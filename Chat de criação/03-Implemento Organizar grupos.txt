@@ -1,0 +1,135 @@
+﻿Perfeito. Vamos organizar por grupos de pertença com máxima precisão, um arquivo de cada vez, sem misturar passos.
+Objetivo desta etapa (bem claro):
+I Mostrar os eventos agrupados por grupo de perten�a
+(ex.: Grupo Jovem S�o Paulo, Grupo de Casais, etc.)
+Nada mais.
+VISÃO GERAL (antes de mexer)
+Hoje você já tem:
+* eventos lidos do JSON
+* eventos organizados por mês
+Agora vamos:
+* criar uma nova organização paralela (por grupo)
+* sem mexer no JSON
+* sem quebrar a organização por mês
+ETAPA 1 — Criar a função “organizar por grupo”
+� Arquivo a criar agora
+web/lib/organizarPorGrupo.ts
+
+PASSO 1.1 — Criar e abrir o arquivo
+No terminal:
+nano web/lib/organizarPorGrupo.ts
+
+PASSO 1.2 — Cole EXATAMENTE isto
+// web/lib/organizarPorGrupo.ts
+
+import { Evento } from "./eventos";
+
+export function organizarEventosPorGrupo(eventos: Evento[]) {
+  const organizados: Record<string, Evento[]> = {};
+
+  eventos.forEach((evento) => {
+    const grupo = evento.grupo_relacionado || "Outros";
+
+    if (!organizados[grupo]) {
+      organizados[grupo] = [];
+    }
+
+    organizados[grupo].push(evento);
+  });
+
+  return organizados;
+}
+
+Salve:
+* Ctrl + O → Enter
+* Ctrl + X
+O que essa função faz (em português simples)
+* olha cada evento
+* pega o campo grupo_relacionado
+* se não existir, coloca em “Outros”
+* cria grupos automaticamente
+* devolve algo assim:
+{
+  "Grupo Jovem São Paulo": [evento1, evento2],
+  "Grupo de Casais": [evento3]
+}
+
+ETAPA 2 — Usar a organização por grupo na página
+� Arquivo a modificar agora
+web/pages/index.tsx
+
+⚠️ Somente este arquivo será alterado agora.
+PASSO 2.1 — Abrir o arquivo
+nano web/pages/index.tsx
+
+PASSO 2.2 — Ajustar os imports (no topo)
+Substitua esta linha:
+import { organizarEventosPorMes } from "../lib/organizarPorMes";
+
+Por estas DUAS linhas:
+import { organizarEventosPorMes } from "../lib/organizarPorMes";
+import { organizarEventosPorGrupo } from "../lib/organizarPorGrupo";
+
+PASSO 2.3 — Criar a organização por grupo (ANTES do return)
+Dentro do componente Home, logo após esta linha:
+const eventosPorMes = organizarEventosPorMes(eventos);
+
+I ADICIONE esta linha abaixo:
+const eventosPorGrupo = organizarEventosPorGrupo(eventos);
+
+PASSO 2.4 — Exibir os eventos por grupo (abaixo da agenda mensal)
+⚠️ Não removemos nada do que já existe.
+Vamos acrescentar uma nova seção.
+I Role at� o final do JSX, logo antes de </main>
+e cole EXATAMENTE isto:
+<hr />
+
+<h1>Agenda por Grupos de Pertença</h1>
+
+{Object.entries(eventosPorGrupo).map(([grupo, eventosDoGrupo]) => (
+  <section key={grupo} style={{ marginBottom: "2rem" }}>
+    <h2>{grupo}</h2>
+
+    <ul>
+      {eventosDoGrupo.map((evento) => (
+        <li key={evento.id} style={{ marginBottom: "1rem" }}>
+          <strong>{evento.titulo}</strong><br />
+          Data: {evento.data}
+          {evento.horario && <> — {evento.horario}</>}
+          <br />
+          Local: {evento.local}
+          {evento.tema && (
+            <>
+              <br />
+              Tema: {evento.tema}
+            </>
+          )}
+        </li>
+      ))}
+    </ul>
+  </section>
+))}
+
+Salve o arquivo.
+ETAPA 3 — Ver o resultado
+No navegador:
+I http://localhost:3000(http://localhost:3000/)
+(se necess�rio, Ctrl + F5)
+O QUE VOCÊ DEVE VER AGORA
+1️⃣ Agenda por mês (como antes)
+2️⃣ Uma linha divisória
+3️⃣ Agenda por Grupos de Pertença
+4️⃣ Um título de grupo, por exemplo:
+Grupo Jovem São Paulo
+
+5️⃣ Embaixo, os eventos desse grupo
+Isso significa:
+� A mesma base de dados agora gera DUAS agendas diferentes
+ mensal e por grupo 
+exatamente como pensado pastoralmente.
+CONFIRMAÇÃO (uma frase)
+Quando tudo estiver aparecendo corretamente, responda apenas:
+I Agenda por grupos funcionando
+Depois disso, o próximo passo natural será:
+I filtrar eventos p�blicos / internos
+(para preparar a agenda que pode ser partilhada externamente).

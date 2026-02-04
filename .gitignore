@@ -1,0 +1,8 @@
+# Dependências
+/web/node_modules
+
+# Build do Next.js
+/web/.next
+
+# Variáveis de ambiente
+.env

@@ -1,0 +1,58 @@
+{
+  "grupos": [
+    {
+      "id": "gimvi-adolescentes",
+      "slug": "gimvi-adolescentes",
+      "nome": "GimVi Adolescentes",
+      "faixa_etaria": "Adolescentes até 15 anos",
+      "descricao": "Grupo inter-paroquial missionário de Villaregia Adolescentes",
+      "objetivo_ano": "A espiritualidade cristã se junta aos tempos de hoje, com todos os desafios e alegrias. Ver Jesus na nossa vida.",
+      "equipe": [
+        "Marco (31 996822184)",
+        "Rosyelen",
+        "José Roberto"
+      ],
+      "convite_final": "Venha fazer parte do GimVi Adolescentes e caminhar juntos para um crescimento humano e espiritual!"
+    },
+    {
+      "id": "gimvi-jovens",
+      "slug": "gimvi-jovens",
+      "nome": "GimVi Jovens",
+      "faixa_etaria": "16–30 anos",
+      "descricao": "Grupo inter-paroquial missionário de Villaregia Jovens",
+      "objetivo_ano": "Autoconhecimento, conhecimento e prática do bem.",
+      "equipe": [
+        "P. Siro Opportuni",
+        "Roberta",
+        "Rodrigo e Nathalia"
+      ],
+      "convite_final": "Jovem! Você deseja uma caminhada cristã, descobrir a si mesmo e praticar o bem? Participe do GimVi Jovens!"
+    },
+    {
+      "id": "nova-constelacao",
+      "slug": "nova-constelacao",
+      "nome": "Nova Constelação",
+      "faixa_etaria": "12–15 anos",
+      "descricao": "Grupo inter-religioso de autoconhecimento, implementação de valores humanos e prática do bem",
+      "objetivo_ano": "Autoconhecimento, conhecimento e prática do bem",
+      "equipe": [
+        "P. Siro Paulo",
+        "Vitória",
+        "Ana Clara"
+      ],
+      "convite_final": "Se você é um adolescente que deseja caminhar no bem e para o bem, venha participar do nosso grupo!"
+    },
+    {
+      "id": "grupo-trilhas",
+      "slug": "grupo-trilhas",
+      "nome": "Grupo Trilhas",
+      "faixa_etaria": "30 ~",
+      "descricao": "Grupo de formação humano-cristã para o autoconhecimento, conhecimento e pratica do bem",
+      "objetivo_ano": "Autoconhecimento, conhecimento e pratica do bem",
+      "equipe": [
+        "Erika"
+      ],
+      "convite_final": "Venha participar ao grupo Trilhas!"
+    }
+  ]
+}

@@ -1,0 +1,403 @@
+﻿Perfeito. Agora voltamos conscientemente ao programa interno da PASCOM, com mentalidade de produto (não mais de experimento).
+Vou responder em três partes claras, exatamente como você pediu, e no nível certo para não ter que refazer tudo depois.
+
+🔧 PROGRAMA PASCOM — PLANO DE CONSOLIDAÇÃO
+CONTEXTO (importante alinhar)
+Você já tem:
+    • ✅ Motor funcional (Next.js)
+    • ✅ Modelo de dados sólido (grupos + encontros)
+    • ✅ Livro público separado (agenda/e-book)
+    • ✅ Fluxo editorial claro
+Agora entramos na fase:
+“tornar isso utilizável por uma equipe real”
+
+1️⃣ O QUE AINDA FALTA (mapa honesto)
+Vou dividir por níveis, do essencial ao avançado.
+
+🔴 NÍVEL 1 — ESSENCIAL (antes de qualquer publicação)
+Sem isso, a equipe pode se confundir ou quebrar dados.
+1.1 Controle mínimo de acesso
+Hoje:
+    • qualquer pessoa que conheça a URL pode:
+        ◦ criar grupos
+        ◦ apagar grupos
+        ◦ apagar encontros
+👉 Falta:
+    • um “modo interno” PASCOM
+💡 Solução simples (por enquanto):
+    • senha única no .env
+    • verificada nas rotas /api/*
+    • não precisa login complexo agora
+
+1.2 Confirmações e mensagens mais claras
+Hoje:
+    • exclusão funciona ✔
+    • mas o feedback ainda é técnico
+👉 Melhorar:
+    • textos pastorais:
+        ◦ “Grupo removido com sucesso”
+        ◦ “Encontro adicionado ao calendário”
+    • avisos mais visíveis
+
+1.3 Organização visual do painel PASCOM
+Hoje:
+    • homepage mistura:
+        ◦ visão pública
+        ◦ funções administrativas
+👉 Falta separar:
+    • Painel PASCOM
+    • Livro público
+💡 Solução:
+    • rota /admin
+    • rota /livro
+    • homepage simples redirecionando
+
+2️⃣ APRIMORAR (qualidade e tranquilidade)
+Aqui o sistema deixa de ser “funcional” e passa a ser confiável.
+
+🟡 NÍVEL 2 — USABILIDADE DA EQUIPE
+2.1 Evitar duplicações (seu problema atual)
+Você já percebeu:
+    • grupos duplicados
+    • encontros duplicados
+👉 Falta:
+    • validação:
+        ◦ slug único
+        ◦ data + grupo não repetirem
+💡 Solução:
+    • checagem antes de salvar JSON
+    • aviso claro:
+      “Já existe um encontro neste dia para este grupo”
+
+2.2 Datas mais humanas no formulário
+Você já intuiu corretamente 👌
+👉 Ajustar:
+    • input type="date"
+    • campo opcional:
+        ◦ “Texto livre da data”
+(ex: 15–17 de maio · Grand Prix)
+No livro:
+    • se houver data_legivel, ela prevalece
+    • senão, usa a data normal
+
+2.3 Separar tipos de encontros
+Hoje:
+    • regular
+    • especial
+👉 Aprimorar:
+    • visual diferente
+    • cor diferente
+    • destaque no livro
+
+3️⃣ PUBLICAR PARA A EQUIPE (do jeito certo)
+Aqui é onde muitos projetos quebram — vamos evitar isso.
+
+🟢 NÍVEL 3 — PUBLICAÇÃO REAL
+3.1 Onde hospedar
+Opções realistas para você:
+✅ Vercel (recomendado)
+    • feito para Next.js
+    • gratuito no início
+    • deploy automático
+Ou:
+    • servidor da comunidade (mais complexo)
+👉 Minha recomendação: Vercel.
+
+3.2 Separar URLs
+Depois de publicado, a equipe terá:
+    • 🔒 Programa PASCOM
+      https://agenda.villaregia.org/admin
+    • 🌍 Livro público
+      https://agenda.villaregia.org/livro
+Isso é muito importante pastoralmente.
+
+3.3 Pequeno manual interno (indispensável)
+Antes de entregar para a equipe, você vai precisar:
+    • 1 página simples:
+        ◦ “Como criar um grupo”
+        ◦ “Como inserir encontros”
+        ◦ “O que NÃO fazer”
+    • isso evita:
+        ◦ erros
+        ◦ retrabalho
+        ◦ ansiedade
+👉 Eu posso te ajudar a escrever isso.
+
+📌 PROPOSTA DE ORDEM (recomendada)
+Para não refazer nada, sugiro:
+1️⃣ Criar /admin
+2️⃣ Mover funções PASCOM para lá
+3️⃣ Colocar senha simples
+4️⃣ Ajustar formulários de data
+5️⃣ Tratar duplicações
+6️⃣ Só então publicar
+
+👉 Próxima decisão (curta e objetiva)
+Escolha uma opção para continuarmos:
+A) Criar o Painel PASCOM (/admin)
+B) Ajustar datas e validações
+C) Preparar o projeto para publicação (Vercel)
+Responda só com: A, B ou C
+A
+Ótimo. Escolha perfeita.
+Criar o Painel PASCOM (/admin) agora é exatamente o passo certo para não bagunçar o projeto e dar tranquilidade à equipe.
+Vou conduzir com método, em passos pequenos, explicando o porquê de cada coisa.
+
+🔐 PASSO A — Criar o Painel PASCOM (/admin)
+🎯 Objetivo do /admin
+Separar claramente:
+    • 🌍 Livro público → /livro
+    • 🔒 Programa interno PASCOM → /admin
+Assim:
+    • a equipe sabe onde mexer
+    • o público não vê botões de edição
+    • o sistema fica sustentável
+
+🧱 ARQUITETURA FINAL (simples e clara)
+/pages
+  /admin
+    index.tsx        → painel principal PASCOM
+    grupos.tsx       → gestão de grupos
+    encontros.tsx    → gestão de encontros
+  /livro
+    index.tsx        → capa
+    calendario.tsx
+    [slug].tsx       → capítulos
+👉 Hoje vamos criar apenas o essencial:
+    • /admin/index.tsx
+
+1️⃣ Criar a página /admin
+Crie o arquivo:
+web/pages/admin/index.tsx
+
+2️⃣ Código do Painel PASCOM (copiar e colar)
+// web/pages/admin/index.tsx
+
+import Link from "next/link";
+
+export default function AdminHome() {
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#f5f7f9",
+        padding: "3rem 2rem",
+      }}
+    >
+      <section style={{ maxWidth: "900px", margin: "0 auto" }}>
+        <h1 style={{ color: "#371900", marginBottom: "0.5rem" }}>
+          Painel PASCOM – Agenda CMV-BH
+        </h1>
+
+        <p style={{ color: "#3e4647", marginBottom: "2.5rem" }}>
+          Área interna para organização dos grupos, encontros e agendas
+          anuais da Comunidade Missionária de Villaregia.
+        </p>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: "1.5rem",
+          }}
+        >
+          {/* ===== GRUPOS ===== */}
+          <Link href="/grupos/novo" style={{ textDecoration: "none" }}>
+            <div
+              style={{
+                background: "#ffffff",
+                borderRadius: "12px",
+                padding: "1.8rem",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.06)",
+                cursor: "pointer",
+              }}
+            >
+              <h2 style={{ color: "#4bbbc8" }}>👥 Grupos</h2>
+              <p style={{ color: "#3e4647" }}>
+                Criar, editar ou remover grupos pastorais.
+              </p>
+            </div>
+          </Link>
+
+          {/* ===== ENCONTROS ===== */}
+          <Link href="/" style={{ textDecoration: "none" }}>
+            <div
+              style={{
+                background: "#ffffff",
+                borderRadius: "12px",
+                padding: "1.8rem",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.06)",
+                cursor: "pointer",
+              }}
+            >
+              <h2 style={{ color: "#c77e4a" }}>📅 Encontros</h2>
+              <p style={{ color: "#3e4647" }}>
+                Gerenciar calendários e atividades dos grupos.
+              </p>
+            </div>
+          </Link>
+
+          {/* ===== LIVRO ===== */}
+          <Link href="/livro" style={{ textDecoration: "none" }}>
+            <div
+              style={{
+                background: "#ffffff",
+                borderRadius: "12px",
+                padding: "1.8rem",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.06)",
+                cursor: "pointer",
+              }}
+            >
+              <h2 style={{ color: "#ff6136" }}>📘 Livro Público</h2>
+              <p style={{ color: "#3e4647" }}>
+                Visualizar como a agenda aparece para o público.
+              </p>
+            </div>
+          </Link>
+        </div>
+
+        <p style={{ marginTop: "3rem" }}>
+          <Link href="/" style={{ color: "#0b5c6b" }}>
+            ← Voltar ao sistema
+          </Link>
+        </p>
+      </section>
+    </main>
+  );
+}
+
+3️⃣ O que muda imediatamente
+Depois de salvar:
+    • Acesse 👉 http://localhost:3000/admin
+    • Você verá:
+        ◦ um painel claro
+        ◦ sem confusão com o livro
+        ◦ pronto para crescer
+Nada do que você já fez quebra.
+Nada precisa ser refeito.
+
+4️⃣ Próximo micro-passo (ainda dentro do A)
+Agora temos duas opções ainda dentro do Painel PASCOM:
+A1) Mover a homepage atual para /admin/grupos
+A2) Criar proteção por senha simples no /admin
+👉 Para seguir, responda apenas:
+    • A1 ou
+    • A2
+(ambas são importantes, mas a ordem muda a experiência da equipe)
+A1
+Depois: Somente quem tem ...@villaregia.org pode entrar.
+Perfeito. Vamos fazer A1 agora (organização correta), e já deixo preparado o terreno para a regra
+👉 “somente quem tem @villaregia.org pode entrar” (A2 logo depois, sem refazer nada).
+Vou ser cirúrgico e pedagógico.
+
+✅ A1 — Mover a gestão de grupos para /admin/grupos
+🎯 O que estamos fazendo (conceito)
+Hoje:
+    • a homepage mistura:
+        ◦ visão geral
+        ◦ funções administrativas
+    • isso confunde a equipe
+Vamos:
+    • transformar a homepage administrativa atual em:
+      /admin/grupos
+    • deixar:
+      /admin           → painel limpo
+      /livro           → público
+      /admin/grupos    → gestão real
+👉 Não mudamos código de lógica, só movemos a página.
+
+1️⃣ Criar a nova página /admin/grupos
+Crie o arquivo:
+web/pages/admin/grupos.tsx
+
+2️⃣ Copiar o código atual da homepage administrativa
+Pegue TODO o conteúdo do arquivo atual:
+web/pages/index.tsx
+👉 Copie somente o componente + getStaticProps
+👉 Cole inteiro dentro de:
+web/pages/admin/grupos.tsx
+⚠️ Não altere nada ainda.
+Primeiro vamos garantir que tudo funciona no novo lugar.
+
+3️⃣ Limpar a homepage pública (/)
+Agora vamos deixar a homepage neutra, sem gestão.
+Abra:
+web/pages/index.tsx
+Substitua todo o conteúdo por isto:
+// web/pages/index.tsx
+
+import Link from "next/link";
+
+export default function HomePublica() {
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "#fdfcf8",
+      }}
+    >
+      <section style={{ textAlign: "center" }}>
+        <h1 style={{ color: "#4bbbc8" }}>
+          Agenda CMV-BH
+        </h1>
+
+        <p style={{ marginBottom: "2rem" }}>
+          Agenda pastoral da Comunidade Missionária de Villaregia
+        </p>
+
+        <Link href="/livro">
+          📘 Abrir agenda pública
+        </Link>
+
+        <br /><br />
+
+        <Link href="/admin" style={{ fontSize: "0.9rem", color: "#8d908f" }}>
+          Área interna PASCOM
+        </Link>
+      </section>
+    </main>
+  );
+}
+📌 Agora:
+    • / → neutra e clara
+    • /livro → público
+    • /admin → painel
+    • /admin/grupos → gestão
+
+4️⃣ Ajustar o link no painel /admin
+Abra:
+web/pages/admin/index.tsx
+Troque este link:
+<Link href="/grupos/novo">
+por:
+<Link href="/admin/grupos">
+E o texto pode ficar:
+👥 Gerenciar Grupos
+
+5️⃣ Teste rápido (importante)
+No navegador:
+    • ✅ http://localhost:3000/
+    • ✅ http://localhost:3000/livro
+    • ✅ http://localhost:3000/admin
+    • ✅ http://localhost:3000/admin/grupos
+Se tudo abrir → A1 concluído ✔️
+
+🔒 Próximo passo (A2 — já alinhado com o que você pediu)
+Você disse:
+“Somente quem tem …@villaregia.org pode entrar.”
+Isso é perfeito e pastoralmente correto.
+👉 Próximo passo será:
+    • proteção simples por e-mail institucional
+    • sem login complicado
+    • sem banco de dados
+    • usando:
+        ◦ uma tela de acesso
+        ◦ verificação @villaregia.org
+        ◦ sessão simples
+
+Confirmação para avançar:
+👉 “A1 ok, seguir com A2”
+

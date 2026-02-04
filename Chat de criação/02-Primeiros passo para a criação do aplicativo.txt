@@ -1,0 +1,136 @@
+﻿Perfeito. Vamos criar o MODELO DE DADOS OFICIAL da Agenda dos Grupos CMV-BH, j� flex�vel, exatamente como voc� pediu:
+I campos edit�veis e extens�veis pelos administradores.
+Vou fazer isso em três níveis:
+1️⃣ conceito pastoral
+2️⃣ modelo lógico (explicado)
+3️⃣ modelo técnico (JSON real, pronto para uso)
+MODELO DE DADOS — Agenda dos Grupos CMV-BH
+1. Princípio fundamental do modelo
+O evento é o núcleo.
+Tudo o resto (agenda, e-book, relatórios) nasce dele.
+O modelo foi pensado para ser:
+* ✔ simples no início
+* ✔ extensível no futuro
+* ✔ controlado pela PASCOM (administradores)
+2. Conceito pastoral do “Evento”
+Um Evento representa qualquer atividade da vida comunitária:
+Tipos oficiais iniciais
+* encontro_grupo
+* celebracao
+* formacao
+* atividade_missionaria
+⚠️ Importante
+Os administradores poderão acrescentar novos tipos no futuro
+(ex.: assembleia, convivência, reunião ampliada, etc.).
+3. Estrutura lógica do Evento
+3.1 Campos essenciais (núcleo)
+Esses sempre existirão:
+* id → identificador único
+* titulo → nome do evento
+* tipo → tipo pastoral
+* data_inicio
+* data_fim (opcional)
+* local
+* tema (opcional)
+3.2 Organização pastoral
+* categoria_principal
+	* grupo
+	* retiro
+* grupo_relacionado (quando aplicável)
+	* nome do grupo
+	* ou código interno
+3.3 Informações descritivas (editáveis)
+* descricao
+* observacoes
+Esses campos são:
+* totalmente editáveis
+* opcionais
+* ideais para enriquecer o e-book
+3.4 Visibilidade e publicação
+* visibilidade
+	* publico
+	* interno
+Isso controla:
+* o que aparece para fora
+* o que fica apenas para a comunidade
+3.5 Metadados administrativos (PASCOM)
+* responsaveis
+* criado_por
+* data_criacao
+* ultima_atualizacao
+3.6 Campos personalizados (chave da flexibilidade)
+I Aqui est� o ponto mais importante do que voc� pediu.
+"campos_personalizados": {
+  "pregador": "Pe. João",
+  "material": "link-do-drive",
+  "cor_liturgica": "verde"
+}
+
+✔ Administradores podem:
+* criar novos campos
+* remover campos
+* adaptar linguagem pastoral
+* sem alterar o código do sistema
+4. MODELO TÉCNICO — JSON OFICIAL (2026)
+Crie o arquivo:
+/data/eventos-2026.json
+
+Conteúdo inicial:
+{
+  "ano": 2026,
+  "eventos": [
+    {
+      "id": "evt-001",
+      "titulo": "Encontro do Grupo Jovem",
+      "tipo": "encontro_grupo",
+      "categoria_principal": "grupo",
+      "grupo_relacionado": "Grupo Jovem São Paulo",
+
+      "data_inicio": "2026-02-15T19:30",
+      "data_fim": "2026-02-15T21:30",
+      "local": "Salão Paroquial",
+      "tema": "Chamados à Missão",
+
+      "descricao": "Encontro mensal de formação e partilha.",
+      "observacoes": "",
+
+      "visibilidade": "interno",
+
+      "responsaveis": ["Coordenação Grupo Jovem"],
+      "campos_personalizados": {},
+
+      "criado_por": "pascom@villaregia.org",
+      "data_criacao": "2025-11-01T10:00",
+      "ultima_atualizacao": "2025-11-01T10:00"
+    }
+  ]
+}
+
+5. O que os administradores podem modificar
+✔ título
+✔ datas
+✔ local
+✔ descrição
+✔ responsáveis
+✔ visibilidade
+✔ campos personalizados (livres)
+✔ até novos tipos de evento (no futuro)
+❌ Não precisam mexer no código
+❌ Não precisam mexer na estrutura base
+6. O que este modelo já permite
+Com esse JSON, já conseguimos:
+* ✔ gerar a agenda mensal
+* ✔ gerar a agenda por grupos
+* ✔ gerar a agenda de retiros
+* ✔ montar o e-book anual
+* ✔ evoluir para banco de dados depois
+PRÓXIMO PASSO (concreto)
+I Agora vamos ligar esse modelo ao Next.js.
+No próximo passo eu vou:
+1. Criar uma função para ler eventos-2026.json
+2. Mostrar os eventos na página inicial
+3. Organizar por mês
+Confirmação simples
+Responda apenas:
+I Criar leitura e exibi��o dos eventos
+E começamos a ver a Agenda dos Grupos CMV-BH aparecer na tela.

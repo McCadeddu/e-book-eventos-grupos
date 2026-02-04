@@ -1,0 +1,100 @@
+﻿Perfeito. Abaixo está o DOCUMENTO FUNDADOR OFICIAL do projeto, redigido em linguagem institucional, clara e estável, pronto para:
+* aprovação interna
+* arquivamento PASCOM
+* uso como referência técnica e pastoral
+* base para desenvolvimento do aplicativo
+DOCUMENTO FUNDADOR
+Agenda dos Grupos CMV-BH
+Pastoral da Comunicação – CMV-BH
+Ano de referência inicial: 2026
+1. Identidade do Projeto
+1.1 Nome oficial
+Agenda dos Grupos CMV-BH
+1.2 Finalidade principal
+A Agenda dos Grupos CMV-BH tem como finalidade:
+Organizar, partilhar, preservar e recordar as datas e eventos que expressam a vida pastoral da Comunidade ao longo do ano.
+Este instrumento nasce para servir a unidade, a memória e a visibilidade da vida comunitária, favorecendo a participação, o planejamento e a comunicação pastoral.
+1.3 Público-alvo
+A Agenda dos Grupos CMV-BH destina-se a:
+* Coordenação geral da comunidade
+* Coordenadores de grupos
+* Membros da comunidade
+* Pessoas externas, mediante acesso apenas aos eventos definidos como públicos
+O sistema prevê, portanto, uma agenda de acesso misto, com conteúdos internos e públicos claramente definidos.
+2. Estrutura Pastoral do Conteúdo
+2.1 Definição de “Evento”
+Para efeitos do aplicativo e da agenda, considera-se evento pastoral toda atividade que faz parte da vida organizada da comunidade.
+São eventos obrigatórios no sistema:
+* Encontros regulares dos grupos
+* Celebrações
+* Formações
+* Atividades missionáras
+O critério de inclusão é o pertencimento à vida comunitária, e não o grau de importância do evento.
+2.2 Nível pastoral do evento
+Neste estágio inicial do projeto, todos os eventos são classificados como:
+* Eventos de caráter informativo
+O foco principal é a organização clara das datas e informações essenciais, garantindo simplicidade, adesão dos grupos e confiabilidade da agenda.
+2.3 Campos obrigatórios de cada evento
+Todo evento cadastrado na Agenda dos Grupos CMV-BH deve conter, obrigatoriamente:
+* Data
+* Local
+* Tema, quando houver
+Esses campos são considerados suficientes para:
+* a agenda digital
+* o e-book anual
+* a comunicação básica dos eventos
+2.4 Estrutura organizacional dos eventos
+Os eventos são organizados segundo duas divisões principais:
+1. Por Grupos de pertença
+	* grupos regulares
+	* núcleos
+	* equipes
+	* demais expressões estáveis da comunidade
+1. Por Retiros de evangelização
+	* retiros
+	* encontros extraordinários
+	* experiências intensivas e pontuais
+Essa divisão estrutura tanto a navegação da agenda quanto a organização do e-book anual.
+3. Governança e Fluxo de Gestão
+3.1 Responsabilidade institucional
+A Pastoral da Comunicação – PASCOM CMV-BH é a responsável oficial por:
+* gerar o aplicativo
+* manter o sistema
+* garantir a unidade pastoral e comunicativa da agenda
+A Agenda dos Grupos CMV-BH é, portanto, um instrumento oficial da comunidade, sob responsabilidade da PASCOM.
+3.2 Perfis de acesso
+Administradores do sistema
+São administradores:
+* os membros da equipe central da PASCOM CMV-BH
+* identificados por e-mail institucional
+(ex.: nome.sobrenome@villaregia.org)
+O acesso ao sistema é realizado exclusivamente por meio desse e-mail institucional.
+3.3 Permissões dos administradores
+Os administradores do sistema podem:
+* alterar datas dos eventos
+* alterar o nome de um evento
+* alterar explicações e dados informativos de um evento ou encontro
+* alterar os membros responsáveis por grupos ou eventos, quando houver mudanças
+Essas permissões existem para garantir:
+* atualização correta das informações
+* clareza comunicativa
+* fidelidade da agenda à realidade pastoral da comunidade
+3.4 Princípio de funcionamento
+A Agenda dos Grupos CMV-BH:
+* não é uma plataforma colaborativa aberta
+* não funciona como um sistema de edição livre
+Trata-se de uma agenda editorialmente acompanhada, garantindo:
+* unidade pastoral
+* confiabilidade das informações
+* uma única agenda oficial de referência para toda a comunidade
+4. Validade do Documento
+Este Documento Fundador:
+* entra em vigor a partir do ano pastoral de 2026
+* serve como base para o desenvolvimento técnico do aplicativo
+* orienta atualizações futuras, mantendo continuidade e coerência pastoral
+✔ Documento Fundador concluído
+No próximo passo, podemos:
+1. avançar para o BLOCO 4 — Produto final (Agenda / e-book)
+2. transformar este documento em PDF oficial PASCOM
+3. ou passar diretamente para o modelo técnico de dados do aplicativo
+Diga-me como deseja prosseguir.

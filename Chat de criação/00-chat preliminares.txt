@@ -1,0 +1,335 @@
+﻿Quero criar um aplicativo para transformar os eventos (encontros) dos grupos numa agenda (tipo e-book) que se pode partilhar a todos. A partir desse ano 2026, poderÃ¡ ser atualizada cada ano.
+Ãtima ideia â isso resolve organizaÃ§Ã£o pastoral, comunicaÃ§Ã£o e memÃ³ria histÃ³rica num Ãºnico fluxo. Vou estruturar a proposta de forma tÃ©cnica + pastoral, para que ela seja realmente executÃ¡vel a partir de 2026 e escalÃ¡vel nos anos seguintes.
+1. Conceito do aplicativo
+Ideia central
+Um aplicativo (web + mobile) que transforma os eventos dos grupos em uma Agenda Anual Pastoral, apresentada como:
+* Å Agenda interativa (dia / mês / grupo)
+* Ø E-book anual (PDF / EPUB) compartilhável
+*   Base viva, atualizável ao longo do ano
+* â»ï¸ Modelo reutilizÃ¡vel para 2027, 2028, etc.
+PrincÃ­pio pastoral
+NÃ£o Ã© sÃ³ calendÃ¡rio: Ã© vida comunitÃ¡ria organizada, visÃ­vel e partilhÃ¡vel.
+2. Estrutura funcional do sistema
+2.1 NÃºcleo: Evento Pastoral
+Cada evento Ã© o âÃ¡tomoâ do sistema.
+Campos essenciais
+* TÃ­tulo do encontro
+* Grupo / pastoral / movimento
+* Data e horÃ¡rio
+* Local
+* ResponsÃ¡vel
+* Tipo de evento (formaÃ§Ã£o, celebraÃ§Ã£o, missÃ£o, reuniÃ£o, convivÃªnciaâ¦)
+* Objetivo pastoral
+* Palavra-chave / tema bÃ­blico (opcional)
+* ObservaÃ§Ãµes
+Esses dados alimentam todos os formatos:
+* agenda
+* e-book
+* planejamento pastoral
+* comunicaÃ§Ã£o
+2.2 Agenda digital (visual e prÃ¡tica)
+Funcionalidades:
+* VisÃ£o mensal e anual
+* Filtro por:
+	* grupo
+	* tipo de evento
+	* responsÃ¡vel
+* Clique no evento â abre ficha completa
+* Compartilhamento por link
+I Ideal para uso cotidiano da comunidade.
+2.3 GeraÃ§Ã£o automÃ¡tica do âe-book Agenda Pastoralâ
+Aqui estÃ¡ o diferencial forte.
+O e-book Ã© gerado automaticamente a partir dos eventos, com:
+Estrutura sugerida
+1. Capa (Ano + Comunidade)
+2. IntroduÃ§Ã£o pastoral do ano
+3. CalendÃ¡rio geral
+4. Agenda por mÃªs
+5. Agenda por grupo
+6. EspaÃ§o para anotaÃ§Ãµes
+7. Contatos e referÃªncias pastorais
+Formatos
+* PDF (impressÃ£o)
+* EPUB (leitura digital)
+* VersÃ£o simples para WhatsApp
+Ì Pode ser gerado:
+* no inÃ­cio do ano
+* ou novamente sempre que houver mudanÃ§as relevantes
+3. AtualizaÃ§Ã£o anual (a partir de 2026)
+3.1 Modelo-base por ano
+* O ano 2026 vira um template
+* Para 2027:
+	* duplica-se a estrutura
+	* ajustam-se datas
+	* mantÃ©m-se grupos e tipos de evento
+	* reavalia-se o planejamento pastoral
+Isso cria continuidade pastoral, nÃ£o recomeÃ§o do zero.
+3.2 HistÃ³rico e memÃ³ria
+O sistema guarda:
+* agendas passadas
+* eventos realizados
+* relatÃ³rios automÃ¡ticos
+Isso permite:
+* avaliaÃ§Ã£o pastoral
+* relatÃ³rios anuais
+* planejamento fundamentado
+4. Arquitetura tÃ©cnica (simples e sustentÃ¡vel)
+
+
+
+4.1 Tipo de aplicativo (recomendado)
+Web App progressivo (PWA)
+* Funciona no celular como app
+* NÃ£o exige loja (Play Store / App Store)
+* AtualizaÃ§Ã£o imediata para todos
+4.2 Tecnologias sugeridas (coerentes com o que vocÃª jÃ¡ usa)
+* Frontend: Next.js / React
+* Banco de dados: Firestore ou PostgreSQL
+* AutenticaÃ§Ã£o:
+	* administrador pastoral
+	* coordenadores de grupo
+* GeraÃ§Ã£o de PDF:
+	* automÃ¡tica a partir dos dados
+* ExportaÃ§Ã£o:
+	* PDF / Excel / JSON
+5. Fluxo de uso pastoral (bem concreto)
+1. Cada grupo cadastra seus encontros
+2. A coordenaÃ§Ã£o valida
+3. O sistema:
+	* atualiza a agenda
+	* reflete no planejamento pastoral
+1. Com um clique:
+	* gera-se a Agenda Pastoral (e-book)
+1. O link Ã© partilhado com toda a comunidade
+ò Uma única fonte, múltiplos usos.
+6. Fases de implementaÃ§Ã£o (realista)
+Fase 1 â Essencial (MVP)
+* Cadastro de eventos
+* Agenda anual
+* ExportaÃ§Ã£o PDF simples
+Fase 2 â Pastoral inteligente
+* Objetivos pastorais
+* Planejamento comunicativo
+* RelatÃ³rios automÃ¡ticos
+Fase 3 â Comunidade viva
+* ComentÃ¡rios nos eventos
+* Materiais anexos
+* HistÃ³rico e memÃ³ria pastoral
+7. PrÃ³ximo passo (decisÃ£o estratÃ©gica)
+Para avanÃ§armos com precisÃ£o, o prÃ³ximo passo nÃ£o Ã© tÃ©cnico, Ã© pastoral:
+I Quem alimenta os dados?
+* cada grupo?
+* sÃ³ coordenaÃ§Ã£o?
+* modelo hÃ­brido?
+I Quem valida?
+* PASCOM?
+* coordenaÃ§Ã£o geral?
+I Agenda pública ou parcialmente restrita?
+Se quiser, no prÃ³ximo passo posso:
+* desenhar o modelo de dados
+* criar o primeiro esboÃ§o da Agenda Pastoral 2026
+* ou transformar isso num projeto oficial PASCOM (com objetivos, etapas e cronograma)
+Perfeito. Para âdelinear bemâ, proponho avanÃ§armos de forma estruturada e objetiva, fechando decisÃµes-chave antes de qualquer cÃ³digo.
+Vou sugerir um roteiro de delineamento em 4 blocos. VocÃª confirma, ajusta ou completa â e seguimos para o prÃ³ximo nÃ­vel.
+BLOCO 1 â Identidade do aplicativo (fundacional)
+1. Nome do projeto
+(ex.: Agenda Pastoral, Agenda ComunitÃ¡ria, Agenda Viva, outro)
+2. Finalidade principal (uma frase)
+I Exemplo:
+3. âOrganizar, partilhar e preservar a vida pastoral da comunidade ao longo do ano.â
+4. PÃºblico-alvo
+	* â CoordenaÃ§Ã£o geral
+	* â Coordenadores de grupos
+	* â Membros da comunidade
+	* â Pessoas externas (agenda pÃºblica)
+BLOCO 2 â Estrutura pastoral (conteÃºdo)
+1. O que entra como âeventoâ?
+Marcar os obrigatÃ³rios:
+	* â encontros regulares dos grupos
+	* â celebraÃ§Ãµes
+	* â formaÃ§Ãµes
+	* â eventos missionÃ¡rios
+	* â reuniÃµes internas
+	* â outros: __________
+1. NÃ­vel pastoral do evento
+	* â apenas informativo
+	* â ligado a objetivo pastoral
+	* â ligado tambÃ©m Ã  comunicaÃ§Ã£o (PASCOM)
+1. Queremos que cada evento tenha:
+	* â objetivo pastoral explÃ­cito
+	* â responsÃ¡vel nomeado
+	* â material associado (texto, imagem, link)
+	* â memÃ³ria depois do evento (opcional)
+BLOCO 3 â GovernanÃ§a e fluxo
+1. Quem insere os eventos?
+	* â cada grupo diretamente
+	* â coordenaÃ§Ã£o
+	* â modelo hÃ­brido
+1. Quem valida/publica?
+	* â PASCOM
+	* â coordenaÃ§Ã£o geral
+	* â automÃ¡tico
+1. Agenda visÃ­vel para:
+	* â todos (pÃºblica)
+	* â sÃ³ membros
+	* â parte pÃºblica / parte interna
+BLOCO 4 â Produto final (agenda / e-book)
+1. Formatos desejados
+* â agenda interativa online
+* â PDF tipo e-book anual
+* â versÃ£o para impressÃ£o
+* â versÃ£o leve para WhatsApp
+1. AtualizaÃ§Ã£o
+* â e-book fixo no inÃ­cio do ano
+* â e-book regenerÃ¡vel ao longo do ano
+* â ambos
+1. Continuidade
+* â reaproveitar estrutura todo ano
+* â manter histÃ³rico acessÃ­vel
+* â gerar relatÃ³rio pastoral automÃ¡tico
+Proposta de mÃ©todo
+I Responda numerando, mesmo de forma sintética (ex.:  1. Agenda Pastoral / 2. coordenação + membros / 3. sim ).
+Assim, no prÃ³ximo passo eu:
+* transformo isso num documento fundador do projeto
+* desenho o modelo de dados
+* e conecto diretamente com o calendÃ¡rio PASCOM que vocÃª jÃ¡ estÃ¡ construindo.
+Quando quiser, comeÃ§amos pelo Bloco 1.
+
+Perfeito. A partir de agora seguimos sempre a MESMA metodologia, clara, previsível e sem improvisos.
+Vou responder somente do jeito que você pediu.
+� METODOLOGIA FIXA (regra permanente)
+Para qualquer mudança (bug, recurso novo, publicação), seguimos sempre esta ordem:
+5 ETAPA 0  O QUE N�O SE TOCA
+Antes de tudo, fica proibido:
+* ❌ “testar para ver”
+* ❌ editar JSON manualmente
+* ❌ criar lógica nova sem alinhar o modelo
+* ❌ mexer em vários arquivos ao mesmo tempo
+I Um arquivo por vez. Uma causa por vez.
+5 ETAPA 1  DEFINIR A FONTE DA VERDADE
+Sempre responder antes de codar:
+Onde este dado vive oficialmente?
+No seu projeto, a regra correta é:
+* data/grupos.json → somente dados do grupo
+* data/encontros.json → somente encontros
+* ❌ grupos.json NÃO pode conter encontros dentro
+⚠️ Esse foi o erro que destruiu seus dados antes.
+5 ETAPA 2  BLOQUEAR A ESTRUTURA (ANTES DE TUDO)
+Antes de qualquer funcionalidade:
+2.1 Estrutura fixa de Grupo
+Grupo {
+  id: string        // igual ao slug
+  slug: string      // imutável
+  nome: string
+  faixa_etaria: string
+  descricao: string
+  objetivo_ano: string
+  equipe: string[]
+  convite_final: string
+}
+
+❌ Nunca:
+* faixaEtaria
+* objetivoAno
+* conviteFinal
+I Se chegar diferente � normalizar na API.
+2.2 Estrutura fixa de Encontro
+Encontro {
+  id: string
+  grupo_id: string
+  tipo: "encontro_regular" | "evento_especial"
+  data_inicio: string | null
+  data_fim: string | null
+  data_legivel: string
+  titulo: string
+  horario: string
+  local: string
+  visibilidade: "interno" | "publico"
+}
+
+5 ETAPA 3  ORDEM CORRETA DOS ARQUIVOS (SEMPRE)
+Quando for implementar algo, a ordem nunca muda:
+① API (backend)
+Garante dados corretos
+� Arquivo:
+/pages/api/xxxxx.ts
+
+Aqui:
+* validar
+* normalizar
+* gerar slug
+* gerar id
+* salvar JSON
+❌ UI nunca cria dados “inteligentes”.
+② Dados (JSON)
+Conferir se a API salvou corretamente
+� Arquivos:
+/data/grupos.json
+/data/encontros.json
+
+Checklist:
+* IDs únicos
+* slug presente
+* nenhum campo estranho
+③ Admin (CRUD)
+Criar / editar / excluir
+� Arquivos:
+/pages/admin/...
+/pages/grupos/...
+
+Aqui:
+* só consome API
+* nunca inventa estrutura
+* nunca escreve JSON direto
+④ Público (livro / preview)
+Só leitura
+� Arquivos:
+/pages/livro/...
+
+Se algo quebra aqui → o erro está antes.
+5 ETAPA 4  REGRA DE OURO (essa � para sempre)
+Se algo “sumiu”, o erro está 100% na API ou no JSON.
+Nunca:
+* no preview
+* no livro
+* no frontend
+5 ETAPA 5  COMO VAMOS TRABALHAR A PARTIR DE AGORA
+Quando você quiser resolver algo, você escreve assim:
+Objetivo:
+Arquivo atual:
+Comportamento esperado:
+Comportamento atual:
+E eu vou responder sempre neste formato:
+� RESPOSTA PADR�O (minha obriga��o)
+1� Arquivo 1
+� caminho/do/arquivo.ts
+I coloque exatamente isto
+(sem mexer em mais nada)
+2� Depois disso
+� outro/arquivo.ts
+I ajuste somente isto
+3️⃣ Antes de continuar
+✔️ verifique no navegador:
+* página X
+* ação Y
+4️⃣ Só então passamos ao próximo passo
+5 APLICANDO � SITUA��O ATUAL (exemplo concreto)
+Objetivo atual implícito
+“Criar grupo sem quebrar dados nem duplicar”
+Ordem correta seria:
+1. Corrigir /api/grupos/index.ts
+2. Conferir grupos.json
+3. Só depois testar /grupos/novo
+4. Só depois olhar /admin/grupos
+5. Por último /livro
+Nunca o contrário.
+ Conclus�o (importante)
+* Você não é desorganizado
+* O projeto cresceu sem travar regras cedo
+* Agora travamos o método
+* Isso evita retrabalho e stress
+I Pr�ximo passo l�gico agora � UM S�:
+9 Vamos corrigir definitivamente a API de grupos
+Quando quiser, diga:
+“Começar pela API de grupos”
+E eu sigo exatamente essa metodologia, sem improvisar.

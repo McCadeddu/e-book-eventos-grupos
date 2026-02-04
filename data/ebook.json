@@ -1,0 +1,10 @@
+{
+  "ano": 2026,
+  "titulo": "Agenda dos Grupos e Eventos",
+  "subtitulo": "Comunidade de Belo Horizonte",
+  "botao_texto": "Abrir agenda",
+  "capas": [
+    "/villaregia-capa.png"
+  ],
+  "logo": "/villaregia-logo.png"
+}

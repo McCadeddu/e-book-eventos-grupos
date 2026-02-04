@@ -1,0 +1,24 @@
+{
+  "ano": 2026,
+  "eventos": [
+    {
+      "id": "evt-001",
+      "titulo": "Encontro do Grupo Jovem",
+      "tipo": "encontro_grupo",
+      "categoria_principal": "grupo",
+      "grupo_relacionado": "Grupo Jovem São Paulo",
+      "data": "15/02/2026",
+      "horario": "19h30 – 21h30",
+      "local": "Salão Paroquial",
+      "tema": "Chamados à Missão",
+      "descricao": "Encontro mensal de formação e partilha.",
+      "observacoes": "",
+      "visibilidade": "interno",
+      "responsaveis": ["Coordenação Grupo Jovem"],
+      "campos_personalizados": {},
+      "criado_por": "pascom@villaregia.org",
+      "data_criacao": "01/11/2025",
+      "ultima_atualizacao": "01/11/2025"
+    }
+  ]
+}
