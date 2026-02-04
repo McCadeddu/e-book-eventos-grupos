@@ -1,8 +1,18 @@
-# Dependências
-/web/node_modules
+# Node
+node_modules/
 
-# Build do Next.js
-/web/.next
+# Next.js
+web/.next/
+web/out/
 
-# Variáveis de ambiente
+# Env
 .env
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
