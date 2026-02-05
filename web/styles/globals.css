@@ -1,22 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #3e4647; /* Núcleo 4 – CMV */
+    --background: #ffffff;
+    --foreground: #3e4647; /* Núcleo 4 – CMV */
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background: #0a0a0a;
-        --foreground: #3e4647; /* 4 Núcleo – CMV */
-    }
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
 }
 
 body {
@@ -26,19 +19,15 @@ body {
     line-height: 1.5;
 }
 
-h1, h2, h3 {
-    color: #3e4647;
-}
-
 a {
-    color: #4bbbc8; /* cor principal CMV */
+    color: #4bbbc8;
     font-weight: 500;
 }
 
     a:hover {
-        color: #548287; /* 2º núcleo */
+        color: #548287;
     }
 
 .text-muted {
-    color: #8d908f; /* Associados / Agregados */
+    color: #8d908f;
 }

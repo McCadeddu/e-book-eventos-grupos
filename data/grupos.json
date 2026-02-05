@@ -32,15 +32,17 @@
       "id": "nova-constelacao",
       "slug": "nova-constelacao",
       "nome": "Nova Constelação",
-      "faixa_etaria": "12–15 anos",
-      "descricao": "Grupo inter-religioso de autoconhecimento, implementação de valores humanos e prática do bem",
-      "objetivo_ano": "Autoconhecimento, conhecimento e prática do bem",
+      "faixa_etaria": "10–13 anos",
+      "descricao": "Grupo inter-religioso preadolescente para crescer na amizade e valores humanos",
+      "objetivo_ano": "Potencializar e canalizar as próprias energias para fazer a diferença neste mundo",
       "equipe": [
-        "P. Siro Paulo",
-        "Vitória",
+        "P. Siro Paulo (31993873137)",
+        "Rosemeire (31986807411)",
+        "Alice",
+        "Vitória (31985187506)",
         "Ana Clara"
       ],
-      "convite_final": "Se você é um adolescente que deseja caminhar no bem e para o bem, venha participar do nosso grupo!"
+      "convite_final": "Se você é um preadolescente que deseja caminhar no bem e para o bem, venha participar do nosso grupo!"
     },
     {
       "id": "grupo-trilhas",
@@ -53,6 +55,140 @@
         "Erika"
       ],
       "convite_final": "Venha participar ao grupo Trilhas!"
+    },
+    {
+      "id": "gimca-1",
+      "slug": "gimca-1",
+      "nome": "Gimca 1",
+      "faixa_etaria": "Noivos próximos ao casamento e casais com até 10 anos de vida juntos",
+      "descricao": "Grupo interparoquial missionário de casais, que se reúne uma vez ao mês, para juntos refletirem sobre a vida do casal à luz que Deus sonhou para eles.",
+      "objetivo_ano": "Num ambiente de fraternidade, com a ajuda uns dos outros, nos apoiarmos para viver a plenitude de nossa vocação: o matrimônio!",
+      "equipe": [
+        "P. Hernando (3195143578)",
+        "Denise e Josemar"
+      ],
+      "convite_final": "Convidamos vocês a caminharem conosco nesse ano."
+    },
+    {
+      "id": "gimca-2",
+      "slug": "gimca-2",
+      "nome": "Gimca 2",
+      "faixa_etaria": "Casais com mais de 10 anos de matrimônio ou convivência",
+      "descricao": "Grupo interparoquial missionário de casais que deseja caminhar rumo uma vida cristã mais profunda e da pratica do bem",
+      "objetivo_ano": "Autoconhecimento, conhecimento e pratica do bem",
+      "equipe": [
+        "Márcia (3171755909)",
+        "Nina"
+      ],
+      "convite_final": "Venha participar ao nosso grupo!"
+    },
+    {
+      "id": "afetividade-jovens",
+      "slug": "afetividade-jovens",
+      "nome": "Afetividade Jovens",
+      "faixa_etaria": "14 - 20 anos",
+      "descricao": "Retiro de afetividade para os jovens",
+      "objetivo_ano": "Descobrir a beleza de ser amados, amoráveis e puros aos olhos de Deus e da humanidade",
+      "equipe": [
+        "Lavínia e Adolfo"
+      ],
+      "convite_final": ""
+    },
+    {
+      "id": "jeshua",
+      "slug": "jeshua",
+      "nome": "Jeshuá",
+      "faixa_etaria": "16 - 27 anos",
+      "descricao": "Retiro para jovens",
+      "objetivo_ano": "Experiência transformativa do Amor de Deus",
+      "equipe": [
+        "Roberta",
+        "Marilene",
+        "Yasmin e Gustavo",
+        "Diego e Mariana",
+        "Magna",
+        "Maria Fernanda"
+      ],
+      "convite_final": "Experimente quanto é bom ser filhos de Deus que salva!"
+    },
+    {
+      "id": "grand-prix-formula-1",
+      "slug": "grand-prix-formula-1",
+      "nome": "Grand Prix Formula 1",
+      "faixa_etaria": "12 - 15 anos",
+      "descricao": "Retiro de encontro profundo com Deus",
+      "objetivo_ano": "",
+      "equipe": [
+        "Kátia e Leonardo",
+        "Cristiane",
+        "Isabela",
+        "Fernanda",
+        "Fernando e Fábia",
+        "Marilene"
+      ],
+      "convite_final": ""
+    },
+    {
+      "id": "gimvi-criancas",
+      "slug": "gimvi-criancas",
+      "nome": "GimVi  Crianças e Pre-Adolescentes",
+      "faixa_etaria": "6 - 12 anos",
+      "descricao": "Grupo interparoquial missionário de Villaregia crianças",
+      "objetivo_ano": "",
+      "equipe": [
+        "Michele Rocha",
+        "Isabela",
+        "Sonia"
+      ],
+      "convite_final": ""
+    },
+    {
+      "id": "cana",
+      "slug": "cana",
+      "nome": "CANÁ",
+      "faixa_etaria": "Casais",
+      "descricao": "Retiro para casais",
+      "objetivo_ano": "",
+      "equipe": [
+        "Catarina e Sérgio",
+        "Patrícia",
+        "Vanir",
+        "Meire e Deiverson",
+        "Adriana"
+      ],
+      "convite_final": "Participe ao nosso retiro para casais!"
+    },
+    {
+      "id": "areia-ou-rocha",
+      "slug": "areia-ou-rocha",
+      "nome": "AREIA OU  ROCHA",
+      "faixa_etaria": "Casais",
+      "descricao": "Retiro para casais",
+      "objetivo_ano": "",
+      "equipe": [
+        "Nádia e Paulo",
+        "Fernando e Eliane",
+        "Esenclever e Ana Paula",
+        "Márcia"
+      ],
+      "convite_final": "Participe do nosso encontro!"
+    },
+    {
+      "id": "afetividade-casais",
+      "slug": "afetividade-casais",
+      "nome": "AFETIVIDADE  CASAIS",
+      "faixa_etaria": "Casais",
+      "descricao": "Retiro de afetividade para casais",
+      "objetivo_ano": "",
+      "equipe": [
+        "P. Hernando",
+        "Harley",
+        "Karine",
+        "Nádia e Paulo",
+        "Liliane",
+        "Lincon"
+      ],
+      "convite_final": "Participe do nosso encontro!"
     }
   ]
 }
