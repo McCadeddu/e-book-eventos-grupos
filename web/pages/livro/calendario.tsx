@@ -18,7 +18,8 @@ export default function CalendarioLivro({ grupos, encontros }: Props) {
 
   function encontrosDoMes(mes: number) {
     return encontrosOrdenados.filter((e) => {
-      const [ano, m] = e.data_inicio.split("-").map(Number);
+        if (!e.data_inicio) return false;
+        const [, m] = e.data_inicio.split("-").map(Number);
       return m === mes;
     });
   }
