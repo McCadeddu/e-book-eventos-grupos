@@ -10,7 +10,10 @@
 
     "publish:content": "npm run build && git add ../data/encontros.json ../data/grupos.json styles/globals.css && git commit -m \"content: update grupos e eventos\" && git push",
 
-    "publish:code": "npm run build && git add . && git commit -m \"feat: update codigo\" && git push"
+    "publish:code": "npm run build && git add . && git commit -m \"feat: update codigo\" && git push",
+
+    "publish": "npm run build && node scripts/publish.js"
+
   },
   "dependencies": {
     "html-to-image": "^1.11.13",
