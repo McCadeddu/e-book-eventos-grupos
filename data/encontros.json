@@ -869,20 +869,6 @@
       "visibilidade": "publico"
     },
     {
-      "id": "gimca-1-2026-08-29",
-      "grupo_id": "gimca-1",
-      "data_inicio": "2026-08-29",
-      "data_legivel": "",
-      "data_fim": "2026-08-30",
-      "horario": "Dois dias",
-      "titulo": "Afetividade casais",
-      "local": "CMV",
-      "tema": "",
-      "descricao": "",
-      "tipo": "evento_especial",
-      "visibilidade": "publico"
-    },
-    {
       "id": "gimca-1-2026-09-06",
       "grupo_id": "gimca-1",
       "data_inicio": "2026-09-06",
@@ -1533,7 +1519,7 @@
       "data_legivel": "",
       "data_fim": null,
       "horario": "9h00 - 16h00",
-      "titulo": "Sexto encontro mensal",
+      "titulo": "Aniversário da CMV. Encontro com a presidente da Comunidade Missionária de Villaregia, Briseida",
       "local": "CMV",
       "tema": "",
       "descricao": "",
