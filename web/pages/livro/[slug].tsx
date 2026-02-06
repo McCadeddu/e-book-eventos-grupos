@@ -33,49 +33,75 @@ export default function CapituloLivro({
 
   const encontrosOrdenados = ordenarEncontrosPorData(encontros);
 
+    const coresCMV = [
+        "#4bbbc8", // principal
+        "#ff6136", // secundário
+        "#f1e5ae", // secundário II
+        "#c77e4a", // núcleo 1
+        "#548287", // núcleo 2
+        "#725e50", // núcleo 3
+    ];
+
+    function corDoGrupo(index: number) {
+        return coresCMV[index % coresCMV.length];
+    }
+
+    // cor do grupo atual (baseada na posição na lista geral)
+    const indiceGrupoAtual = grupos.findIndex(g => g.id === grupo.id);
+    const corGrupoAtual = corDoGrupo(indiceGrupoAtual);
+
   return (
-    <main
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-        background: "#fdfcf8",
-      }}
-    >
-      {/* ===== ÍNDICE LATERAL ===== */}
-      <aside
-        style={{
-          width: "260px",
-          padding: "2rem 1.5rem",
-          borderRight: "1px solid #ddd",
-          background: "#f7efe2",
-        }}
+      <main
+          style={{
+              display: "flex",
+              minHeight: "100vh",
+              background: "#fdfcf8",
+              paddingLeft: "4rem", // 👈 espaço para as abas
+          }}
       >
-        <h2 style={{ color: "#0b5c6b" }}>Agenda 2026</h2>
+          {/* ===== ÍNDICE LATERAL (ABAS DO LIVRO) ===== */}
+          <aside
+              style={{
+                  position: "fixed",
+                  left: 0,
+                  top: 0,
+                  height: "100vh",
+                  padding: "0.5rem",
+                  backgroundColor: "#fdfcf8",
+                  zIndex: 10,
+                  overflowY: "auto",
+              }}
+          >
+              {grupos.map((g, index) => {
+                  const ativo = g.id === grupo.id;
 
-        <ul style={{ listStyle: "none", paddingLeft: 0, marginTop: "1.5rem" }}>
-          {grupos.map((g) => (
-            <li key={g.id} style={{ marginBottom: "0.75rem" }}>
-              <Link
-                href={`/livro/${g.slug}`}
-                style={{
-                  textDecoration: "none",
-                  color:
-                    g.slug === grupo.slug ? "#0b5c6b" : "#371900",
-                  fontWeight: g.slug === grupo.slug ? 700 : 500,
-                }}
-              >
-                ▸ {g.nome}
-              </Link>
-            </li>
-          ))}
-        </ul>
+                  return (
+                      <Link key={g.id} href={`/livro/${g.slug}`}>
+                          <span
+                              style={{
+                                  display: "block",
+                                  writingMode: "vertical-rl",
+                                  transform: "rotate(180deg)",
+                                  margin: "0.4rem 0",
+                                  padding: "0.45rem 0.3rem",
+                                  borderRadius: "6px",
+                                  backgroundColor: corDoGrupo(index),
+                                  color: "#ffffff",
+                                  fontSize: "0.75rem",
+                                  fontWeight: ativo ? 700 : 500,
+                                  opacity: ativo ? 1 : 0.75,
+                                  border: ativo ? "2px solid #3e4647" : "none",
+                                  whiteSpace: "nowrap",
+                                  cursor: "pointer",
+                              }}
+                          >
+                              {g.nome}
+                          </span>
+                      </Link>
+                  );
+              })}
+          </aside>
 
-        <p style={{ marginTop: "2rem", fontSize: "0.85rem" }}>
-          <Link href="/livro" style={{ color: "#0b5c6b" }}>
-            ← Voltar ao índice do livro
-          </Link>
-        </p>
-      </aside>
       {/* ===== LIVRO ABERTO ===== */}
       <section
         style={{
@@ -90,13 +116,16 @@ export default function CapituloLivro({
         }}
       >
         {/* ===== PÁGINA ESQUERDA ===== */}
-        <div
-          style={{
-            flex: 1,
-            paddingRight: "2rem",
-            borderRight: "1px solid #e0ddd7",
-          }}
-        >
+              <div
+                  style={{
+                      flex: 1,
+                      padding: "2rem",
+                      borderRight: "1px solid #e0ddd7",
+                      backgroundColor: corGrupoAtual,
+                      color: "#ffffff",
+                      borderRadius: "8px",
+                  }}
+              >
           <h1 style={{ marginBottom: "0.25rem" }}>{grupo.nome}</h1>
           <p style={{ marginTop: 0, fontStyle: "italic" }}>
             {grupo.faixa_etaria}
@@ -119,8 +148,21 @@ export default function CapituloLivro({
         </div>
 
         {/* ===== PÁGINA DIREITA ===== */}
-        <div style={{ flex: 1, paddingLeft: "2rem" }}>
-          <h2>Agenda dos Encontros</h2>
+              <div style={{ flex: 1, paddingLeft: "2rem" }}>
+                  <p style={{ marginTop: 0, marginBottom: "1rem" }}>
+                      <Link
+                          href="/livro/calendario"
+                          style={{
+                              textDecoration: "none",
+                              color: "#3e4647",
+                              fontSize: "0.9rem",
+                          }}
+                      >
+                          ← Voltar ao calendário anual
+                      </Link>
+                  </p>
+
+                  <h2>Agenda dos Encontros</h2>
 
           {encontrosOrdenados.length === 0 && (
             <p>Nenhum encontro cadastrado.</p>

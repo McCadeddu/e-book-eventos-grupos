@@ -39,15 +39,66 @@ export default function CalendarioLivro({ grupos, encontros }: Props) {
     "Dezembro",
   ];
 
+    const coresCMV = [
+        "#4bbbc8", // principal
+        "#ff6136", // secundário
+        "#f1e5ae", // secundário II
+        "#c77e4a", // núcleo 1
+        "#548287", // núcleo 2
+        "#725e50", // núcleo 3
+    ];
+
+    function corDoGrupo(index: number) {
+        return coresCMV[index % coresCMV.length];
+    }
+
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#fdfcf8",
-        padding: "3rem 2rem",
-      }}
-    >
-      <section style={{ maxWidth: "900px", margin: "0 auto" }}>
+      <main
+          style={{
+              minHeight: "100vh",
+              backgroundColor: "#fdfcf8",
+              padding: "3rem 2rem 3rem 4rem", // 👈 espaço para o índice
+          }}
+      >
+          {/* ÍNDICE LATERAL DE GRUPOS */}
+          <aside
+              style={{
+                  position: "fixed",
+                  left: 0,
+                  top: 0,
+                  height: "100vh",
+                  display: "flex",
+                  flexDirection: "column",
+                  padding: "0.5rem",
+                  backgroundColor: "#fdfcf8",
+                  zIndex: 10,
+                  overflowY: "auto",   // 👈 permite escorregar
+              }}
+          >
+              {grupos.map((grupo, index) => (
+                  <Link key={grupo.id} href={`/livro/${grupo.slug}`}>
+                      <span
+                          style={{
+                              writingMode: "vertical-rl",
+                              transform: "rotate(180deg)",
+                              margin: "0.4rem 0",
+                              padding: "0.4rem 0.25rem",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                              fontSize: "0.75rem",
+                              backgroundColor: corDoGrupo(index),
+                              color: "#ffffff",
+                              opacity: 0.85,
+                              whiteSpace: "nowrap",
+                          }}
+                      >
+                          {grupo.nome}
+                      </span>
+                  </Link>
+              ))}
+          </aside>
+
+          <section style={{ maxWidth: "900px", margin: "0 auto" }}>
         {/* TÍTULO */}
         <h1 style={{ color: "#4bbbc8", marginBottom: "0.5rem" }}>
           Calendário Anual 2026
@@ -105,24 +156,6 @@ export default function CalendarioLivro({ grupos, encontros }: Props) {
           );
         })}
 
-        {/* NAVEGAÇÃO */}
-        <div style={{ marginTop: "3rem" }}>
-          <Link href="/livro/gimvi-adolescentes">
-            <button
-              style={{
-                backgroundColor: "#ff6136",
-                color: "#ffffff",
-                border: "none",
-                borderRadius: "30px",
-                padding: "0.8rem 1.8rem",
-                fontSize: "1rem",
-                cursor: "pointer",
-              }}
-            >
-              📖 Começar pelos grupos
-            </button>
-          </Link>
-        </div>
       </section>
     </main>
   );
