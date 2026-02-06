@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "npx next dev",
     "build": "npx next build",
+    "start": "next start",
+    "lint": "next lint",
 
     "publish:content": "npm run build && git add ../data/encontros.json ../data/grupos.json styles/globals.css && git commit -m \"content: update grupos e eventos\" && git push",
 

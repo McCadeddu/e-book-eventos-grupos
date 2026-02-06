@@ -36,7 +36,7 @@ export default function CapituloLivro({
     const coresCMV = [
         "#4bbbc8", // principal
         "#ff6136", // secundário
-        "#f1e5ae", // secundário II
+        "#443205", // secundário II (corrigido – bom contraste)
         "#c77e4a", // núcleo 1
         "#548287", // núcleo 2
         "#725e50", // núcleo 3
