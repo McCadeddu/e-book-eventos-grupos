@@ -189,6 +189,30 @@
         "Lincon"
       ],
       "convite_final": "Participe do nosso encontro!"
+    },
+    {
+      "id": "gam",
+      "slug": "gam",
+      "nome": "GAM",
+      "faixa_etaria": "Adultos a partir de 55 anos",
+      "descricao": "Grupo missionario Adultos",
+      "objetivo_ano": "Autoconhecimento, conhecimento e pratica do bem",
+      "equipe": [
+        "Angélica (3197645306)"
+      ],
+      "convite_final": "Venha participar ao nosso grupo!"
+    },
+    {
+      "id": "emaus",
+      "slug": "emaus",
+      "nome": "EMAÚS",
+      "faixa_etaria": "Adultos",
+      "descricao": "Retiro de espiritualidade e renovação da própria vida profunda ",
+      "objetivo_ano": "Sentir o amor de Deus na própria vida",
+      "equipe": [
+        "Maria e Wilson"
+      ],
+      "convite_final": "Participe do retiro!"
     }
   ]
 }
