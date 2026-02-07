@@ -3,8 +3,12 @@
 import Link from "next/link";
 import { GetStaticPaths, GetStaticProps } from "next";
 
-import { lerGrupos, lerGrupoPorSlug, Grupo } from "../../lib/grupos";
-import { lerEncontrosPorGrupo } from "../../lib/encontros";
+import { Grupo } from "../../lib/grupos";
+import {
+    getGruposOrdenados,
+    getGrupoPorSlug,
+} from "../../lib/db/grupos";
+import { getEncontrosPorGrupo } from "../../lib/db/encontros";
 import { ordenarEncontrosPorData } from "../../lib/encontros-utils";
 import { Encontro } from "../../lib/encontros-utils";
 
@@ -233,40 +237,38 @@ export default function CapituloLivro({
  * 🔹 Gera os capítulos do livro
  */
 export const getStaticPaths: GetStaticPaths = async () => {
-  const grupos = lerGrupos();
+    const grupos = await getGruposOrdenados();
 
-  const paths = grupos
-    .filter((g) => typeof g.slug === "string" && g.slug.length > 0)
-    .map((g) => ({
-      params: { slug: g.slug },
+    const paths = grupos.map((g) => ({
+        params: { slug: g.slug },
     }));
 
-  return {
-    paths,
-    fallback: false,
-  };
+    return {
+        paths,
+        fallback: false,
+    };
 };
 
 /**
  * 🔹 Dados do capítulo (livro público)
  */
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const slug = params?.slug as string;
+    const slug = params?.slug as string;
 
-  const grupo = lerGrupoPorSlug(slug);
-  if (!grupo) {
-    return { notFound: true };
-  }
+    const grupo = await getGrupoPorSlug(slug);
+    if (!grupo) {
+        return { notFound: true };
+    }
 
-  const grupos = lerGrupos();
-  const encontros = lerEncontrosPorGrupo(grupo.id);
+    const grupos = await getGruposOrdenados();
+    const encontros = await getEncontrosPorGrupo(grupo.id);
 
-  return {
-    props: {
-      grupo,
-      grupos,
-      encontros,
-    },
-    revalidate: 60,
-  };
+    return {
+        props: {
+            grupo,
+            grupos,
+            encontros,
+        },
+        revalidate: 60,
+    };
 };

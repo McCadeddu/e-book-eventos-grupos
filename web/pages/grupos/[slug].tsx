@@ -1,10 +1,10 @@
 // web/pages/grupos/[slug].tsx
 
 import { GetStaticPaths, GetStaticProps } from "next";
-import { lerGrupos, lerGrupoPorSlug, Grupo } from "../../lib/grupos";
 import { useRouter } from "next/router";
-
-import { lerEncontrosPorGrupo } from "../../lib/encontros";
+import { Grupo } from "../../lib/grupos";
+import { getGruposOrdenados, getGrupoPorSlug } from "../../lib/db/grupos";
+import { getEncontrosPorGrupo } from "../../lib/db/encontros";
 import {
   Encontro,
   ordenarEncontrosPorData,
@@ -29,7 +29,10 @@ export default function PaginaGrupo({ grupo, encontros }: Props) {
     const resposta = await fetch("/api/encontros", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
+        body: JSON.stringify({
+            id,
+            grupo_id: grupo.id
+        }),
     });
 
     const resultado = await resposta.json();
@@ -179,7 +182,7 @@ export default function PaginaGrupo({ grupo, encontros }: Props) {
  * 🔹 Gera as páginas de todos os grupos
  */
 export const getStaticPaths: GetStaticPaths = async () => {
-  const grupos = lerGrupos();
+    const grupos = await getGruposOrdenados();
 
   const paths = grupos
     .filter(
@@ -202,18 +205,19 @@ export const getStaticPaths: GetStaticPaths = async () => {
  */
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const slug = params?.slug as string;
-  const grupo = lerGrupoPorSlug(slug);
+    const grupo = await getGrupoPorSlug(slug);
 
-  if (!grupo) {
-    return { notFound: true };
-  }
+    if (!grupo) {
+        return { notFound: true };
+    }
 
-  const encontros = lerEncontrosPorGrupo(grupo.id);
+    const encontros = await getEncontrosPorGrupo(grupo.id);
 
   return {
     props: {
       grupo,
       encontros,
-    },
+      },
+      revalidate: 1,
   };
 };

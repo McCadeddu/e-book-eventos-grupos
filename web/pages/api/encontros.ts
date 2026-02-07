@@ -1,139 +1,106 @@
 // web/pages/api/encontros.ts
 
 import type { NextApiRequest, NextApiResponse } from "next";
-import fs from "fs";
-import path from "path";
+import { supabase } from "../../lib/supabaseClient";
 
-function caminhoEncontros() {
-  return path.join(process.cwd(), "..", "data", "encontros.json");
+function gerarIdEncontro(grupoId: string, dataInicio: string) {
+    return `${grupoId}-${dataInicio}`;
 }
 
-function lerArquivo() {
-  const conteudo = fs.readFileSync(caminhoEncontros(), "utf-8");
-  return JSON.parse(conteudo);
-}
-
-function salvarArquivo(dados: any) {
-  fs.writeFileSync(
-    caminhoEncontros(),
-    JSON.stringify(dados, null, 2),
-    "utf-8"
-  );
-}
-
-function gerarId(grupoId: string, data: string) {
-  return `${grupoId}-${data.replace(/\//g, "-")}`;
-}
-
-export default function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
+export default async function handler(
+    req: NextApiRequest,
+    res: NextApiResponse
 ) {
-  // ===== CRIAR (POST) =====
-  if (req.method === "POST") {
-    const {
-      grupoId,
-      tipo,
-      dataInicio,
-      dataFim,
-      titulo,
-      horario,
-      local,
-      visibilidade,
-    } = req.body;
+    // ===== CRIAR =====
+    if (req.method === "POST") {
+        const {
+            grupoId,
+            tipo,
+            dataInicio,
+            dataFim,
+            dataLegivel,
+            titulo,
+            horario,
+            local,
+            visibilidade,
+        } = req.body;
 
-    if (!grupoId || !tipo || !dataInicio) {
-      return res
-        .status(400)
-        .json({ erro: "Campos obrigatórios ausentes" });
+        if (!grupoId || !dataInicio || !tipo) {
+            return res.status(400).json({ erro: "Campos obrigatórios ausentes" });
+        }
+
+        const encontro = {
+            id: gerarIdEncontro(grupoId, dataInicio),
+            grupo_id: grupoId,
+            tipo,
+            data_inicio: dataInicio,
+            data_fim: dataFim || null,
+            data_legivel: dataLegivel || null,
+            titulo: titulo || null,
+            horario: horario || null,
+            local: local || null,
+            visibilidade: visibilidade || "interno",
+        };
+
+        const { error } = await supabase
+            .from("encontros")
+            .insert(encontro);
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ erro: error.message });
+        }
+
+        await res.revalidate("/livro/calendario");
+
+        return res.status(200).json({ sucesso: true });
     }
 
-    const dados = lerArquivo();
+    // ===== EDITAR =====
+    if (req.method === "PUT") {
+        const { id, ...atualizacoes } = req.body;
 
-    const novoEncontro = {
-      id: gerarId(grupoId, dataInicio),
-      grupo_id: grupoId,
-      data_inicio: dataInicio,
-      data_legivel: req.body.dataLegivel || "",
-      data_fim: dataFim || null,
-      horario: horario || "",
-      titulo: titulo || "",
-      local: local || "",
-      tema: "",
-      descricao: "",
-      tipo,
-      visibilidade: visibilidade || "interno",
-    };
+        const { error } = await supabase
+            .from("encontros")
+            .update(atualizacoes)
+            .eq("id", id);
 
-    dados.encontros.push(novoEncontro);
-    salvarArquivo(dados);
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ erro: error.message });
+        }
 
-    console.log("📅 Encontro criado:", novoEncontro.id);
+        // 🔁 revalidação
+        await res.revalidate("/livro/calendario");
+        if (atualizacoes.grupo_id) {
+            await res.revalidate(`/livro/${atualizacoes.grupo_id}`);
+        }
 
-    return res.status(200).json({ sucesso: true });
-  }
-
-  // ===== EDITAR (PUT) =====
-  if (req.method === "PUT") {
-    const { id, ...atualizacoes } = req.body;
-
-    if (!id) {
-      return res.status(400).json({ erro: "ID ausente" });
+        return res.status(200).json({ sucesso: true });
     }
 
-    const dados = lerArquivo();
-    const indice = dados.encontros.findIndex(
-      (e: any) => e.id === id
-    );
+    // ===== EXCLUIR =====
+    if (req.method === "DELETE") {
+        const { id, grupo_id } = req.body;
 
-    if (indice === -1) {
-      return res.status(404).json({ erro: "Encontro não encontrado" });
+        const { error } = await supabase
+            .from("encontros")
+            .delete()
+            .eq("id", id);
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ erro: error.message });
+        }
+
+        // 🔁 revalidação
+        await res.revalidate("/livro/calendario");
+        if (grupo_id) {
+            await res.revalidate(`/livro/${grupo_id}`);
+        }
+
+        return res.status(200).json({ sucesso: true });
     }
 
-    dados.encontros[indice] = {
-      ...dados.encontros[indice],
-      ...atualizacoes,
-      data_inicio:
-        atualizacoes.data_inicio ??
-        dados.encontros[indice].data_inicio,
-    data_fim:
-        atualizacoes.data_fim ??
-        dados.encontros[indice].data_fim,
-    };
-
-
-    salvarArquivo(dados);
-
-    console.log("✏️ Encontro editado:", id);
-
-    return res.status(200).json({ sucesso: true });
-  }
-
-  // ===== EXCLUIR (DELETE) =====
-  if (req.method === "DELETE") {
-    const { id } = req.body;
-
-    if (!id) {
-      return res.status(400).json({ erro: "ID ausente" });
-    }
-
-    const dados = lerArquivo();
-    const antes = dados.encontros.length;
-
-    dados.encontros = dados.encontros.filter(
-      (e: any) => e.id !== id
-    );
-
-    if (dados.encontros.length === antes) {
-      return res.status(404).json({ erro: "Encontro não encontrado" });
-    }
-
-    salvarArquivo(dados);
-
-    console.log("🗑️ Encontro excluído:", id);
-
-    return res.status(200).json({ sucesso: true });
-  }
-
-  return res.status(405).json({ erro: "Método não permitido" });
+    return res.status(405).json({ erro: "Método não permitido" });
 }

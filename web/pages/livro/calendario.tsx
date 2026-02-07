@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { GetStaticProps } from "next";
 
-import { lerGrupos, Grupo } from "../../lib/grupos";
-import { lerEncontros } from "../../lib/encontros";
+import { Grupo } from "../../lib/grupos";
+import { getGruposOrdenados } from "../../lib/db/grupos";
+import { getEncontros } from "../../lib/db/encontros";
 import { ordenarEncontrosPorData } from "../../lib/encontros-utils";
 import { Encontro } from "../../lib/encontros-utils";
 
@@ -200,14 +201,14 @@ export default function CalendarioLivro({ grupos, encontros }: Props) {
  * 🔹 Dados do calendário público
  */
 export const getStaticProps: GetStaticProps = async () => {
-  const grupos = lerGrupos();
-  const encontros = lerEncontros();
+    const grupos = await getGruposOrdenados();
+    const encontros = await getEncontros();
 
-  return {
-    props: {
-      grupos,
-      encontros,
-    },
-    revalidate: 60,
-  };
+    return {
+        props: {
+            grupos,
+            encontros,
+        },
+        revalidate: 60,
+    };
 };

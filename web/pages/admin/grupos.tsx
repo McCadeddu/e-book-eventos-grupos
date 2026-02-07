@@ -1,13 +1,41 @@
 // web/pages/admin/grupos.tsx
 
 import Link from "next/link";
-import { lerGrupos, Grupo } from "../../lib/grupos";
-import { lerEncontros } from "../../lib/encontros";
+import { Grupo } from "../../lib/grupos";
+import { getGruposOrdenados } from "../../lib/db/grupos";
+import { getEncontros } from "../../lib/db/encontros";
 import { Encontro, ordenarEncontrosPorData } from "../../lib/encontros-utils";
+
+import { useEffect } from "react";
 
 import { useRouter } from "next/router";
 
 import { alertasDoEncontro } from "../../lib/alertas";
+
+function labelData(encontro: Encontro): string {
+    if (encontro.data_legivel && encontro.data_legivel.trim() !== "") {
+        return encontro.data_legivel;
+    }
+
+    if (encontro.data_inicio && encontro.data_fim) {
+        return `${encontro.data_inicio
+            .split("-")
+            .reverse()
+            .join("/")} – ${encontro.data_fim
+                .split("-")
+                .reverse()
+                .join("/")}`;
+    }
+
+    if (encontro.data_inicio) {
+        return encontro.data_inicio
+            .split("-")
+            .reverse()
+            .join("/");
+    }
+
+    return "Data a definir";
+}
 
 type Props = {
   grupos: Grupo[];
@@ -70,6 +98,20 @@ export default function Home({ grupos, encontros }: Props) {
             alert("❌ Erro ao alterar a ordem.");
       }
   }
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const hash = window.location.hash;
+        if (!hash) return;
+
+        const id = hash.replace("#", "");
+        const el = document.getElementById(id);
+
+        if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    }, [grupos]);
 
  return (
   <main
@@ -222,19 +264,10 @@ export default function Home({ grupos, encontros }: Props) {
               )}
 
               {encontrosDoGrupo(grupo.id).map((encontro, index) => (
-                <li key={`${encontro.id}-${index}`}>
-                  <strong>
-                    {encontro.data_legivel
-                      ? encontro.data_legivel
-                      : encontro.data_inicio
-                      ? encontro.data_fim
-                      ? `${encontro.data_inicio.split("-").reverse().join("/")} – ${encontro.data_fim
-                            ?.split("-")
-                            .reverse()
-                            .join("/")}`
-                        : encontro.data_inicio.split("-").reverse().join("/")
-                      : "Data a definir"}
-                  </strong>
+                  <li key={`${encontro.id}-${index}`}>
+
+                  <strong>{labelData(encontro)}</strong>
+
                   {alertasDoEncontro(encontro).length > 0 && (
                     <ul style={{ marginTop: "0.3rem", paddingLeft: "1rem" }}>
                       {alertasDoEncontro(encontro).map((alerta) => (
@@ -316,14 +349,14 @@ export default function Home({ grupos, encontros }: Props) {
  * 🔹 Dados carregados no servidor
  */
 export async function getStaticProps() {
-  const grupos = lerGrupos().sort((a, b) => a.ordem - b.ordem);
-  const encontros = lerEncontros();
+    const grupos = await getGruposOrdenados();
+    const encontros = await getEncontros();
 
-  return {
-    props: {
-      grupos,
-      encontros,
-    },
-    revalidate: 1,
-  };
+    return {
+        props: {
+            grupos,
+            encontros,
+        },
+        revalidate: 1,
+    };
 }
