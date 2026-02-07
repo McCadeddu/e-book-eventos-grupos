@@ -1,4 +1,4 @@
-// web/lib/grupos.ts
+﻿// web/lib/grupos.ts
 
 import fs from "fs";
 import path from "path";
@@ -10,15 +10,19 @@ export type EncontroGrupo = {
 };
 
 export type Grupo = {
-  id: string;
-  slug: string;
-  nome: string;
-  faixa_etaria: string;
-  descricao: string;
-  objetivo_ano: string;
-  equipe: string[];
-  convite_final: string;
-  encontros: EncontroGrupo[];
+    id: string;
+    slug: string;
+    nome: string;
+    faixa_etaria: string;
+    descricao: string;
+    objetivo_ano: string;
+    equipe: string[];
+    convite_final: string;
+    encontros: EncontroGrupo[];
+
+    // 🔹 controle editorial
+    ordem: number;
+    categoria?: "grupo" | "evento";
 };
 
 export function lerGrupos(): Grupo[] {

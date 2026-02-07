@@ -50,6 +50,27 @@ export default function Home({ grupos, encontros }: Props) {
     }
   }
 
+  async function moverGrupo(grupoId: string, direcao: "up" | "down") {
+      try {
+          const resposta = await fetch("/api/grupos/ordenar", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ grupoId, direcao }),
+          });
+
+          const resultado = await resposta.json();
+
+            if (resultado.sucesso) {
+                router.replace(router.asPath);
+            } else {
+                alert("❌ Não foi possível alterar a ordem.");
+            }
+      } catch (error) {
+            console.error(error);
+            alert("❌ Erro ao alterar a ordem.");
+      }
+  }
+
  return (
   <main
     style={{
@@ -144,9 +165,46 @@ export default function Home({ grupos, encontros }: Props) {
               boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
             }}
           >
-            <h2 style={{ color: "#3c8a97", marginBottom: "1rem" }}>
-              {grupo.nome}
-            </h2>
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: "1rem",
+                    }}
+                >
+                    <h2 style={{ color: "#3c8a97", margin: 0 }}>
+                        {grupo.nome}
+                    </h2>
+
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <button
+                            title="Mover para cima"
+                            onClick={() => moverGrupo(grupo.id, "up")}
+                            style={{
+                                border: "none",
+                                background: "transparent",
+                                cursor: "pointer",
+                                fontSize: "1.1rem",
+                            }}
+                        >
+                            ⬆️
+                        </button>
+
+                        <button
+                            title="Mover para baixo"
+                            onClick={() => moverGrupo(grupo.id, "down")}
+                            style={{
+                                border: "none",
+                                background: "transparent",
+                                cursor: "pointer",
+                                fontSize: "1.1rem",
+                            }}
+                        >
+                            ⬇️
+                        </button>
+                    </div>
+                </div>
 
             <p style={{ color: "#3f3f3f", marginTop: 0 }}>
               <em>{grupo.faixa_etaria}</em>
@@ -258,7 +316,7 @@ export default function Home({ grupos, encontros }: Props) {
  * 🔹 Dados carregados no servidor
  */
 export async function getStaticProps() {
-  const grupos = lerGrupos();
+  const grupos = lerGrupos().sort((a, b) => a.ordem - b.ordem);
   const encontros = lerEncontros();
 
   return {
