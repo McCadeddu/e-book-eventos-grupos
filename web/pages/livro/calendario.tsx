@@ -56,23 +56,23 @@ export default function CalendarioLivro({ grupos, encontros }: Props) {
       <main
           style={{
               minHeight: "100vh",
+              display: "flex",
+              gap: "2rem",
               backgroundColor: "#fdfcf8",
-              padding: "3rem 2rem 3rem 4rem", // 👈 espaço para o índice
+              padding: "3rem",
           }}
       >
-          {/* ÍNDICE LATERAL DE GRUPOS */}
+          {/* ÍNDICE LATERAL DE GRUPOS ESQUERDO */}
           <aside
               style={{
-                  position: "fixed",
-                  left: 0,
-                  top: 0,
-                  height: "100vh",
+                  position: "sticky",
+                  top: "2rem",
+                  alignSelf: "flex-start",
                   display: "flex",
                   flexDirection: "column",
                   padding: "0.5rem",
                   backgroundColor: "#fdfcf8",
                   zIndex: 10,
-                  overflowY: "auto",   // 👈 permite escorregar
               }}
           >
               {grupos.map((grupo, index) => (
@@ -98,7 +98,7 @@ export default function CalendarioLivro({ grupos, encontros }: Props) {
               ))}
           </aside>
 
-          <section style={{ maxWidth: "900px", margin: "0 auto" }}>
+      <section style={{ maxWidth: "900px", margin: "0 auto" }}>
         {/* TÍTULO */}
         <h1 style={{ color: "#4bbbc8", marginBottom: "0.5rem" }}>
           Calendário Anual 2026
@@ -155,8 +155,43 @@ export default function CalendarioLivro({ grupos, encontros }: Props) {
             </section>
           );
         })}
-
       </section>
+
+          {/* ÍNDICE LATERAL DIREITO (ESPELHO) */}
+          <aside
+              style={{
+                  position: "sticky",
+                  top: "2rem",
+                  alignSelf: "flex-start",
+                  display: "flex",
+                  flexDirection: "column",
+                  padding: "0.5rem",
+                  backgroundColor: "#fdfcf8",
+                  zIndex: 10,
+              }}
+          >
+              {grupos.map((grupo, index) => (
+                  <Link key={`right-${grupo.id}`} href={`/livro/${grupo.slug}`}>
+                      <span
+                          style={{
+                              writingMode: "vertical-rl",
+                              margin: "0.4rem 0",
+                              padding: "0.4rem 0.25rem",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                              fontSize: "0.75rem",
+                              backgroundColor: corDoGrupo(index),
+                              color: "#ffffff",
+                              opacity: 0.75,
+                              whiteSpace: "nowrap",
+                          }}
+                      >
+                          {grupo.nome}
+                      </span>
+                  </Link>
+              ))}
+          </aside>
+
     </main>
   );
 }

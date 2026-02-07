@@ -56,58 +56,16 @@ export default function CapituloLivro({
               display: "flex",
               minHeight: "100vh",
               background: "#fdfcf8",
-              paddingLeft: "4rem", // 👈 espaço para as abas
+              padding: "0 1rem",
           }}
       >
-          {/* ===== ÍNDICE LATERAL (ABAS DO LIVRO) ===== */}
-          <aside
-              style={{
-                  position: "fixed",
-                  left: 0,
-                  top: 0,
-                  height: "100vh",
-                  padding: "0.5rem",
-                  backgroundColor: "#fdfcf8",
-                  zIndex: 10,
-                  overflowY: "auto",
-              }}
-          >
-              {grupos.map((g, index) => {
-                  const ativo = g.id === grupo.id;
-
-                  return (
-                      <Link key={g.id} href={`/livro/${g.slug}`}>
-                          <span
-                              style={{
-                                  display: "block",
-                                  writingMode: "vertical-rl",
-                                  transform: "rotate(180deg)",
-                                  margin: "0.4rem 0",
-                                  padding: "0.45rem 0.3rem",
-                                  borderRadius: "6px",
-                                  backgroundColor: corDoGrupo(index),
-                                  color: "#ffffff",
-                                  fontSize: "0.75rem",
-                                  fontWeight: ativo ? 700 : 500,
-                                  opacity: ativo ? 1 : 0.75,
-                                  border: ativo ? "2px solid #3e4647" : "none",
-                                  whiteSpace: "nowrap",
-                                  cursor: "pointer",
-                              }}
-                          >
-                              {g.nome}
-                          </span>
-                      </Link>
-                  );
-              })}
-          </aside>
 
       {/* ===== LIVRO ABERTO ===== */}
       <section
         style={{
           flex: 1,
-          padding: "3rem",
-          maxWidth: "1000px",
+          padding: "2.5rem 2rem",
+          maxWidth: "1100px",
           display: "flex",
           gap: "3rem",
           transition: "all 0.35s ease",
@@ -146,51 +104,126 @@ export default function CapituloLivro({
           <h2 style={{ marginTop: "2.5rem" }}>Convite</h2>
           <p>{grupo.convite_final}</p>
         </div>
-
-        {/* ===== PÁGINA DIREITA ===== */}
-              <div style={{ flex: 1, paddingLeft: "2rem" }}>
-                  <p style={{ marginTop: 0, marginBottom: "1rem" }}>
-                      <Link
-                          href="/livro/calendario"
-                          style={{
-                              textDecoration: "none",
-                              color: "#3e4647",
-                              fontSize: "0.9rem",
-                          }}
-                      >
-                          ← Voltar ao calendário anual
-                      </Link>
-                  </p>
-
-                  <h2>Agenda dos Encontros</h2>
-
-          {encontrosOrdenados.length === 0 && (
-            <p>Nenhum encontro cadastrado.</p>
-          )}
-
-          <ul>
-            {encontrosOrdenados.map((encontro) => (
-              <li key={encontro.id} style={{ marginBottom: "0.6rem" }}>
-                <strong>
-                  {encontro.data_legivel ||
-                    encontro.data_inicio
-                      .split("-")
-                      .reverse()
-                      .join("/")}
-                </strong>
-
-                {encontro.data_fim &&
-                  ` – ${encontro.data_fim
-                    .split("-")
-                    .reverse()
-                    .join("/")}`}
-
-                {encontro.titulo && ` — ${encontro.titulo}`}
-              </li>
-            ))}
-          </ul>
-        </div>
       </section>
+
+          {/* ===== BARRA LATERAL DIREITA — AGENDA ===== */}
+          <aside
+              style={{
+                  position: "sticky",
+                  top: "1rem",
+                  width: "260px",
+                  padding: "2rem 1.5rem",
+                  marginRight: "2rem",
+                  backgroundColor: "#ffffff",
+                  borderLeft: "2px solid #e0ddd7",
+                  alignSelf: "flex-start",
+              }}
+          >
+              <div
+                  style={{
+                      marginTop: "-1rem",
+                      marginBottom: "1.5rem",
+                      paddingBottom: "0.75rem",
+                      borderBottom: "1px solid #e0ddd7",
+                  }}
+              >
+                  <Link
+                      href="/livro/calendario"
+                      style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "0.35rem",
+                          textDecoration: "none",
+                          color: "#548287",
+                          fontSize: "0.85rem",
+                          fontWeight: 600,
+                      }}
+                  >
+                      ← Calendário anual
+                  </Link>
+              </div>
+
+              <h2
+                  style={{
+                      marginTop: "1rem",
+                      marginBottom: "1.25rem",
+                      color: "#3e4647",
+                      fontSize: "1.25rem",
+                  }}
+              >
+                  Agenda dos Encontros
+              </h2>
+
+              {encontrosOrdenados.length === 0 && (
+                  <p style={{ color: "#8d908f" }}>Nenhum encontro cadastrado.</p>
+              )}
+
+              <ul style={{ paddingLeft: "1rem" }}>
+                  {encontrosOrdenados.map((encontro) => (
+                      <li key={encontro.id} style={{ marginBottom: "0.75rem" }}>
+                          <strong>
+                              {encontro.data_legivel ||
+                                  encontro.data_inicio
+                                      .split("-")
+                                      .reverse()
+                                      .join("/")}
+                          </strong>
+
+                          {encontro.data_fim &&
+                              ` – ${encontro.data_fim
+                                  .split("-")
+                                  .reverse()
+                                  .join("/")}`}
+
+                          {encontro.titulo && (
+                              <div style={{ fontSize: "0.9rem", color: "#3e4647" }}>
+                                  {encontro.titulo}
+                              </div>
+                          )}
+                      </li>
+                  ))}
+              </ul>
+          </aside>
+
+          {/* ===== ÍNDICE DE GRUPOS (EXTREMA DIREITA) ===== */}
+          <aside
+              style={{
+                  position: "sticky",
+                  top: "3rem",
+                  padding: "0.5rem",
+                  marginLeft: "1rem",
+                  backgroundColor: "#fdfcf8",
+                  alignSelf: "flex-start",
+              }}
+          >
+              {grupos.map((g, index) => {
+                  const ativo = g.id === grupo.id;
+
+                  return (
+                      <Link key={g.id} href={`/livro/${g.slug}`}>
+                          <span
+                              style={{
+                                  display: "block",
+                                  writingMode: "vertical-rl",
+                                  margin: "0.4rem 0",
+                                  padding: "0.6rem 0.35rem",
+                                  borderRadius: "6px",
+                                  backgroundColor: corDoGrupo(index),
+                                  color: "#ffffff",
+                                  fontSize: "0.75rem",
+                                  fontWeight: ativo ? 700 : 500,
+                                  opacity: ativo ? 1 : 0.7,
+                                  border: ativo ? "2px solid #3e4647" : "none",
+                                  whiteSpace: "nowrap",
+                                  cursor: "pointer",
+                              }}
+                          >
+                              {g.nome}
+                          </span>
+                      </Link>
+                  );
+              })}
+          </aside>
     </main>
   );
 }
