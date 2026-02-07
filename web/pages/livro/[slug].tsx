@@ -60,71 +60,26 @@ export default function CapituloLivro({
           }}
       >
 
-      {/* ===== LIVRO ABERTO ===== */}
-      <section
-        style={{
-          flex: 1,
-          padding: "2.5rem 2rem",
-          maxWidth: "1100px",
-          display: "flex",
-          gap: "3rem",
-          transition: "all 0.35s ease",
-          opacity: animando ? 0 : 1,
-          transform: animando ? "translateX(60px)" : "translateX(0)",
-        }}
-      >
-        {/* ===== PÁGINA ESQUERDA ===== */}
-              <div
-                  style={{
-                      flex: 1,
-                      padding: "2rem",
-                      borderRight: "1px solid #e0ddd7",
-                      backgroundColor: corGrupoAtual,
-                      color: "#ffffff",
-                      borderRadius: "8px",
-                  }}
-              >
-          <h1 style={{ marginBottom: "0.25rem" }}>{grupo.nome}</h1>
-          <p style={{ marginTop: 0, fontStyle: "italic" }}>
-            {grupo.faixa_etaria}
-          </p>
-        
-          <p style={{ marginTop: "1.5rem" }}>{grupo.descricao}</p>
-
-          <h2 style={{ marginTop: "2.5rem" }}>Objetivo do Ano</h2>
-          <p>{grupo.objetivo_ano}</p>
-
-          <h2 style={{ marginTop: "2.5rem" }}>Equipe de Responsáveis</h2>
-          <ul>
-            {grupo.equipe.map((nome) => (
-              <li key={nome}>{nome}</li>
-            ))}
-          </ul>
-
-          <h2 style={{ marginTop: "2.5rem" }}>Convite</h2>
-          <p>{grupo.convite_final}</p>
-        </div>
-      </section>
-
-          {/* ===== BARRA LATERAL DIREITA — AGENDA ===== */}
-          <aside
+          {/* ===== CONTEÚDO DO LIVRO (1 COLUNA) ===== */}
+          <section
               style={{
-                  position: "sticky",
-                  top: "1rem",
-                  width: "260px",
-                  padding: "2rem 1.5rem",
-                  marginRight: "2rem",
-                  backgroundColor: "#ffffff",
-                  borderLeft: "2px solid #e0ddd7",
-                  alignSelf: "flex-start",
+                  flex: 1,
+                  padding: "3rem",
+                  maxWidth: "1000px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "2.5rem",
+                  transition: "all 0.35s ease",
+                  opacity: animando ? 0 : 1,
+                  transform: animando ? "translateX(60px)" : "translateX(0)",
               }}
           >
+              {/* ===== NAVEGAÇÃO DO LIVRO ===== */}
               <div
                   style={{
-                      marginTop: "-1rem",
-                      marginBottom: "1.5rem",
-                      paddingBottom: "0.75rem",
-                      borderBottom: "1px solid #e0ddd7",
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: "1rem",
                   }}
               >
                   <Link
@@ -132,58 +87,104 @@ export default function CapituloLivro({
                       style={{
                           display: "inline-flex",
                           alignItems: "center",
-                          gap: "0.35rem",
-                          textDecoration: "none",
-                          color: "#548287",
-                          fontSize: "0.85rem",
+                          gap: "0.5rem",
+                          padding: "0.45rem 0.9rem",
+                          borderRadius: "999px",
+                          backgroundColor: "#f1e5ae", // CMV secundário II
+                          color: "#3e4647",          // texto núcleo escuro
+                          fontSize: "0.9rem",
                           fontWeight: 600,
+                          textDecoration: "none",
                       }}
                   >
-                      ← Calendário anual
+                      Voltar ao Calendário anual
                   </Link>
               </div>
 
-              <h2
+              {/* ===== APRESENTAÇÃO DO GRUPO ===== */}
+              <div
                   style={{
-                      marginTop: "1rem",
-                      marginBottom: "1.25rem",
-                      color: "#3e4647",
-                      fontSize: "1.25rem",
+                      padding: "2rem",
+                      backgroundColor: corGrupoAtual,
+                      color: "#ffffff",
+                      borderRadius: "8px",
                   }}
               >
-                  Agenda dos Encontros
-              </h2>
+                  <h1 style={{ marginBottom: "0.25rem" }}>{grupo.nome}</h1>
+                  <p style={{ marginTop: 0, fontStyle: "italic" }}>
+                      {grupo.faixa_etaria}
+                  </p>
 
-              {encontrosOrdenados.length === 0 && (
-                  <p style={{ color: "#8d908f" }}>Nenhum encontro cadastrado.</p>
-              )}
+                  <p style={{ marginTop: "1.5rem" }}>{grupo.descricao}</p>
 
-              <ul style={{ paddingLeft: "1rem" }}>
-                  {encontrosOrdenados.map((encontro) => (
-                      <li key={encontro.id} style={{ marginBottom: "0.75rem" }}>
-                          <strong>
-                              {encontro.data_legivel ||
-                                  encontro.data_inicio
-                                      .split("-")
-                                      .reverse()
-                                      .join("/")}
-                          </strong>
+                  <h2 style={{ marginTop: "2.5rem" }}>Objetivo do Ano</h2>
+                  <p>{grupo.objetivo_ano}</p>
 
-                          {encontro.data_fim &&
-                              ` – ${encontro.data_fim
-                                  .split("-")
-                                  .reverse()
-                                  .join("/")}`}
+                  <h2 style={{ marginTop: "2.5rem" }}>Equipe de Responsáveis</h2>
+                  <ul>
+                      {grupo.equipe.map((nome) => (
+                          <li key={nome}>{nome}</li>
+                      ))}
+                  </ul>
 
-                          {encontro.titulo && (
-                              <div style={{ fontSize: "0.9rem", color: "#3e4647" }}>
-                                  {encontro.titulo}
+                  <h2 style={{ marginTop: "2.5rem" }}>Convite</h2>
+                  <p>{grupo.convite_final}</p>
+              </div>
+
+              {/* ===== AGENDA DOS ENCONTROS ===== */}
+              <section
+                  style={{
+                      backgroundColor: "#ffffff",
+                      padding: "2rem",
+                      borderRadius: "8px",
+                  }}
+              >
+                  
+                  <h2
+                      style={{
+                          marginBottom: "1.25rem",
+                          color: "#3e4647",
+                          fontSize: "1.25rem",
+                      }}
+                  >
+                      Agenda dos Encontros
+                  </h2>
+
+                  {encontrosOrdenados.length === 0 && (
+                      <p style={{ color: "#8d908f" }}>Nenhum encontro cadastrado.</p>
+                  )}
+
+                  <ul style={{ paddingLeft: "1rem" }}>
+                      {encontrosOrdenados.map((encontro) => (
+                          <li key={encontro.id} style={{ marginBottom: "1rem" }}>
+                              <div>
+                                  <strong>
+                                      {encontro.data_legivel ||
+                                          encontro.data_inicio
+                                              .split("-")
+                                              .reverse()
+                                              .join("/")}
+                                  </strong>
+                                  {encontro.titulo && ` — ${encontro.titulo}`}
                               </div>
-                          )}
-                      </li>
-                  ))}
-              </ul>
-          </aside>
+
+                              {(encontro.horario || encontro.local) && (
+                                  <div
+                                      style={{
+                                          fontSize: "0.85rem",
+                                          opacity: 0.9,
+                                          marginTop: "0.2rem",
+                                      }}
+                                  >
+                                      {encontro.horario && <>⏰ {encontro.horario}</>}
+                                      {encontro.local && <> · 📍 {encontro.local}</>}
+                                  </div>
+                              )}
+                          </li>
+                      ))}
+                  </ul>
+              </section>
+          </section>
 
           {/* ===== ÍNDICE DE GRUPOS (EXTREMA DIREITA) ===== */}
           <aside
