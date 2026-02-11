@@ -1,7 +1,7 @@
 ﻿Perfeito. Vamos organizar por grupos de pertença com máxima precisão, um arquivo de cada vez, sem misturar passos.
 Objetivo desta etapa (bem claro):
-I Mostrar os eventos agrupados por grupo de perten�a
-(ex.: Grupo Jovem S�o Paulo, Grupo de Casais, etc.)
+I Mostrar os eventos agrupados por grupo de perten�a
+(ex.: Grupo Jovem S�o Paulo, Grupo de Casais, etc.)
 Nada mais.
 VISÃO GERAL (antes de mexer)
 Hoje você já tem:
@@ -12,7 +12,7 @@ Agora vamos:
 * sem mexer no JSON
 * sem quebrar a organização por mês
 ETAPA 1 — Criar a função “organizar por grupo”
-� Arquivo a criar agora
+� Arquivo a criar agora
 web/lib/organizarPorGrupo.ts
 
 PASSO 1.1 — Criar e abrir o arquivo
@@ -55,7 +55,7 @@ O que essa função faz (em português simples)
 }
 
 ETAPA 2 — Usar a organização por grupo na página
-� Arquivo a modificar agora
+� Arquivo a modificar agora
 web/pages/index.tsx
 
 ⚠️ Somente este arquivo será alterado agora.
@@ -80,7 +80,7 @@ const eventosPorGrupo = organizarEventosPorGrupo(eventos);
 PASSO 2.4 — Exibir os eventos por grupo (abaixo da agenda mensal)
 ⚠️ Não removemos nada do que já existe.
 Vamos acrescentar uma nova seção.
-I Role at� o final do JSX, logo antes de </main>
+I Role at� o final do JSX, logo antes de </main>
 e cole EXATAMENTE isto:
 <hr />
 
@@ -114,7 +114,7 @@ Salve o arquivo.
 ETAPA 3 — Ver o resultado
 No navegador:
 I http://localhost:3000(http://localhost:3000/)
-(se necess�rio, Ctrl + F5)
+(se necess�rio, Ctrl + F5)
 O QUE VOCÊ DEVE VER AGORA
 1️⃣ Agenda por mês (como antes)
 2️⃣ Uma linha divisória
@@ -124,12 +124,12 @@ Grupo Jovem São Paulo
 
 5️⃣ Embaixo, os eventos desse grupo
 Isso significa:
-� A mesma base de dados agora gera DUAS agendas diferentes
+� A mesma base de dados agora gera DUAS agendas diferentes
  mensal e por grupo 
 exatamente como pensado pastoralmente.
 CONFIRMAÇÃO (uma frase)
 Quando tudo estiver aparecendo corretamente, responda apenas:
 I Agenda por grupos funcionando
 Depois disso, o próximo passo natural será:
-I filtrar eventos p�blicos / internos
+I filtrar eventos p�blicos / internos
 (para preparar a agenda que pode ser partilhada externamente).
