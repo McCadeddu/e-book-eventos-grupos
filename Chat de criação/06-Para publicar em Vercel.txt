@@ -1,0 +1,146 @@
+Sim — **é totalmente possível** 👍
+E, no seu caso, **é recomendável**.
+
+Vamos criar **um comando único**, pensado exatamente para o seu fluxo pastoral, que faça **tudo isso com um clique** (ou um comando).
+
+---
+
+# 🎯 O que queremos automatizar
+
+Hoje, para publicar corretamente, você faz:
+
+1. `npm run build` (verificação)
+2. `git add` (dados + css certos)
+3. `git commit` (mensagem padrão)
+4. `git push`
+5. Vercel faz o deploy
+
+👉 Isso pode (e deve) virar **um único comando**.
+
+---
+
+# 🟢 SOLUÇÃO 1 — Script npm (RECOMENDADA)
+
+Essa é a melhor opção porque:
+
+* funciona em Windows
+* funciona em Linux
+* fica documentada no projeto
+* qualquer pessoa da PASCOM pode usar
+
+---
+
+## 1️⃣ Arquivo a modificar
+
+👉 **`web/package.json`**
+
+---
+
+## 2️⃣ Onde mexer (com precisão)
+
+### 🔍 Trecho atual
+
+```json
+"scripts": {
+  "dev": "npx next dev",
+  "build": "npx next build",
+  "start": "npx next start",
+  "lint": "npx eslint ."
+}
+```
+
+---
+
+### ✏️ Substituir por (ou acrescentar)
+
+```json
+"scripts": {
+  "dev": "npx next dev",
+  "build": "npx next build",
+  "start": "npx next start",
+  "lint": "npx eslint .",
+
+  "publish": "npm run build && git add ../data/encontros.json ../data/grupos.json styles/globals.css && git commit -m \"content: update grupos e eventos\" && git push"
+}
+```
+
+📌 **Nada mais precisa ser alterado**.
+
+---
+
+## 3️⃣ Como usar (a partir de agora)
+
+Sempre que você terminar de atualizar grupos e eventos:
+
+```bash
+npm run publish
+```
+
+E pronto:
+
+* build roda
+* arquivos certos são versionados
+* commit acontece
+* push acontece
+* Vercel atualiza sozinho
+
+👉 **Um comando = publicação pastoral**.
+
+---
+
+## ⚠️ Observação importante (mensagem do commit)
+
+Por padrão, o commit será sempre:
+
+```txt
+content: update grupos e eventos
+```
+
+Se quiser algo mais específico (ex: “versão final 2026”), podemos criar **outra variação**.
+
+---
+
+# 🟡 SOLUÇÃO 2 — Alias Git (opcional, mais pessoal)
+
+Se quiser algo ainda mais curto (ex: `git publicar`):
+
+```bash
+git config --global alias.publicar "!npm run build && git add ../data/encontros.json ../data/grupos.json styles/globals.css && git commit -m 'content: update grupos e eventos' && git push"
+```
+
+Depois:
+
+```bash
+git publicar
+```
+
+📌 Mas isso fica **só no seu computador** (menos institucional).
+
+---
+
+# 🧭 Minha recomendação final
+
+👉 **Use o script `npm run publish`**
+Ele é:
+
+* claro
+* reproduzível
+* seguro
+* perfeito para fase atual do projeto
+
+Mais tarde, quando houver banco de dados, esse comando continuará válido (só mudará o conteúdo).
+
+---
+
+## 🔒 Regra de ouro (guarde)
+
+> **Produção só se atualiza por comando consciente.
+> Nunca por edição manual no Vercel.**
+
+Se quiser, no próximo passo posso:
+
+* refinar o script (ex: confirmar antes de publicar)
+* criar um `npm run publish:preview`
+* ou preparar um README pastoral simples para a equipe
+
+👉 Quer que a gente refine o comando ou já está perfeito assim?

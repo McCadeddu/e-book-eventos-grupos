@@ -15,20 +15,6 @@
       "convite_final": "Venha fazer parte do GimVi Adolescentes e caminhar juntos para um crescimento humano e espiritual!"
     },
     {
-      "id": "gimvi-jovens",
-      "slug": "gimvi-jovens",
-      "nome": "GimVi Jovens",
-      "faixa_etaria": "16–30 anos",
-      "descricao": "Grupo inter-paroquial missionário de Villaregia Jovens",
-      "objetivo_ano": "Autoconhecimento, conhecimento e prática do bem.",
-      "equipe": [
-        "P. Siro Opportuni",
-        "Roberta",
-        "Rodrigo e Nathalia"
-      ],
-      "convite_final": "Jovem! Você deseja uma caminhada cristã, descobrir a si mesmo e praticar o bem? Participe do GimVi Jovens!"
-    },
-    {
       "id": "nova-constelacao",
       "slug": "nova-constelacao",
       "nome": "Nova Constelação",
@@ -45,16 +31,18 @@
       "convite_final": "Se você é um preadolescente que deseja caminhar no bem e para o bem, venha participar do nosso grupo!"
     },
     {
-      "id": "grupo-trilhas",
-      "slug": "grupo-trilhas",
-      "nome": "Grupo Trilhas",
-      "faixa_etaria": "30 ~",
-      "descricao": "Grupo de formação humano-cristã para o autoconhecimento, conhecimento e pratica do bem",
-      "objetivo_ano": "Autoconhecimento, conhecimento e pratica do bem",
+      "id": "gimvi-jovens",
+      "slug": "gimvi-jovens",
+      "nome": "GimVi Jovens",
+      "faixa_etaria": "16–30 anos",
+      "descricao": "Grupo inter-paroquial missionário de Villaregia Jovens",
+      "objetivo_ano": "Autoconhecimento, conhecimento e prática do bem.",
       "equipe": [
-        "Erika"
+        "P. Siro Opportuni",
+        "Roberta",
+        "Rodrigo e Nathalia"
       ],
-      "convite_final": "Venha participar ao grupo Trilhas!"
+      "convite_final": "Jovem! Você deseja uma caminhada cristã, descobrir a si mesmo e praticar o bem? Participe do GimVi Jovens!"
     },
     {
       "id": "gimca-1",
@@ -81,6 +69,44 @@
         "Nina"
       ],
       "convite_final": "Venha participar ao nosso grupo!"
+    },
+    {
+      "id": "gimvi-criancas",
+      "slug": "gimvi-criancas",
+      "nome": "GimVi  Crianças e Pre-Adolescentes",
+      "faixa_etaria": "6 - 12 anos",
+      "descricao": "Grupo interparoquial missionário de Villaregia crianças",
+      "objetivo_ano": "",
+      "equipe": [
+        "Michele Rocha",
+        "Isabela",
+        "Sonia"
+      ],
+      "convite_final": ""
+    },
+    {
+      "id": "gam",
+      "slug": "gam",
+      "nome": "GAM",
+      "faixa_etaria": "Adultos a partir de 55 anos",
+      "descricao": "Grupo missionario Adultos",
+      "objetivo_ano": "Autoconhecimento, conhecimento e pratica do bem",
+      "equipe": [
+        "Angélica (3197645306)"
+      ],
+      "convite_final": "Venha participar ao nosso grupo!"
+    },
+    {
+      "id": "grupo-trilhas",
+      "slug": "grupo-trilhas",
+      "nome": "Grupo Trilhas",
+      "faixa_etaria": "30 ~",
+      "descricao": "Grupo de formação humano-cristã para o autoconhecimento, conhecimento e pratica do bem",
+      "objetivo_ano": "Autoconhecimento, conhecimento e pratica do bem",
+      "equipe": [
+        "Erika"
+      ],
+      "convite_final": "Venha participar ao grupo Trilhas!"
     },
     {
       "id": "afetividade-jovens",
@@ -125,20 +151,6 @@
         "Fernanda",
         "Fernando e Fábia",
         "Marilene"
-      ],
-      "convite_final": ""
-    },
-    {
-      "id": "gimvi-criancas",
-      "slug": "gimvi-criancas",
-      "nome": "GimVi  Crianças e Pre-Adolescentes",
-      "faixa_etaria": "6 - 12 anos",
-      "descricao": "Grupo interparoquial missionário de Villaregia crianças",
-      "objetivo_ano": "",
-      "equipe": [
-        "Michele Rocha",
-        "Isabela",
-        "Sonia"
       ],
       "convite_final": ""
     },
@@ -189,18 +201,6 @@
         "Lincon"
       ],
       "convite_final": "Participe do nosso encontro!"
-    },
-    {
-      "id": "gam",
-      "slug": "gam",
-      "nome": "GAM",
-      "faixa_etaria": "Adultos a partir de 55 anos",
-      "descricao": "Grupo missionario Adultos",
-      "objetivo_ano": "Autoconhecimento, conhecimento e pratica do bem",
-      "equipe": [
-        "Angélica (3197645306)"
-      ],
-      "convite_final": "Venha participar ao nosso grupo!"
     },
     {
       "id": "emaus",
