@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { GetStaticProps } from "next";
 
-import { Grupo } from "../../lib/grupos";
+import { Grupo } from "../../lib/types";
 import { getGruposOrdenados } from "../../lib/db/grupos";
 import { getEncontros } from "../../lib/db/encontros";
 import { ordenarEncontrosPorData } from "../../lib/encontros-utils";

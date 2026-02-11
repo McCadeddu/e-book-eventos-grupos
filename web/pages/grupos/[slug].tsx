@@ -2,7 +2,7 @@
 
 import { GetStaticPaths, GetStaticProps } from "next";
 import { useRouter } from "next/router";
-import { Grupo } from "../../lib/grupos";
+import { Grupo } from "../../lib/types";
 import { getGruposOrdenados, getGrupoPorSlug } from "../../lib/db/grupos";
 import { getEncontrosPorGrupo } from "../../lib/db/encontros";
 import {

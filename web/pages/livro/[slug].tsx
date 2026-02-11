@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { GetStaticPaths, GetStaticProps } from "next";
 
-import { Grupo } from "../../lib/grupos";
+import { Grupo } from "../../lib/types";
 import {
     getGruposOrdenados,
     getGrupoPorSlug,

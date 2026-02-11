@@ -1,6 +1,6 @@
 ﻿// web/lib/db/encontros.ts
 import { supabase } from "../supabaseClient";
-import { Encontro } from "../encontros-utils";
+import { Encontro } from "../types";
 
 export async function getEncontros(): Promise<Encontro[]> {
     const { data, error } = await supabase

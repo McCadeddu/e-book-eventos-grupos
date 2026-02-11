@@ -1,8 +1,9 @@
+//web/pages/grupos/[slug]/novo-encontro.tsx
+
+import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useState, useRef } from "react";
-import fs from "fs";
-import path from "path";
-import { GetServerSideProps } from "next";
+import { getGrupoPorSlug } from "../../../lib/db/grupos";
 
 /* =======================
    TIPOS
@@ -179,27 +180,20 @@ export default function NovoEncontro({ grupo }: Props) {
 }
 
 /* =======================
-   SERVER SIDE
+   SERVER SIDE DB FETCH
 ======================= */
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const slug = context.params?.slug as string;
+    const slug = context.params?.slug as string;
 
-  const grupos = JSON.parse(
-    fs.readFileSync(
-      path.join(process.cwd(), "..", "data", "grupos.json"),
-      "utf-8"
-    )
-  ).grupos;
+    const grupo = await getGrupoPorSlug(slug);
 
-  const grupo = grupos.find((g: any) => g.slug === slug);
+    if (!grupo) {
+        return { notFound: true };
+    }
 
-  if (!grupo) {
-    return { notFound: true };
-  }
-
-  return {
-    props: {
-      grupo,
-    },
-  };
+    return {
+        props: {
+            grupo,
+        },
+    };
 };

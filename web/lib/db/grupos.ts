@@ -1,7 +1,7 @@
 ﻿// web/lib/db/grupos.ts
 
 import { supabase } from "../supabaseClient";
-import { Grupo } from "../grupos";
+import { Grupo } from "../types";
 
 /**
  * Retorna todos os grupos ordenados pela coluna "ordem"

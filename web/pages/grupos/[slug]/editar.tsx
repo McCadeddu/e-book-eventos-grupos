@@ -1,9 +1,10 @@
 // web/pages/grupos/[slug]/editar.tsx
 
-import { GetServerSideProps } from "next";
+import { getGrupoPorSlug } from "../../../lib/db/grupos";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { Grupo } from "../../../lib/grupos";
+import type { Grupo } from "../../../lib/types";
+import { GetServerSideProps } from "next";
 
 type Props = {
   grupo: Grupo;
@@ -87,20 +88,17 @@ export default function EditarGrupo({ grupo }: Props) {
   );
 }
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const slug = context.params?.slug as string;
+    const slug = context.params?.slug as string;
 
-  // Importa a função correta
-  const { lerGrupoPorSlug } = await import("../../../lib/grupos");
+    const grupo = await getGrupoPorSlug(slug);
 
-  const grupo = lerGrupoPorSlug(slug);
+    if (!grupo) {
+        return { notFound: true };
+    }
 
-  if (!grupo) {
-    return { notFound: true };
-  }
-
-  return {
-    props: {
-      grupo,
-    },
-  };
+    return {
+        props: {
+            grupo,
+        },
+    };
 };

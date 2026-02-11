@@ -1,10 +1,9 @@
 // web/pages/grupos/[slug]/editar-encontro/[id].tsx
 
 import { GetServerSideProps } from "next";
+import { supabase } from "../../../../lib/supabaseClient";
 import { useRouter } from "next/router";
 import { useState, useRef } from "react";
-import fs from "fs";
-import path from "path";
 import { Encontro } from "../../../../lib/encontros-utils";
 
 type Props = {
@@ -165,33 +164,26 @@ export default function EditarEncontro({ encontro }: Props) {
 }
 
 /**
- * 🔹 Carrega o encontro pelo ID (server-side)
+ * 🔹 Carrega o encontro a ser editado com base no ID da URL.
+ * Se o encontro não for encontrado, * retorna 404.
+ * Caso contrário, passa os dados do encontro para a página como props.
  */
-export const getServerSideProps: GetServerSideProps = async (
-  context
-) => {
-  const { id } = context.params as { id: string };
+export const getServerSideProps: GetServerSideProps = async (context) => {
+    const { id } = context.params as { id: string };
 
-  const caminho = path.join(
-    process.cwd(),
-    "..",
-    "data",
-    "encontros.json"
-  );
-  const conteudo = fs.readFileSync(caminho, "utf-8");
-  const dados = JSON.parse(conteudo);
+    const { data: encontro, error } = await supabase
+        .from("encontros")
+        .select("*")
+        .eq("id", id)
+        .single();
 
-  const encontro = dados.encontros.find(
-    (e: Encontro) => e.id === id
-  );
+    if (error || !encontro) {
+        return { notFound: true };
+    }
 
-  if (!encontro) {
-    return { notFound: true };
-  }
-
-  return {
-    props: {
-      encontro,
-    },
-  };
+    return {
+        props: {
+            encontro,
+        },
+    };
 };

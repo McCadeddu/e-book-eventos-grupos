@@ -11,38 +11,25 @@ export default async function handler(
         return res.status(405).json({ sucesso: false });
     }
 
-    const { grupoId, direcao } = req.body as {
-        grupoId: string;
-        direcao: "up" | "down";
+    const { ordem } = req.body as {
+        ordem: { id: string; ordem: number }[];
     };
 
-    const { data: grupos, error } = await supabase
-        .from("grupos")
-        .select("id, ordem")
-        .order("ordem", { ascending: true });
+    if (!Array.isArray(ordem)) {
+        return res.status(400).json({ sucesso: false });
+    }
 
-    if (error || !grupos) {
+    const updates = ordem.map((g) =>
+        supabase.from("grupos").update({ ordem: g.ordem }).eq("id", g.id)
+    );
+
+    const results = await Promise.all(updates);
+
+    const erro = results.find((r) => r.error);
+    if (erro) {
+        console.error(erro.error);
         return res.status(500).json({ sucesso: false });
     }
-
-    const index = grupos.findIndex((g) => g.id === grupoId);
-    if (index === -1) {
-        return res.status(404).json({ sucesso: false });
-    }
-
-    const alvoIndex =
-        direcao === "up" ? index - 1 : index + 1;
-
-    if (alvoIndex < 0 || alvoIndex >= grupos.length) {
-        return res.status(200).json({ sucesso: true }); // nada a fazer
-    }
-
-    const atual = grupos[index];
-    const alvo = grupos[alvoIndex];
-
-    // troca as ordens
-    await supabase.from("grupos").update({ ordem: alvo.ordem }).eq("id", atual.id);
-    await supabase.from("grupos").update({ ordem: atual.ordem }).eq("id", alvo.id);
 
     return res.status(200).json({ sucesso: true });
 }

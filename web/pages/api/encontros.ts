@@ -2,9 +2,13 @@
 
 import type { NextApiRequest, NextApiResponse } from "next";
 import { supabase } from "../../lib/supabaseClient";
+import { randomUUID } from "crypto";
 
-function gerarIdEncontro(grupoId: string, dataInicio: string) {
-    return `${grupoId}-${dataInicio}`;
+/**
+ * Gera um ID estável e independente da data
+ */
+function gerarIdEncontro() {
+    return randomUUID();
 }
 
 export default async function handler(
@@ -30,7 +34,7 @@ export default async function handler(
         }
 
         const encontro = {
-            id: gerarIdEncontro(grupoId, dataInicio),
+            id: gerarIdEncontro(),
             grupo_id: grupoId,
             tipo,
             data_inicio: dataInicio,
@@ -51,18 +55,47 @@ export default async function handler(
             return res.status(500).json({ erro: error.message });
         }
 
+        // 🔁 revalidação
         await res.revalidate("/livro/calendario");
+
+        // revalida a página do grupo (slug)
+        const { data: grupo } = await supabase
+            .from("grupos")
+            .select("slug")
+            .eq("id", grupoId)
+            .single();
+
+        if (grupo?.slug) {
+            await res.revalidate(`/livro/${grupo.slug}`);
+        }
 
         return res.status(200).json({ sucesso: true });
     }
 
     // ===== EDITAR =====
     if (req.method === "PUT") {
-        const { id, ...atualizacoes } = req.body;
+        const {
+            id,
+            dataInicio,
+            dataFim,
+            grupo_id,
+            ...resto
+        } = req.body;
+
+        if (!id) {
+            return res.status(400).json({ erro: "ID ausente" });
+        }
+
+        // normalização dos campos
+        const dadosAtualizados = {
+            ...resto,
+            ...(dataInicio && { data_inicio: dataInicio }),
+            ...(dataFim && { data_fim: dataFim }),
+        };
 
         const { error } = await supabase
             .from("encontros")
-            .update(atualizacoes)
+            .update(dadosAtualizados)
             .eq("id", id);
 
         if (error) {
@@ -72,8 +105,17 @@ export default async function handler(
 
         // 🔁 revalidação
         await res.revalidate("/livro/calendario");
-        if (atualizacoes.grupo_id) {
-            await res.revalidate(`/livro/${atualizacoes.grupo_id}`);
+
+        if (grupo_id) {
+            const { data: grupo } = await supabase
+                .from("grupos")
+                .select("slug")
+                .eq("id", grupo_id)
+                .single();
+
+            if (grupo?.slug) {
+                await res.revalidate(`/livro/${grupo.slug}`);
+            }
         }
 
         return res.status(200).json({ sucesso: true });
@@ -82,6 +124,10 @@ export default async function handler(
     // ===== EXCLUIR =====
     if (req.method === "DELETE") {
         const { id, grupo_id } = req.body;
+
+        if (!id) {
+            return res.status(400).json({ erro: "ID ausente" });
+        }
 
         const { error } = await supabase
             .from("encontros")
@@ -95,8 +141,17 @@ export default async function handler(
 
         // 🔁 revalidação
         await res.revalidate("/livro/calendario");
+
         if (grupo_id) {
-            await res.revalidate(`/livro/${grupo_id}`);
+            const { data: grupo } = await supabase
+                .from("grupos")
+                .select("slug")
+                .eq("id", grupo_id)
+                .single();
+
+            if (grupo?.slug) {
+                await res.revalidate(`/livro/${grupo.slug}`);
+            }
         }
 
         return res.status(200).json({ sucesso: true });
