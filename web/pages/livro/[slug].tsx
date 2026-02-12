@@ -10,6 +10,8 @@ import {
 } from "../../lib/db/grupos";
 import { getEncontrosPorGrupo } from "../../lib/db/encontros";
 import { ordenarEncontrosPorData } from "../../lib/encontros-utils";
+import { formatarDataIntervalo } from "../../lib/encontros-utils";
+
 import { Encontro } from "../../lib/encontros-utils";
 
 import { useRouter } from "next/router";
@@ -164,10 +166,7 @@ export default function CapituloLivro({
                               <div>
                                   <strong>
                                       {encontro.data_legivel ||
-                                          encontro.data_inicio
-                                              .split("-")
-                                              .reverse()
-                                              .join("/")}
+                                          formatarDataIntervalo(encontro.data_inicio, encontro.data_fim)}
                                   </strong>
                                   {encontro.titulo && ` — ${encontro.titulo}`}
                               </div>

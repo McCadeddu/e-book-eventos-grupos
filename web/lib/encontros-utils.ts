@@ -1,4 +1,4 @@
-// web/lib/encontros-utils.ts
+﻿// web/lib/encontros-utils.ts
 
 export type Encontro = {
   id: string;
@@ -23,4 +23,31 @@ export function ordenarEncontrosPorData(
     .sort((a, b) =>
       a.data_inicio.localeCompare(b.data_inicio)
     );
+}
+
+export function formatarDataIntervalo(
+    dataInicio: string,
+    dataFim?: string | null
+): string {
+    if (!dataInicio) return "";
+
+    const [anoI, mesI, diaI] = dataInicio.split("-").map(Number);
+
+    if (!dataFim) {
+        return `${diaI.toString().padStart(2, "0")}/${mesI
+            .toString()
+            .padStart(2, "0")}/${anoI}`;
+    }
+
+    const [anoF, mesF, diaF] = dataFim.split("-").map(Number);
+
+    // Mesmo mês
+    if (anoI === anoF && mesI === mesF) {
+        return `${diaI}–${diaF}/${mesI.toString().padStart(2, "0")}/${anoI}`;
+    }
+
+    // Meses diferentes
+    return `${diaI}/${mesI.toString().padStart(2, "0")} a ${diaF}/${mesF
+        .toString()
+        .padStart(2, "0")}/${anoI}`;
 }

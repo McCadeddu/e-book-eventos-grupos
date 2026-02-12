@@ -7,6 +7,8 @@ import { Grupo } from "../../lib/types";
 import { getGruposOrdenados } from "../../lib/db/grupos";
 import { getEncontros } from "../../lib/db/encontros";
 import { ordenarEncontrosPorData } from "../../lib/encontros-utils";
+import { formatarDataIntervalo } from "../../lib/encontros-utils";
+
 import { Encontro } from "../../lib/encontros-utils";
 
 type Props = {
@@ -141,11 +143,8 @@ export default function CalendarioLivro({ grupos, encontros }: Props) {
                   return (
                     <li key={encontro.id} style={{ marginBottom: "0.4rem" }}>
                       <strong>
-                        {encontro.data_legivel ||
-                          encontro.data_inicio
-                            .split("-")
-                            .reverse()
-                            .join("/")}
+                              {encontro.data_legivel ||
+                                  formatarDataIntervalo(encontro.data_inicio, encontro.data_fim)}
                       </strong>
                       {encontro.titulo && ` — ${encontro.titulo}`}
                       {grupo && ` · ${grupo.nome}`}

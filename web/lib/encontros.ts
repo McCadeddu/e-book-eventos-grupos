@@ -1,4 +1,4 @@
-// web/lib/encontros.ts
+﻿// web/lib/encontros.ts
 
 import fs from "fs";
 import path from "path";
