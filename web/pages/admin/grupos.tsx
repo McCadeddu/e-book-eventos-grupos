@@ -181,6 +181,25 @@ export default function Home({ grupos, encontros }: Props) {
                 </aside>
 
                 <div style={{ flex: 1 }}>
+
+                    <div style={{ marginBottom: "1.5rem" }}>
+                        <Link href="/grupos/novo">
+                            <button
+                                style={{
+                                    padding: "0.5rem 1rem",
+                                    backgroundColor: "#fff4d4f1",
+                                    color: "#4bbbc8",
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                    fontWeight: 500,
+                                }}
+                            >
+                                ➕ Novo grupo
+                            </button>
+                        </Link>
+                    </div>
+
                     {ordemGrupos.map(grupo => (
                         <section
                             id={`grupo-${grupo.slug}`}
@@ -194,10 +213,32 @@ export default function Home({ grupos, encontros }: Props) {
                             }}
                         >
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                <h2>{grupo.nome}</h2>
+                                <h2
+                                    style={{
+                                        margin: 0,
+                                        fontSize: "1.4rem",
+                                        fontWeight: 500,
+                                        color: "#4bbbc8",
+                                    }}
+                                >
+                                    {grupo.nome}
+                                </h2>
 
-                                <div style={{ display: "flex", gap: "0.5rem" }}>
-                                    <Link href={`/grupos/${grupo.slug}/editar`}>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "1rem",
+                                        fontSize: "0.95rem",
+                                    }}
+                                >
+                                    <Link
+                                        href={`/grupos/${grupo.slug}/editar`}
+                                        style={{
+                                            textDecoration: "none",
+                                            color: "#2f4858",
+                                        }}
+                                    >
                                         ✏️ Editar grupo
                                     </Link>
 
@@ -214,10 +255,12 @@ export default function Home({ grupos, encontros }: Props) {
                                             router.replace(router.asPath);
                                         }}
                                         style={{
-                                            background: "transparent",
+                                            background: "none",
                                             border: "none",
-                                            color: "darkred",
+                                            padding: 0,
+                                            color: "#8b0000",
                                             cursor: "pointer",
+                                            fontSize: "0.95rem",
                                         }}
                                     >
                                         🗑 Excluir grupo
@@ -236,7 +279,17 @@ export default function Home({ grupos, encontros }: Props) {
                                 )}
 
                                 {encontrosDoGrupo(grupo.id).map(encontro => (
-                                    <li key={encontro.id} style={{ marginBottom: "0.6rem" }}>
+                                    <li
+                                        key={encontro.id}
+                                        style={{
+                                            marginBottom: "0.8rem",
+                                            padding: "0.8rem",
+                                            border: "1px solid #e0d8c3",
+                                            borderRadius: "8px",
+                                            backgroundColor: "#fffdf7",
+                                            boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                                        }}
+                                    >
                                         <strong>{labelData(encontro)}</strong>
                                         {encontro.titulo && ` — ${encontro.titulo}`}
 

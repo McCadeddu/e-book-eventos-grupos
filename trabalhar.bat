@@ -7,6 +7,9 @@ echo Iniciando servidor DEV...
 echo ===============================
 echo.
 
-npm run dev
+start cmd /k "cd web && npm run dev"
 
-pause
+echo Aguardando servidor iniciar...
+timeout /t 5 > nul
+
+start http://localhost:3000

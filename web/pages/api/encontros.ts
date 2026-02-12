@@ -76,8 +76,8 @@ export default async function handler(
     if (req.method === "PUT") {
         const {
             id,
-            dataInicio,
-            dataFim,
+            data_inicio,
+            data_fim,
             grupo_id,
             ...resto
         } = req.body;
@@ -89,8 +89,8 @@ export default async function handler(
         // normalização dos campos
         const dadosAtualizados = {
             ...resto,
-            ...(dataInicio && { data_inicio: dataInicio }),
-            ...(dataFim && { data_fim: dataFim }),
+            ...(data_inicio !== undefined && { data_inicio }),
+            ...(data_fim !== undefined && { data_fim }),
         };
 
         const { error } = await supabase
