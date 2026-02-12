@@ -43,6 +43,7 @@ export default async function handler(
         }
 
         await res.revalidate("/livro/calendario");
+        await res.revalidate("/livro");
         await res.revalidate("/admin/grupos");
 
         return res.status(200).json({ sucesso: true });
@@ -75,6 +76,7 @@ export default async function handler(
         }
 
         await res.revalidate("/livro/calendario");
+        await res.revalidate("/livro");
         await res.revalidate("/admin/grupos");
 
         return res.status(200).json({ sucesso: true });

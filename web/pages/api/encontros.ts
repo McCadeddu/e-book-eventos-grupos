@@ -57,6 +57,7 @@ export default async function handler(
 
         // 🔁 revalidação
         await res.revalidate("/livro/calendario");
+        await res.revalidate("/livro");
 
         // revalida a página do grupo (slug)
         const { data: grupo } = await supabase
@@ -105,6 +106,7 @@ export default async function handler(
 
         // 🔁 revalidação
         await res.revalidate("/livro/calendario");
+        await res.revalidate("/livro");
 
         if (grupo_id) {
             const { data: grupo } = await supabase
@@ -141,6 +143,7 @@ export default async function handler(
 
         // 🔁 revalidação
         await res.revalidate("/livro/calendario");
+        await res.revalidate("/livro");
 
         if (grupo_id) {
             const { data: grupo } = await supabase
