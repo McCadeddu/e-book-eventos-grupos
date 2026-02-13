@@ -77,105 +77,100 @@ export default function NovoEncontro({ grupo }: Props) {
      RENDER
   ======================= */
   return (
-    <main style={{ padding: "2rem", maxWidth: "700px", margin: "0 auto" }}>
-      <p style={{ marginBottom: "1.5rem" }}>
-        <button
-          type="button"
-          onClick={() => router.push("/admin/grupos")}
+      <main
           style={{
-            background: "transparent",
-            border: "none",
-            color: "#0b5c6b",
-            cursor: "pointer",
-            padding: 0,
-            fontSize: "0.95rem",
+              minHeight: "100vh",
+              backgroundColor: "#fdfcf8",
+              padding: "3rem 1rem",
           }}
-        >
-          ← Voltar para administração dos grupos
-        </button>
-      </p>
+      >
+          <div
+              style={{
+                  maxWidth: "700px",
+                  margin: "0 auto",
+                  backgroundColor: "#ffffff",
+                  borderRadius: "10px",
+                  padding: "2.5rem",
+                  boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+              }}
+          >
+              <p style={{ marginBottom: "1.5rem" }}>
+                  <button
+                      type="button"
+                      onClick={() => router.push("/admin/grupos")}
+                      style={{
+                          background: "none",
+                          border: "none",
+                          color: "#ff6136",
+                          cursor: "pointer",
+                          padding: 0,
+                          fontSize: "0.9rem",
+                          fontWeight: 500,
+                      }}
+                  >
+                      ← Voltar à administração dos grupos
+                  </button>
+              </p>
 
-      <h1>Novo Encontro</h1>
+              <div
+                  style={{
+                      borderBottom: "3px solid #ff6136",
+                      paddingBottom: "0.8rem",
+                      marginBottom: "2rem",
+                  }}
+              >
+                  <h1 style={{ margin: 0, color: "#3e4647" }}>
+                      Novo Encontro – {grupo.nome}
+                  </h1>
+              </div>
 
-      <form ref={formRef} onSubmit={handleSubmit}>
-        <label>
-          Tipo de encontro
-          <br />
-          <select name="tipo" required>
-            <option value="encontro_regular">Encontro regular</option>
-            <option value="evento_especial">Evento especial</option>
-          </select>
-        </label>
+              <form
+                  ref={formRef}
+                  onSubmit={handleSubmit}
+                  style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}
+              >
+                  <select name="tipo" required>
+                      <option value="encontro_regular">Encontro regular</option>
+                      <option value="evento_especial">Evento especial</option>
+                  </select>
 
-        <br /><br />
+                  <input type="date" name="dataInicio" required />
+                  <input type="date" name="dataFim" />
+                  <input name="dataLegivel" placeholder="Ex: 15–17 de maio · Grand Prix" />
 
-        <label>
-          Data de início
-          <br />
-          <input type="date" name="dataInicio" required />
-        </label>
+                  <input name="titulo" placeholder="Título do encontro" />
+                  <input name="horario" placeholder="Horário" />
+                  <input name="local" placeholder="Local" />
 
-        <br /><br />
+                  <select name="visibilidade">
+                      <option value="interno">Interno</option>
+                      <option value="publico">Público</option>
+                  </select>
 
-        <label>
-          Data legível (opcional)
-          <br />
-          <input
-            name="dataLegivel"
-            placeholder="Ex: 15–17 de maio · Grand Prix"
-          />
-        </label>
+                  <button
+                      type="submit"
+                      style={{
+                          marginTop: "1.5rem",
+                          padding: "0.8rem",
+                          backgroundColor: "#ff6136",
+                          color: "#ffffff",
+                          border: "none",
+                          borderRadius: "6px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                      }}
+                  >
+                      Salvar Encontro
+                  </button>
+              </form>
 
-        <br /><br />
-
-        <label>
-          Data de fim
-          <br />
-          <input type="date" name="dataFim" />
-        </label>
-
-        <br /><br />
-
-        <label>
-          Título / nome do encontro
-          <br />
-          <input name="titulo" />
-        </label>
-
-        <br /><br />
-
-        <label>
-          Horário
-          <br />
-          <input name="horario" />
-        </label>
-
-        <br /><br />
-
-        <label>
-          Local
-          <br />
-          <input name="local" />
-        </label>
-
-        <br /><br />
-
-        <label>
-          Visibilidade
-          <br />
-          <select name="visibilidade">
-            <option value="interno">Interno</option>
-            <option value="publico">Público</option>
-          </select>
-        </label>
-
-        <br /><br />
-
-        <button type="submit">Salvar Encontro</button>
-      </form>
-
-      {status && <p style={{ marginTop: "1rem" }}>{status}</p>}
-    </main>
+              {status && (
+                  <p style={{ marginTop: "1rem", color: "#3e4647" }}>
+                      {status}
+                  </p>
+              )}
+          </div>
+      </main>
   );
 }
 

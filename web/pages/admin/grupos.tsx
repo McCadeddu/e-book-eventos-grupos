@@ -6,6 +6,8 @@ import { getGruposOrdenados } from "../../lib/db/grupos";
 import { getEncontros } from "../../lib/db/encontros";
 import { Encontro, ordenarEncontrosPorData } from "../../lib/encontros-utils";
 
+import { getEventos } from "../../lib/db/eventos";
+
 import { useEffect, useState } from "react";
 
 import {
@@ -84,11 +86,15 @@ function ItemGrupo({
 type Props = {
     grupos: Grupo[];
     encontros: Encontro[];
+    eventos: any[];
 };
 
-export default function Home({ grupos, encontros }: Props) {
+export default function Home({ grupos, encontros, eventos }: Props) {
     const [ordemGrupos, setOrdemGrupos] = useState(grupos);
     const [modoEdicao, setModoEdicao] = useState(false);
+
+    const [ordemEventos, setOrdemEventos] = useState(eventos);
+    const [modoEdicaoEventos, setModoEdicaoEventos] = useState(false);
 
     const router = useRouter();
 
@@ -99,12 +105,23 @@ export default function Home({ grupos, encontros }: Props) {
     }
 
     useEffect(() => {
-        const hash = window.location.hash;
-        if (!hash) return;
-        const el = document.getElementById(hash.replace("#", ""));
-        el?.scrollIntoView({ behavior: "smooth" });
-    }, [grupos]);
+        function handleHash() {
+            const hash = window.location.hash;
+            if (!hash) return;
 
+            const el = document.getElementById(hash.replace("#", ""));
+            el?.scrollIntoView({ behavior: "smooth" });
+        }
+
+        handleHash();
+        window.addEventListener("hashchange", handleHash);
+
+        return () => {
+            window.removeEventListener("hashchange", handleHash);
+        };
+    }, []);
+
+    // useEffect para atualizar a ordem quando os grupos mudarem (ex: nova ordem salva ou grupo editado)
     async function onDragEnd(event: any) {
         const { active, over } = event;
         if (!over || active.id === over.id) return;
@@ -116,6 +133,7 @@ export default function Home({ grupos, encontros }: Props) {
         setOrdemGrupos(novaOrdem);
     }
 
+    // função para salvar a nova ordem no banco de dados e sair do modo de edição (que volta a mostrar os links normais)
     async function salvarOrdem() {
         await fetch("/api/grupos/ordenar", {
             method: "POST",
@@ -129,6 +147,35 @@ export default function Home({ grupos, encontros }: Props) {
         });
 
         setModoEdicao(false);
+        router.replace(router.asPath);
+    }
+
+    // funções equivalentes para os eventos (que são listados na barra lateral direita)
+    async function onDragEndEventos(event: any) {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+
+        const oldIndex = ordemEventos.findIndex(e => e.id === active.id);
+        const newIndex = ordemEventos.findIndex(e => e.id === over.id);
+
+        const novaOrdem = arrayMove(ordemEventos, oldIndex, newIndex);
+        setOrdemEventos(novaOrdem);
+    }
+
+    // função para salvar a nova ordem dos eventos no banco de dados e sair do modo de edição (que volta a mostrar os links normais)
+    async function salvarOrdemEventos() {
+        await fetch("/api/eventos/ordenar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ordem: ordemEventos.map((e, index) => ({
+                    id: e.id,
+                    ordem: index + 1,
+                })),
+            }),
+        });
+
+        setModoEdicaoEventos(false);
         router.replace(router.asPath);
     }
 
@@ -178,11 +225,67 @@ export default function Home({ grupos, encontros }: Props) {
                             ))}
                         </ul>
                     )}
+
+                    <h3 style={{ marginTop: "2rem" }}>Eventos</h3>
+
+                    <div style={{ marginBottom: "1rem" }}>
+                        {!modoEdicaoEventos ? (
+                            <button onClick={() => setModoEdicaoEventos(true)}>
+                                ✏️ Editar ordem eventos
+                            </button>
+                        ) : (
+                            <button onClick={salvarOrdemEventos}>
+                                💾 Salvar ordem eventos
+                            </button>
+                        )}
+                    </div>
+
+                    {modoEdicaoEventos ? (
+                        <DndContext collisionDetection={closestCenter} onDragEnd={onDragEndEventos}>
+                            <SortableContext
+                                items={ordemEventos.map(e => e.id)}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+                                    {ordemEventos.map(evento => (
+                                        <li key={evento.id} style={{ padding: "0.4rem 0" }}>
+                                            <a
+                                                href={`#evento-${evento.id}`}
+                                                style={{ textDecoration: "none" }}
+                                            >
+                                                ▸ {evento.titulo}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </SortableContext>
+                        </DndContext>
+                    ) : (
+                        <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+                            {ordemEventos.map(evento => (
+                                <li key={evento.id} style={{ padding: "0.4rem 0" }}>
+                                    <a
+                                        href={`#evento-${evento.id}`}
+                                        style={{ textDecoration: "none" }}
+                                    >
+                                        ▸ {evento.titulo}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </aside>
 
                 <div style={{ flex: 1 }}>
 
-                    <div style={{ marginBottom: "1.5rem" }}>
+                    <div
+                        style={{
+                            marginBottom: "1.5rem",
+                            display: "flex",
+                            gap: "1rem",
+                            alignItems: "center",
+                        }}
+                    >
                         <Link href="/grupos/novo">
                             <button
                                 style={{
@@ -198,8 +301,23 @@ export default function Home({ grupos, encontros }: Props) {
                                 ➕ Novo grupo
                             </button>
                         </Link>
-                    </div>
 
+                        <Link href="/admin/eventos/novo">
+                            <button
+                                style={{
+                                    padding: "0.5rem 1rem",
+                                    backgroundColor: "#fff4d4f1",
+                                    color: "#ff6136",
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                    fontWeight: 500,
+                                }}
+                            >
+                                ➕ Novo evento
+                            </button>
+                        </Link>
+                    </div>
                     {ordemGrupos.map(grupo => (
                         <section
                             id={`grupo-${grupo.slug}`}
@@ -336,6 +454,68 @@ export default function Home({ grupos, encontros }: Props) {
                             </div>
                         </section>
                     ))}
+                    <h2 style={{ marginTop: "3rem", color: "#ff6136" }}>
+                        Eventos
+                    </h2>
+
+                    {ordemEventos.map((evento) => (
+                        <section
+                            id={`evento-${evento.id}`}
+                            key={evento.id}
+                            style={{
+                                background: "#fff4d4f1",
+                                borderRadius: "10px",
+                                padding: "2rem",
+                                marginBottom: "2.5rem",
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                            }}
+                        >
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                <h2
+                                    style={{
+                                        margin: 0,
+                                        fontSize: "1.4rem",
+                                        fontWeight: 500,
+                                        color: "#ff6136",
+                                    }}
+                                >
+                                    {evento.titulo}
+                                </h2>
+
+                                <div style={{ display: "flex", gap: "1rem" }}>
+                                    <Link href={`/admin/eventos/editar/${evento.id}`}>
+                                        ✏️ Editar evento
+                                    </Link>
+
+                                    <button
+                                        onClick={async () => {
+                                            if (!confirm("Excluir evento?")) return;
+
+                                            await fetch("/api/eventos", {
+                                                method: "DELETE",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({ id: evento.id }),
+                                            });
+
+                                            router.replace(router.asPath);
+                                        }}
+                                        style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "darkred",
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        🗑 Excluir evento
+                                    </button>
+                                </div>
+                            </div>
+
+                            <p style={{ marginTop: "0.8rem" }}>
+                                {evento.data_inicio}
+                            </p>
+                        </section>
+                    ))}
                 </div>
             </div>
         </main>
@@ -345,9 +525,10 @@ export default function Home({ grupos, encontros }: Props) {
 export async function getStaticProps() {
     const grupos = await getGruposOrdenados();
     const encontros = await getEncontros();
+    const eventos = await getEventos();
 
     return {
-        props: { grupos, encontros },
+        props: { grupos, encontros, eventos },
         revalidate: 1,
     };
 }

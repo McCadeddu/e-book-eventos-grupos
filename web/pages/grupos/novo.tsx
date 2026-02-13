@@ -4,106 +4,119 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 
 export default function NovoGrupo() {
-  const [status, setStatus] = useState<string | null>(null);
-  const router = useRouter();
+    const [status, setStatus] = useState<string | null>(null);
+    const router = useRouter();
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
+        const formData = new FormData(event.currentTarget);
 
-    const dados = {
-      nome: formData.get("nome"),
-      faixa_etaria: formData.get("faixaEtaria"),
-      descricao: formData.get("descricao"),
-      equipe: formData.get("equipe"),
-      objetivo_ano: formData.get("objetivoAno"),
-      convite_final: formData.get("conviteFinal"),
-    };
+        const dados = {
+            nome: formData.get("nome"),
+            faixa_etaria: formData.get("faixaEtaria"),
+            descricao: formData.get("descricao"),
+            equipe: formData.get("equipe"),
+            objetivo_ano: formData.get("objetivoAno"),
+            convite_final: formData.get("conviteFinal"),
+        };
 
 
-    const resposta = await fetch("/api/grupos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dados),
-    });
+        const resposta = await fetch("/api/grupos", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dados),
+        });
 
-    const resultado = await resposta.json();
+        const resultado = await resposta.json();
 
-    if (resultado.sucesso && resultado.grupo?.slug) {
-      router.push(`/grupos/${resultado.grupo.slug}`);
+        if (resultado.sucesso && resultado.grupo?.slug) {
+            router.push(`/grupos/${resultado.grupo.slug}`);
+        }
     }
-  }
 
-  return (
-    <main style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto" }}>
-      <p style={{ marginBottom: "1.5rem" }}>
-        <button
-          type="button"
-          onClick={() => router.push("/admin/grupos")}
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "#0b5c6b",
-            cursor: "pointer",
-            padding: 0,
-            fontSize: "0.95rem",
-          }}
+    return (
+        <main
+            style={{
+                minHeight: "100vh",
+                backgroundColor: "#fdfcf8",
+                padding: "3rem 1rem",
+            }}
         >
-          ← Voltar à administração dos grupos
-        </button>
-      </p>
-      
-      <h1>Criar Novo Grupo</h1>
+            <div
+                style={{
+                    maxWidth: "800px",
+                    margin: "0 auto",
+                    backgroundColor: "#ffffff",
+                    borderRadius: "10px",
+                    padding: "2.5rem",
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+                }}
+            >
+                <p style={{ marginBottom: "1.5rem" }}>
+                    <button
+                        type="button"
+                        onClick={() => router.push("/admin/grupos")}
+                        style={{
+                            background: "none",
+                            border: "none",
+                            color: "#4bbbc8",
+                            cursor: "pointer",
+                            padding: 0,
+                            fontSize: "0.9rem",
+                            fontWeight: 500,
+                        }}
+                    >
+                        ← Voltar à administração dos grupos
+                    </button>
+                </p>
 
-      <form onSubmit={handleSubmit}>
-        <h2>Identidade do Grupo</h2>
+                <div
+                    style={{
+                        borderBottom: "3px solid #4bbbc8",
+                        paddingBottom: "0.8rem",
+                        marginBottom: "2rem",
+                    }}
+                >
+                    <h1 style={{ margin: 0, color: "#3e4647" }}>
+                        Criar Novo Grupo
+                    </h1>
+                </div>
 
-        <input name="nome" placeholder="Nome do grupo" required />
-        <br /><br />
+                <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
 
-        <input
-          name="faixaEtaria"
-          placeholder="Faixa etária"
-          required
-        />
-        <br /><br />
+                    <h3 style={{ color: "#4bbbc8" }}>Identidade</h3>
 
-        <textarea
-          name="descricao"
-          placeholder="Frase explicativa do grupo"
-          rows={3}
-          required
-        />
-        <br /><br />
+                    <input name="nome" placeholder="Nome do grupo" required />
+                    <input name="faixaEtaria" placeholder="Faixa etária" required />
+                    <textarea name="descricao" placeholder="Descrição do grupo" rows={3} required />
 
-        <h2>Equipe</h2>
-        <input
-          name="equipe"
-          placeholder="Responsáveis (separados por vírgula)"
-        />
-        <br /><br />
+                    <h3 style={{ color: "#ff6136", marginTop: "1.5rem" }}>Equipe</h3>
+                    <input name="equipe" placeholder="Responsáveis (separados por vírgula)" />
 
-        <h2>Objetivo do Ano</h2>
-        <textarea
-          name="objetivoAno"
-          placeholder="Objetivo pastoral do ano"
-          rows={3}
-        />
-        <br /><br />
+                    <h3 style={{ color: "#c77e4a", marginTop: "1.5rem" }}>Objetivo do Ano</h3>
+                    <textarea name="objetivoAno" rows={3} />
 
-        <h2>Convite</h2>
-        <textarea
-          name="conviteFinal"
-          placeholder="Frase final de convite"
-          rows={2}
-        />
-        <br /><br />
+                    <h3 style={{ color: "#548287", marginTop: "1.5rem" }}>Convite</h3>
+                    <textarea name="conviteFinal" rows={2} />
 
-        <button type="submit">Salvar Grupo</button>
-      </form>
-
-      {status && <p style={{ marginTop: "1rem" }}>{status}</p>}
-    </main>
-  );
+                    <button
+                        type="submit"
+                        style={{
+                            marginTop: "2rem",
+                            padding: "0.8rem",
+                            backgroundColor: "#4bbbc8",
+                            color: "#ffffff",
+                            border: "none",
+                            borderRadius: "6px",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                        }}
+                    >
+                        Salvar Grupo
+                    </button>
+                </form>
+            </div>
+        </main>
+    );
 }
