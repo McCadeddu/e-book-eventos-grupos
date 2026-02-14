@@ -13,6 +13,9 @@ export type Encontro = {
   tipo: "encontro_regular" | "evento_especial";
     visibilidade: "interno" | "publico";
     evento_id?: string | null;
+  nivel?: "evento" | "organizacao";
+  mostrar_no_anual?: boolean;
+
 };
 
 export function ordenarEncontrosPorData(
