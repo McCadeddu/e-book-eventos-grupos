@@ -7,7 +7,16 @@ import { getGruposOrdenados } from "../../../lib/db/grupos";
 import { formatarDataIntervalo } from "../../../lib/encontros-utils";
 import { supabase } from "../../../lib/supabaseClient";
 
-export default function PaginaEvento({ evento, grupos, encontros }) {
+import { Grupo } from "../../../lib/types";
+import { Encontro } from "../../../lib/encontros-utils";
+
+type Props = {
+    evento: any;
+    grupos: Grupo[];
+    encontros: Encontro[];
+};
+
+export default function PaginaEvento({ evento, grupos, encontros }: Props) {
     if (!evento) return null;
 
     const nomesGrupos = evento.todos_os_grupos

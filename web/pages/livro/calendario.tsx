@@ -13,16 +13,7 @@ import { formatarDataIntervalo } from "../../lib/encontros-utils";
 
 import { Encontro } from "../../lib/encontros-utils";
 
-type ItemCalendario = {
-    id: string;
-    titulo?: string;
-    data_inicio: string;
-    data_fim?: string | null;
-    data_legivel?: string;
-    grupo_id?: string;
-    todos_os_grupos?: boolean;
-    grupos_envolvidos?: string[];
-};
+type ItemCalendario = Encontro;
 
 type Props = {
     grupos: Grupo[];
