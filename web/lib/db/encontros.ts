@@ -2,17 +2,19 @@
 import { supabase } from "../supabaseClient";
 import { Encontro } from "../types";
 
-export async function getEncontros(): Promise<Encontro[]> {
+export async function getEncontros() {
     const { data, error } = await supabase
         .from("encontros")
-        .select("*");
+        .select("*")
+        .not("data_inicio", "is", null)   // 👈 ESSENCIAL
+        .order("data_inicio", { ascending: true });
 
     if (error) {
-        console.error("Erro ao buscar encontros:", error);
+        console.error(error);
         return [];
     }
 
-    return data as Encontro[];
+    return data || [];
 }
 
 export async function getEncontrosPorGrupo(

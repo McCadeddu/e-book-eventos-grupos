@@ -7,19 +7,17 @@ import { randomUUID } from "crypto";
 function gerarId() {
     return randomUUID();
 }
-function normalizarData(valor?: string | null) {
-    if (!valor || valor.trim() === "") return null;
-    return valor;
-}
 
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
+
     /* =====================================================
        CRIAR EVENTO
     ===================================================== */
     if (req.method === "POST") {
+
         const {
             tipo,
             titulo,
@@ -30,13 +28,11 @@ export default async function handler(
             todos_os_grupos,
             objetivo_ano,
             convite,
-            data_inicio,
-            data_fim,
             visibilidade,
         } = req.body;
 
-        if (!titulo || !data_inicio) {
-            return res.status(400).json({ erro: "Campos obrigatórios ausentes" });
+        if (!titulo) {
+            return res.status(400).json({ erro: "Título é obrigatório" });
         }
 
         const evento = {
@@ -46,18 +42,18 @@ export default async function handler(
             faixa_etaria,
             descricao,
             equipe,
-            grupos_envolvidos: todos_os_grupos ? [] : grupos_envolvidos,
+            grupos_envolvidos: todos_os_grupos
+                ? []
+                : Array.isArray(grupos_envolvidos)
+                    ? grupos_envolvidos
+                    : grupos_envolvidos
+                        ? [grupos_envolvidos]
+                        : [],
             todos_os_grupos: !!todos_os_grupos,
             objetivo_ano,
             convite,
-            data_inicio: normalizarData(data_inicio),
-            data_fim: normalizarData(data_fim),
             visibilidade: visibilidade || "publico",
         };
-        function normalizarData(valor?: string | null) {
-            if (!valor || valor.trim() === "") return null;
-            return valor;
-        }
 
         const { error } = await supabase
             .from("eventos")
@@ -77,6 +73,7 @@ export default async function handler(
        EDITAR EVENTO
     ===================================================== */
     if (req.method === "PUT") {
+
         const {
             id,
             titulo,
@@ -92,9 +89,13 @@ export default async function handler(
         const dadosAtualizados = {
             ...resto,
             titulo: titulo?.toUpperCase(),
-            data_inicio: normalizarData(resto.data_inicio),
-            data_fim: normalizarData(resto.data_fim),
-            grupos_envolvidos: todos_os_grupos ? [] : grupos_envolvidos,
+            grupos_envolvidos: todos_os_grupos
+                ? []
+                : Array.isArray(grupos_envolvidos)
+                    ? grupos_envolvidos
+                    : grupos_envolvidos
+                        ? [grupos_envolvidos]
+                        : [],
             todos_os_grupos: !!todos_os_grupos,
         };
 
@@ -117,6 +118,7 @@ export default async function handler(
        EXCLUIR EVENTO
     ===================================================== */
     if (req.method === "DELETE") {
+
         const { id } = req.body;
 
         if (!id) {
@@ -142,7 +144,7 @@ export default async function handler(
 }
 
 /* =====================================================
-   REVALIDAÇÃO GLOBAL DO LIVRO
+   REVALIDAÇÃO
 ===================================================== */
 async function revalidar(res: NextApiResponse) {
     await res.revalidate("/livro");

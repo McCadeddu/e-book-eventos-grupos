@@ -26,6 +26,9 @@ import { CSS } from "@dnd-kit/utilities";
 import { useRouter } from "next/router";
 import { alertasDoEncontro } from "../../lib/alertas";
 
+// função para formatar a data do encontro de forma legível,
+// considerando as várias formas de cadastrar a data(data_legivel,
+// data_inicio + data_fim, etc)
 function labelData(encontro: Encontro): string {
     if (encontro.data_legivel?.trim()) return encontro.data_legivel;
 
@@ -40,6 +43,8 @@ function labelData(encontro: Encontro): string {
     return "Data a definir";
 }
 
+// componente separado para os grupos,
+// que são listados na barra lateral esquerda, e também podem ser ordenados
 function ItemGrupo({
     grupo,
     modoEdicao,
@@ -58,7 +63,10 @@ function ItemGrupo({
     if (!modoEdicao) {
         return (
             <li style={{ padding: "0.4rem 0" }}>
-                <a href={`#grupo-${grupo.slug}`} style={{ textDecoration: "none" }}>
+                <a
+                    href={`#grupo-${grupo.slug}`}
+                    style={{ textDecoration: "none" }}
+                >
                     ▸ {grupo.nome}
                 </a>
             </li>
@@ -83,6 +91,56 @@ function ItemGrupo({
     );
 }
 
+// componente separado para os eventos,
+// que são listados na barra lateral direita, e também podem ser ordenados
+function ItemEvento({
+    evento,
+    modoEdicao,
+}: {
+    evento: any;
+    modoEdicao: boolean;
+}) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({ id: evento.id });
+
+    if (!modoEdicao) {
+        return (
+            <li style={{ padding: "0.4rem 0" }}>
+                <a
+                    href={`#evento-${evento.id}`}
+                    style={{ textDecoration: "none" }}
+                >
+                    ▸ {evento.titulo}
+                </a>
+            </li>
+        );
+    }
+
+    return (
+        <li
+            ref={setNodeRef}
+            {...attributes}
+            {...listeners}
+            style={{
+                transform: CSS.Transform.toString(transform),
+                transition,
+                cursor: "grab",
+                padding: "0.4rem 0",
+                userSelect: "none",
+            }}
+        >
+            ▸ {evento.titulo}
+        </li>
+    );
+}
+
+// tipo das props da página, que inclui os grupos, encontros e eventos 
+// carregados do banco de dados
 type Props = {
     grupos: Grupo[];
     encontros: Encontro[];
@@ -98,12 +156,41 @@ export default function Home({ grupos, encontros, eventos }: Props) {
 
     const router = useRouter();
 
+    // função para filtrar os encontros que pertencem a um grupo,
+    // considerando tanto encontros normais (com grupo_id)
+    // quanto encontros que fazem parte de um evento (evento_id) que inclui o grupo
     function encontrosDoGrupo(grupoId: string) {
         return ordenarEncontrosPorData(
-            encontros.filter((e) => e.grupo_id === grupoId)
+            encontros.filter((e) => {
+                // encontros normais do grupo
+                if (e.grupo_id === grupoId) return true;
+
+                // encontros que pertencem a um evento
+                if (e.evento_id) {
+                    const evento = eventos.find(ev => ev.id === e.evento_id);
+
+                    if (!evento) return false;
+
+                    if (evento.todos_os_grupos) return true;
+
+                    if (evento.grupos_envolvidos?.includes(grupoId)) return true;
+                }
+
+                return false;
+            })
         );
     }
 
+    // função para filtrar os encontros que pertencem a um evento,
+    // considerando o campo evento_id do encontro
+    // (e não o grupo_id, pois um evento pode incluir vários grupos)
+    function encontrosDoEvento(eventoId: string) {
+        return ordenarEncontrosPorData(
+            encontros.filter((e) => e.evento_id === eventoId)
+        );
+    }
+
+    // useEffect para rolar até o grupo ou evento específico se a URL tiver um hash (ex: /admin/grupos#grupo-jovens)
     useEffect(() => {
         function handleHash() {
             const hash = window.location.hash;
@@ -248,30 +335,24 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                             >
                                 <ul style={{ listStyle: "none", paddingLeft: 0 }}>
                                     {ordemEventos.map(evento => (
-                                        <li key={evento.id} style={{ padding: "0.4rem 0" }}>
-                                            <a
-                                                href={`#evento-${evento.id}`}
-                                                style={{ textDecoration: "none" }}
-                                            >
-                                                ▸ {evento.titulo}
-                                            </a>
-                                        </li>
+                                        <ItemEvento
+                                            key={evento.id}
+                                            evento={evento}
+                                            modoEdicao={true}
+                                        />
                                     ))}
                                 </ul>
                             </SortableContext>
                         </DndContext>
                     ) : (
                         <ul style={{ listStyle: "none", paddingLeft: 0 }}>
-                            {ordemEventos.map(evento => (
-                                <li key={evento.id} style={{ padding: "0.4rem 0" }}>
-                                    <a
-                                        href={`#evento-${evento.id}`}
-                                        style={{ textDecoration: "none" }}
-                                    >
-                                        ▸ {evento.titulo}
-                                    </a>
-                                </li>
-                            ))}
+{ordemEventos.map(evento => (
+    <ItemEvento
+        key={evento.id}
+        evento={evento}
+        modoEdicao={false}
+    />
+))}
                         </ul>
                     )}
                 </aside>
@@ -458,64 +539,158 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                         Eventos
                     </h2>
 
-                    {ordemEventos.map((evento) => (
-                        <section
-                            id={`evento-${evento.id}`}
-                            key={evento.id}
-                            style={{
-                                background: "#fff4d4f1",
-                                borderRadius: "10px",
-                                padding: "2rem",
-                                marginBottom: "2.5rem",
-                                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                            }}
-                        >
-                            <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                <h2
-                                    style={{
-                                        margin: 0,
-                                        fontSize: "1.4rem",
-                                        fontWeight: 500,
-                                        color: "#ff6136",
-                                    }}
-                                >
-                                    {evento.titulo}
-                                </h2>
+                    {ordemEventos.map((evento) => {
+                        const encontrosEvento = encontrosDoEvento(evento.id);
 
-                                <div style={{ display: "flex", gap: "1rem" }}>
-                                    <Link href={`/admin/eventos/editar/${evento.id}`}>
-                                        ✏️ Editar evento
-                                    </Link>
-
-                                    <button
-                                        onClick={async () => {
-                                            if (!confirm("Excluir evento?")) return;
-
-                                            await fetch("/api/eventos", {
-                                                method: "DELETE",
-                                                headers: { "Content-Type": "application/json" },
-                                                body: JSON.stringify({ id: evento.id }),
-                                            });
-
-                                            router.replace(router.asPath);
-                                        }}
+                        return (
+                            <section
+                                id={`evento-${evento.id}`}
+                                key={evento.id}
+                                style={{
+                                    background: "#fff4d4f1",
+                                    borderRadius: "10px",
+                                    padding: "2rem",
+                                    marginBottom: "2.5rem",
+                                    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                                }}
+                            >
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <h2
                                         style={{
-                                            background: "none",
-                                            border: "none",
-                                            color: "darkred",
-                                            cursor: "pointer",
+                                            margin: 0,
+                                            fontSize: "1.4rem",
+                                            fontWeight: 500,
+                                            color: "#ff6136",
                                         }}
                                     >
-                                        🗑 Excluir evento
-                                    </button>
-                                </div>
-                            </div>
+                                        {evento.titulo}
+                                    </h2>
 
-                            <p style={{ marginTop: "0.8rem" }}>
-                                {evento.data_inicio}
-                            </p>
-                        </section>
-                    ))}
+                                    <div style={{ display: "flex", gap: "1rem" }}>
+                                        <Link href={`/admin/eventos/editar/${evento.id}`}>
+                                            ✏️ Editar evento
+                                        </Link>
+
+                                        <button
+                                            onClick={async () => {
+                                                if (!confirm("Excluir evento?")) return;
+
+                                                await fetch("/api/eventos", {
+                                                    method: "DELETE",
+                                                    headers: { "Content-Type": "application/json" },
+                                                    body: JSON.stringify({ id: evento.id }),
+                                                });
+
+                                                router.replace(router.asPath);
+                                            }}
+                                            style={{
+                                                background: "none",
+                                                border: "none",
+                                                color: "darkred",
+                                                cursor: "pointer",
+                                            }}
+                                        >
+                                            🗑 Excluir evento
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* 🔵 ENCONTROS DO EVENTO */}
+                                <h3 style={{ marginTop: "1.5rem" }}>Encontros do Evento</h3>
+
+                                <ul>
+                                    {encontrosEvento.length === 0 && (
+                                        <li>Nenhum encontro cadastrado.</li>
+                                    )}
+
+                                    {encontrosEvento.map((encontro) => {
+                                        const organizacao = encontro.nivel === "organizacao";
+
+                                        return (
+                                            <li
+                                                key={encontro.id}
+                                                style={{
+                                                    marginBottom: "0.8rem",
+                                                    padding: "0.8rem",
+                                                    border: organizacao
+                                                        ? "1px solid #ffd7c8"
+                                                        : "1px solid #e0d8c3",
+                                                    borderRadius: "8px",
+                                                    backgroundColor: organizacao
+                                                        ? "#fff5f1"
+                                                        : "#fffdf7",
+                                                }}
+                                            >
+                                                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                                                    <strong>{labelData(encontro)}</strong>
+
+                                                    <span
+                                                        style={{
+                                                            fontSize: "0.7rem",
+                                                            fontWeight: 700,
+                                                            padding: "0.2rem 0.5rem",
+                                                            borderRadius: "999px",
+                                                            backgroundColor: organizacao
+                                                                ? "#ff6136"
+                                                                : "#4bbbc8",
+                                                            color: "#ffffff",
+                                                            letterSpacing: "0.5px",
+                                                        }}
+                                                    >
+                                                        {organizacao ? "ORGANIZAÇÃO" : "EVENTO"}
+                                                    </span>
+                                                </div>
+
+                                                {encontro.titulo && ` — ${encontro.titulo}`}
+
+                                                <div style={{ marginTop: "0.3rem", fontSize: "0.9rem" }}>
+                                                    <Link
+                                                        href={`/admin/eventos/${evento.id}/editar-encontro/${encontro.id}`}
+                                                    >
+                                                        ✏️ Editar
+                                                    </Link>
+
+                                                    {" | "}
+
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!confirm("Excluir encontro?")) return;
+
+                                                            await fetch("/api/encontros", {
+                                                                method: "DELETE",
+                                                                headers: { "Content-Type": "application/json" },
+                                                                body: JSON.stringify({
+                                                                    id: encontro.id,
+                                                                    evento_id: evento.id,
+                                                                }),
+                                                            });
+
+                                                            router.replace(router.asPath);
+                                                        }}
+                                                        style={{
+                                                            background: "transparent",
+                                                            border: "none",
+                                                            color: "darkred",
+                                                            cursor: "pointer",
+                                                        }}
+                                                    >
+                                                        🗑 Excluir
+                                                    </button>
+                                                </div>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+
+                                {/* 🔵 BOTÃO NOVO ENCONTRO */}
+                                <div style={{ marginTop: "1rem" }}>
+                                    <Link href={`/admin/eventos/${evento.id}/novo-encontro`}>
+                                        ➕ Novo encontro
+                                    </Link>
+                                </div>
+                            </section>
+                        );
+                    })}
                 </div>
             </div>
         </main>

@@ -37,8 +37,6 @@ export default function NovoEvento({ grupos }: Props) {
                 .map((n) => n.trim()),
             objetivo_ano: formData.get("objetivo_ano"),
             convite: formData.get("convite"),
-            data_inicio: formData.get("data_inicio"),
-            data_fim: formData.get("data_fim"),
             grupos_envolvidos: gruposSelecionados,
             todos_os_grupos: todos,
             visibilidade: formData.get("visibilidade"),
@@ -135,13 +133,6 @@ export default function NovoEvento({ grupos }: Props) {
                         rows={3}
                     />
 
-                    <h3 style={{ color: "#4bbbc8", marginTop: "1.5rem" }}>
-                        Datas
-                    </h3>
-
-                    <input type="date" name="data_inicio" required />
-                    <input type="date" name="data_fim" />
-
                     <h3 style={{ color: "#c77e4a", marginTop: "1.5rem" }}>
                         Grupos Envolvidos
                     </h3>
@@ -193,9 +184,6 @@ export default function NovoEvento({ grupos }: Props) {
                                         type="checkbox"
                                         name="grupos_envolvidos"
                                         value={g.id}
-                                        defaultChecked={
-                                            evento?.grupos_envolvidos?.includes(g.id)
-                                        }
                                     />
                                     {g.nome}
                                 </label>

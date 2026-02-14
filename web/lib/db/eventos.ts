@@ -6,8 +6,7 @@ export async function getEventos() {
     const { data, error } = await supabase
         .from("eventos")
         .select("*")
-        .order("ordem", { ascending: true })
-        .order("data_inicio", { ascending: true });
+        .order("ordem", { ascending: true });
 
     if (error) {
         console.error(error);

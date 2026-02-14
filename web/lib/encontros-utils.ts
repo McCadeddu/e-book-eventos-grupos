@@ -11,7 +11,8 @@ export type Encontro = {
   descricao?: string;
   local?: string;
   tipo: "encontro_regular" | "evento_especial";
-  visibilidade: "interno" | "publico";
+    visibilidade: "interno" | "publico";
+    evento_id?: string | null;
 };
 
 export function ordenarEncontrosPorData(

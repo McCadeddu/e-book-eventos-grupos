@@ -27,15 +27,25 @@ export default async function handler(
             horario,
             local,
             visibilidade,
+            evento_id,
+            nivel,
+            mostrar_no_anual,
         } = req.body;
 
-        if (!grupoId || !dataInicio || !tipo) {
+        if (!tipo || !dataInicio) {
             return res.status(400).json({ erro: "Campos obrigatórios ausentes" });
+        }
+
+        if ((grupoId && evento_id) || (!grupoId && !evento_id)) {
+            return res.status(400).json({
+                erro: "Encontro deve pertencer a um grupo OU a um evento (nunca ambos)."
+            });
         }
 
         const encontro = {
             id: gerarIdEncontro(),
-            grupo_id: grupoId,
+            grupo_id: grupoId || null,
+            evento_id: evento_id || null,
             tipo,
             data_inicio: dataInicio,
             data_fim: dataFim || null,
@@ -44,6 +54,13 @@ export default async function handler(
             horario: horario || null,
             local: local || null,
             visibilidade: visibilidade || "interno",
+
+            // 🔵 NOVOS CAMPOS
+            nivel: nivel || "evento",
+            mostrar_no_anual:
+                nivel === "organizacao"
+                    ? false
+                    : mostrar_no_anual ?? true,
         };
 
         const { error } = await supabase
@@ -55,20 +72,8 @@ export default async function handler(
             return res.status(500).json({ erro: error.message });
         }
 
-        // 🔁 revalidação
         await res.revalidate("/livro/calendario");
         await res.revalidate("/livro");
-
-        // revalida a página do grupo (slug)
-        const { data: grupo } = await supabase
-            .from("grupos")
-            .select("slug")
-            .eq("id", grupoId)
-            .single();
-
-        if (grupo?.slug) {
-            await res.revalidate(`/livro/${grupo.slug}`);
-        }
 
         return res.status(200).json({ sucesso: true });
     }
@@ -80,6 +85,9 @@ export default async function handler(
             data_inicio,
             data_fim,
             grupo_id,
+            evento_id,
+            nivel,
+            mostrar_no_anual,
             ...resto
         } = req.body;
 
@@ -87,11 +95,24 @@ export default async function handler(
             return res.status(400).json({ erro: "ID ausente" });
         }
 
+        if ((grupo_id && evento_id) || (!grupo_id && !evento_id)) {
+            return res.status(400).json({
+                erro: "Encontro deve pertencer a um grupo OU a um evento (nunca ambos)."
+            });
+        }
+
         // normalização dos campos
         const dadosAtualizados = {
             ...resto,
-            ...(data_inicio !== undefined && { data_inicio }),
-            ...(data_fim !== undefined && { data_fim }),
+            grupo_id: grupo_id || null,
+            evento_id: evento_id || null,
+            data_inicio,
+            data_fim: data_fim || null,
+            nivel: nivel || "evento",
+            mostrar_no_anual:
+                nivel === "organizacao"
+                    ? false
+                    : mostrar_no_anual ?? true,
         };
 
         const { error } = await supabase

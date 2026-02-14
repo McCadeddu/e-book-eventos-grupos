@@ -19,6 +19,8 @@ import { Encontro } from "../../lib/encontros-utils";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import { supabase } from "../../lib/supabaseClient";
+
 type Props = {
     grupo: Grupo;
     grupos: Grupo[];
@@ -189,15 +191,86 @@ export default function CapituloLivro({
                   )}
 
                   <ul>
-                      {encontrosOrdenados.map((encontro) => (
-                          <li key={encontro.id} style={{ marginBottom: "1rem" }}>
-                              <strong>
-                                  {encontro.data_legivel ||
-                                      formatarDataIntervalo(encontro.data_inicio, encontro.data_fim)}
-                              </strong>
-                              {encontro.titulo && ` — ${encontro.titulo}`}
-                          </li>
-                      ))}
+                      {encontrosOrdenados.map((encontro) => {
+                          const ehEvento = !!encontro.evento_id;
+                          const ehOrganizacao = encontro.nivel === "organizacao";
+
+                          return (
+                              <li
+                                  key={encontro.id}
+                                  style={{
+                                      marginBottom: "1rem",
+                                      padding: "0.8rem",
+                                      borderRadius: "8px",
+                                      border: ehOrganizacao
+                                          ? "1px solid #ffd7c8"
+                                          : ehEvento
+                                              ? "1px solid #ffe3d8"
+                                              : "1px solid #e0ddd7",
+                                      backgroundColor: ehOrganizacao
+                                          ? "#fff5f1"
+                                          : ehEvento
+                                              ? "#fff9f6"
+                                              : "#ffffff",
+                                  }}
+                              >
+                                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                                      <strong>
+                                          {encontro.data_legivel ||
+                                              formatarDataIntervalo(
+                                                  encontro.data_inicio,
+                                                  encontro.data_fim
+                                              )}
+                                      </strong>
+
+                                      {ehEvento && (
+                                          <span
+                                              style={{
+                                                  fontSize: "0.7rem",
+                                                  fontWeight: 700,
+                                                  padding: "0.2rem 0.5rem",
+                                                  borderRadius: "999px",
+                                                  backgroundColor: ehOrganizacao
+                                                      ? "#ff6136"
+                                                      : "#4bbbc8",
+                                                  color: "#ffffff",
+                                                  letterSpacing: "0.5px",
+                                              }}
+                                          >
+                                              {ehOrganizacao
+                                                  ? "EQUIPE ORGANIZATIVA"
+                                                  : "EVENTO"}
+                                          </span>
+                                      )}
+                                  </div>
+
+                                  {encontro.titulo && (
+                                      <div style={{ marginTop: "0.3rem" }}>
+                                          {ehOrganizacao && (
+                                              <strong style={{ color: "#ff6136" }}>
+                                                  Equipe organizativa –{" "}
+                                              </strong>
+                                          )}
+                                          {encontro.titulo}
+                                      </div>
+                                  )}
+
+                                  {(encontro.horario || encontro.local) && (
+                                      <div
+                                          style={{
+                                              fontSize: "0.9rem",
+                                              marginTop: "0.3rem",
+                                              color: "#555",
+                                          }}
+                                      >
+                                          {encontro.horario && <span>🕒 {encontro.horario}</span>}
+                                          {encontro.horario && encontro.local && " · "}
+                                          {encontro.local && <span>📍 {encontro.local}</span>}
+                                      </div>
+                                  )}
+                              </li>
+                          );
+                      })}
                   </ul>
               </section>
 
@@ -277,30 +350,58 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const getStaticProps: GetStaticProps = async ({ params }) => {
     const slug = params?.slug as string;
 
+    // 1️⃣ grupo atual
     const grupo = await getGrupoPorSlug(slug);
     if (!grupo) {
         return { notFound: true };
     }
 
+    // 2️⃣ todos os grupos (para índice lateral)
     const grupos = await getGruposOrdenados();
-    const encontros = await getEncontrosPorGrupo(grupo.id);
+
+    // 3️⃣ encontros próprios do grupo
+    const encontrosGrupo = await getEncontrosPorGrupo(grupo.id);
+
+    // 4️⃣ todos os eventos
     const eventos = await getEventos();
 
+    // 5️⃣ eventos que envolvem este grupo
     const eventosDoGrupo = eventos.filter((evento: any) =>
         evento.todos_os_grupos ||
         (evento.grupos_envolvidos &&
             evento.grupos_envolvidos.includes(grupo.id))
     );
 
-    const todos = [...encontros, ...eventosDoGrupo].sort((a: any, b: any) =>
-        a.data_inicio.localeCompare(b.data_inicio)
-    );
+    // 6️⃣ buscar encontros que pertencem aos eventos deste grupo (para mostrar na agenda, com prefixo do nome do evento)
+    const encontrosEventos: any[] = [];
+
+    for (const evento of eventosDoGrupo) {
+        const { data } = await supabase
+            .from("encontros")
+            .select("*")
+            .eq("evento_id", evento.id);
+
+        if (data) {
+            encontrosEventos.push(
+                ...data.map(e => ({
+                    ...e,
+                    nome_evento: evento.titulo, // 🔵 importante para prefixo
+                }))
+            );
+        }
+    }
+
+    // 7️⃣ unificar encontros do grupo + encontros dos eventos
+    const todosEncontros = [
+        ...encontrosGrupo,
+        ...encontrosEventos,
+    ];
 
     return {
         props: {
             grupo,
             grupos,
-            encontros: todos,
+            encontros: todosEncontros,
             eventosDoGrupo,
         },
         revalidate: 60,

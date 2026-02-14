@@ -4,6 +4,7 @@ import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useState, useRef } from "react";
 import { getGrupoPorSlug } from "../../../lib/db/grupos";
+import { getEventos } from "../../../lib/db/eventos";
 
 /* =======================
    TIPOS
@@ -15,16 +16,18 @@ type Grupo = {
 };
 
 type Props = {
-  grupo: Grupo;
+    grupo: Grupo;
+    eventos: any[];
 };
 
 /* =======================
    COMPONENTE
 ======================= */
-export default function NovoEncontro({ grupo }: Props) {
+export default function NovoEncontro({ grupo, eventos }: Props) {
   const formRef = useRef<HTMLFormElement | null>(null);
   const router = useRouter();
   const [status, setStatus] = useState<string | null>(null);
+  const [eventoId, setEventoId] = useState<string | null>(null);
 
   if (!grupo) {
     return <p>Grupo não encontrado.</p>;
@@ -50,6 +53,7 @@ export default function NovoEncontro({ grupo }: Props) {
       horario: formData.get("horario"),
       local: formData.get("local"),
       visibilidade: formData.get("visibilidade"),
+      evento_id: formData.get("evento_id") || null,
     };
 
     try {
@@ -134,8 +138,29 @@ export default function NovoEncontro({ grupo }: Props) {
                       <option value="evento_especial">Evento especial</option>
                   </select>
 
-                  <input type="date" name="dataInicio" required />
-                  <input type="date" name="dataFim" />
+                  <label>
+                      Vincular a Evento (opcional)
+                      <br />
+                      <select
+                          name="evento_id"
+                          value={eventoId || ""}
+                          onChange={(e) => setEventoId(e.target.value || null)}
+                      >
+                          <option value="">Nenhum</option>
+                          {eventos.map((evento) => (
+                              <option key={evento.id} value={evento.id}>
+                                  {evento.titulo}
+                              </option>
+                          ))}
+                      </select>
+                  </label>
+
+                  {!eventoId && (
+                      <>
+                          <input type="date" name="dataInicio" required />
+                          <input type="date" name="dataFim" />
+                      </>
+                  )}
                   <input name="dataLegivel" placeholder="Ex: 15–17 de maio · Grand Prix" />
 
                   <input name="titulo" placeholder="Título do encontro" />
@@ -186,9 +211,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         return { notFound: true };
     }
 
+    const eventos = await getEventos();
+
     return {
         props: {
             grupo,
+            eventos,
         },
     };
 };

@@ -5,6 +5,8 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { supabase } from "../../../../lib/supabaseClient";
 import { getGruposOrdenados } from "../../../../lib/db/grupos";
+import { formatarDataIntervalo } from "../../../../lib/encontros-utils";
+import Link from "next/link";
 
 type Grupo = {
     id: string;
@@ -19,19 +21,20 @@ type Evento = {
     equipe?: string[];
     objetivo_ano?: string;
     convite?: string;
-    data_inicio: string;
-    data_fim?: string | null;
     todos_os_grupos: boolean;
     grupos_envolvidos?: string[];
     visibilidade: string;
 };
 
+import { Encontro } from "../../../../lib/types";
+
 type Props = {
     evento: Evento;
     grupos: Grupo[];
+    encontros: Encontro[];
 };
 
-export default function EditarEvento({ evento, grupos }: Props) {
+export default function EditarEvento({ evento, grupos, encontros }: Props) {
     const router = useRouter();
     const [status, setStatus] = useState<string | null>(null);
     const [todos, setTodos] = useState(evento.todos_os_grupos);
@@ -55,8 +58,6 @@ export default function EditarEvento({ evento, grupos }: Props) {
                 .map((n) => n.trim()),
             objetivo_ano: formData.get("objetivo_ano"),
             convite: formData.get("convite"),
-            data_inicio: formData.get("data_inicio"),
-            data_fim: formData.get("data_fim"),
             grupos_envolvidos: gruposSelecionados,
             todos_os_grupos: todos,
             visibilidade: formData.get("visibilidade"),
@@ -151,23 +152,6 @@ export default function EditarEvento({ evento, grupos }: Props) {
                         name="descricao"
                         defaultValue={evento.descricao}
                         rows={3}
-                    />
-
-                    <h3 style={{ color: "#4bbbc8", marginTop: "1.5rem" }}>
-                        Datas
-                    </h3>
-
-                    <input
-                        type="date"
-                        name="data_inicio"
-                        defaultValue={evento.data_inicio}
-                        required
-                    />
-
-                    <input
-                        type="date"
-                        name="data_fim"
-                        defaultValue={evento.data_fim || ""}
                     />
 
                     <h3 style={{ color: "#c77e4a", marginTop: "1.5rem" }}>
@@ -286,6 +270,78 @@ export default function EditarEvento({ evento, grupos }: Props) {
                     </button>
                 </form>
 
+                <hr style={{ margin: "3rem 0" }} />
+
+                <h2 style={{ color: "#ff6136" }}>
+                    Calendário do Evento (Encontros)
+                </h2>
+
+                {encontros.length === 0 && (
+                    <p>Nenhum encontro cadastrado para este evento.</p>
+                )}
+
+                <ul>
+                    {encontros.map((encontro) => (
+                        <li
+                            key={encontro.id}
+                            style={{
+                                marginBottom: "0.8rem",
+                                padding: "0.8rem",
+                                border: "1px solid #e0d8c3",
+                                borderRadius: "8px",
+                                backgroundColor: "#fffdf7",
+                            }}
+                        >
+                            <strong>
+                                {formatarDataIntervalo(encontro.data_inicio, encontro.data_fim)}
+                            </strong>
+
+                            {encontro.titulo && ` — ${encontro.titulo}`}
+
+                            <div style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
+
+                                <Link
+                                    href={`/admin/eventos/${evento.id}/editar-encontro/${encontro.id}`}
+                                    style={{ marginRight: "1rem" }}
+                                >
+                                    ✏️ Editar
+                                </Link>
+
+                                <button
+                                    onClick={async () => {
+                                        if (!confirm("Excluir encontro?")) return;
+
+                                        await fetch("/api/encontros", {
+                                            method: "DELETE",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({
+                                                id: encontro.id,
+                                                evento_id: evento.id,
+                                            }),
+                                        });
+
+                                        router.replace(router.asPath);
+                                    }}
+                                    style={{
+                                        background: "none",
+                                        border: "none",
+                                        color: "darkred",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    🗑 Excluir
+                                </button>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+
+                <div style={{ marginTop: "1rem" }}>
+                    <Link href={`/admin/eventos/${evento.id}/novo-encontro`}>
+                        ➕ Novo encontro do evento
+                    </Link>
+                </div>
+
                 {status && (
                     <p style={{ marginTop: "1rem", color: "#3e4647" }}>
                         {status}
@@ -311,10 +367,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         return { notFound: true };
     }
 
+    const { data: encontros } = await supabase
+        .from("encontros")
+        .select("*")
+        .eq("evento_id", id)
+        .order("data_inicio", { ascending: true });
+
     return {
         props: {
             evento,
             grupos,
+            encontros: encontros || [],
         },
     };
 };

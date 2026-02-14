@@ -27,9 +27,10 @@ type ItemCalendario = {
 type Props = {
     grupos: Grupo[];
     encontros: ItemCalendario[];
+    eventos: any[];
 };
 
-export default function CalendarioLivro({ grupos, encontros }: Props) {
+export default function CalendarioLivro({ grupos, encontros, eventos }: Props) {
   const encontrosOrdenados = ordenarEncontrosPorData(encontros);
 
   function encontrosDoMes(mes: number) {
@@ -158,66 +159,61 @@ export default function CalendarioLivro({ grupos, encontros }: Props) {
               )}
 
               <ul>
-                {encontrosMes.map((encontro) => {
-                    const grupo = "grupo_id" in encontro
-                        ? grupos.find((g) => g.id === (encontro as any).grupo_id)
-                        : null;
 
-                  return (
-                      <li key={encontro.id} style={{ marginBottom: "0.4rem" }}>
-                          <strong>
-                              {encontro.data_legivel ||
-                                  formatarDataIntervalo(encontro.data_inicio, encontro.data_fim)}
-                          </strong>
+                      {encontrosMes.map((encontro) => {
+                          const grupo = encontro.grupo_id
+                              ? grupos.find((g) => g.id === encontro.grupo_id)
+                              : null;
 
-                          {" — "}
+                          return (
+                              <li key={encontro.id} style={{ marginBottom: "0.8rem" }}>
+                                  <strong>
+                                      {encontro.data_legivel ||
+                                          formatarDataIntervalo(
+                                              encontro.data_inicio,
+                                              encontro.data_fim
+                                          )}
+                                  </strong>
 
-                          {"grupo_id" in encontro ? (
-                              <>
-                                  {encontro.titulo}
-                                  {" · "}
-                                  {grupos.find(g => g.id === encontro.grupo_id)?.nome}
-                              </>
-                          ) : (
-                              <>
-                                  <Link
-                                      href={`/livro/evento/${encontro.id}`}
-                                      style={{ textDecoration: "none" }}
-                                  >
-                                      <span
-                                          style={{
-                                              fontWeight: 700,
-                                              textTransform: "uppercase",
-                                              color: "#ff6136",
-                                          }}
-                                      >
+                                  {" — "}
+
+                                  {encontro.grupo_id ? (
+                                      <>
                                           {encontro.titulo}
-                                      </span>
-                                  </Link>
+                                          {grupo && (
+                                              <>
+                                                  {" · "}
+                                                  {grupo.nome}
+                                              </>
+                                          )}
+                                      </>
+                                  ) : (
+                                      <>
+                                          <span
+                                              style={{
+                                                  fontWeight: 700,
+                                                  textTransform: "uppercase",
+                                                  color: "#ff6136",
+                                              }}
+                                          >
+                                              {encontro.titulo}
+                                          </span>
 
-                                  {/* GRUPOS ENVOLVIDOS */}
-                                  <div
-                                      style={{
-                                          fontSize: "0.85rem",
-                                          color: "#6b6b6b",
-                                          marginTop: "0.2rem",
-                                      }}
-                                  >
-                                      <strong>São envolvidos os membros de:</strong>{" "}
-                                      {encontro.todos_os_grupos
-                                          ? "Todos os grupos"
-                                          : encontro.grupos_envolvidos
-                                              ?.map((id: string) =>
-                                                  grupos.find(g => g.id === id)?.nome
-                                              )
-                                              .join(", ")
-                                      }
-                                  </div>
-                              </>
-                          )}
-                      </li>
-                  );
-                })}
+                                          <div
+                                              style={{
+                                                  fontSize: "0.85rem",
+                                                  color: "#6b6b6b",
+                                                  marginTop: "0.2rem",
+                                              }}
+                                          >
+                                              Encontro de Evento
+                                          </div>
+                                      </>
+                                  )}
+                              </li>
+                          );
+                      })}
+
               </ul>
             </section>
           );
@@ -237,43 +233,40 @@ export default function CalendarioLivro({ grupos, encontros }: Props) {
                   borderLeft: "1px solid #ffd7c8",
               }}
           >
-              {encontros
-                  .filter(e => !("grupo_id" in e))
-                  .map((evento: any) => (
-                      <Link
-                          key={evento.id}
-                          href={`/livro/evento/${evento.id}`}
-                          style={{ textDecoration: "none" }}
+              {(eventos ?? []).map((evento: any) => (
+                  <Link
+                      key={evento.id}
+                      href={`/livro/evento/${evento.id}`}
+                      style={{ textDecoration: "none" }}
+                  >
+                      <span
+                          style={{
+                              display: "block",
+                              writingMode: "vertical-rl",
+                              margin: "0.6rem 0",
+                              padding: "0.7rem 0.4rem",
+                              borderRadius: "8px",
+                              backgroundColor: "#ff6136",
+                              color: "#ffffff",
+                              fontSize: "0.75rem",
+                              fontWeight: 700,
+                              opacity: 0.85,
+                              transition: "all 0.25s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = "1";
+                              e.currentTarget.style.transform = "scale(1.05)";
+                          }}
+                          onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = "0.85";
+                              e.currentTarget.style.transform = "scale(1)";
+                          }}
                       >
-                          <span
-                              style={{
-                                  display: "block",
-                                  writingMode: "vertical-rl",
-                                  margin: "0.6rem 0",
-                                  padding: "0.7rem 0.4rem",
-                                  borderRadius: "8px",
-                                  backgroundColor: "#ff6136",
-                                  color: "#ffffff",
-                                  fontSize: "0.75rem",
-                                  fontWeight: 700,
-                                  opacity: 0.85,
-                                  transition: "all 0.25s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                  e.currentTarget.style.opacity = "1";
-                                  e.currentTarget.style.transform = "scale(1.05)";
-                              }}
-                              onMouseLeave={(e) => {
-                                  e.currentTarget.style.opacity = "0.85";
-                                  e.currentTarget.style.transform = "scale(1)";
-                              }}
-                          >
-                              {evento.titulo}
-                          </span>
-                      </Link>
-                  ))}
+                          {evento.titulo}
+                      </span>
+                  </Link>
+              ))}
           </aside>
-
     </main>
   );
 }
@@ -283,18 +276,30 @@ export default function CalendarioLivro({ grupos, encontros }: Props) {
  */
 export const getStaticProps: GetStaticProps = async () => {
     const grupos = await getGruposOrdenados();
-    const encontros = await getEncontros();
-    const eventos = await getEventos();
 
-    const todos = [...encontros, ...eventos].sort((a: any, b: any) =>
-        a.data_inicio.localeCompare(b.data_inicio)
-    );
+    const encontros = (await getEncontros())
+        .filter(e => {
+            if (!e.data_inicio) return false;
+
+            if (!e.evento_id) return true;
+
+            return e.nivel === "evento" && e.mostrar_no_anual === true;
+        })
+        .map(e => ({
+            ...e,
+            data_inicio: e.data_inicio ?? null,
+            data_fim: e.data_fim ?? null,
+            data_legivel: e.data_legivel ?? null,
+        }));
+
+    const eventos = await getEventos();
 
     return {
         props: {
             grupos,
-            encontros: todos,
+            encontros,
+            eventos: eventos ?? [],
         },
         revalidate: 60,
     };
-};
+}

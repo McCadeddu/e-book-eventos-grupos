@@ -6,15 +6,21 @@ import { useRouter } from "next/router";
 import { useState, useRef } from "react";
 import { Encontro } from "../../../../lib/encontros-utils";
 
+import { getEventos } from "../../../../lib/db/eventos";
+
 type Props = {
-  encontro: Encontro;
+    encontro: Encontro;
+    eventos: any[];
 };
 
-export default function EditarEncontro({ encontro }: Props) {
+export default function EditarEncontro({ encontro, eventos }: Props) {
   const router = useRouter();
-  const formRef = useRef<HTMLFormElement | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
-  const [salvando, setSalvando] = useState(false);
+const formRef = useRef<HTMLFormElement | null>(null);
+const [status, setStatus] = useState<string | null>(null);
+const [salvando, setSalvando] = useState(false);
+const [eventoId, setEventoId] = useState<string | null>(
+    encontro.evento_id || null
+);
 
   async function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
@@ -34,7 +40,8 @@ export default function EditarEncontro({ encontro }: Props) {
       titulo: formData.get("titulo"),
       horario: formData.get("horario"),
       local: formData.get("local"),
-      visibilidade: formData.get("visibilidade"),
+        visibilidade: formData.get("visibilidade"),
+        evento_id: formData.get("evento_id") || null,
     };
 
     const resposta = await fetch("/api/encontros", {
@@ -75,21 +82,52 @@ export default function EditarEncontro({ encontro }: Props) {
           </select>
         </label>
 
-        <br /><br />
+              <br /><br />
 
-        <label>
-          Data de início
-          <br />
-          <input name="data_inicio" defaultValue={encontro.data_inicio || ""} />
-        </label>
+              <label>
+                  Vincular a Evento (opcional)
+                  <br />
+                  <select
+                      name="evento_id"
+                      value={eventoId || ""}
+                      onChange={(e) =>
+                          setEventoId(e.target.value || null)
+                      }
+                  >
+                      <option value="">Nenhum</option>
+                      {eventos.map((evento) => (
+                          <option key={evento.id} value={evento.id}>
+                              {evento.titulo}
+                          </option>
+                      ))}
+                  </select>
+              </label>
 
-        <br /><br />
+              {!eventoId && (
+                  <>
+                      <label>
+                          Data de início
+                          <br />
+                          <input
+                              name="data_inicio"
+                              defaultValue={encontro.data_inicio || ""}
+                          />
+                      </label>
 
-        <label>
-          Data de fim
-          <br />
-          <input name="data_fim" defaultValue={encontro.data_fim || ""} />
-        </label>
+                      <br /><br />
+
+                      <label>
+                          Data de fim
+                          <br />
+                          <input
+                              name="data_fim"
+                              defaultValue={encontro.data_fim || ""}
+                          />
+                      </label>
+
+                      <br /><br />
+                  </>
+              )}
 
         <br /><br />
 
@@ -181,9 +219,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         return { notFound: true };
     }
 
+    const eventos = await getEventos();
+
     return {
         props: {
             encontro,
+            eventos,
         },
     };
 };

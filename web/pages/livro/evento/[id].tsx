@@ -5,8 +5,9 @@ import { GetStaticPaths, GetStaticProps } from "next";
 import { getEventos } from "../../../lib/db/eventos";
 import { getGruposOrdenados } from "../../../lib/db/grupos";
 import { formatarDataIntervalo } from "../../../lib/encontros-utils";
+import { supabase } from "../../../lib/supabaseClient";
 
-export default function PaginaEvento({ evento, grupos }) {
+export default function PaginaEvento({ evento, grupos, encontros }) {
     if (!evento) return null;
 
     const nomesGrupos = evento.todos_os_grupos
@@ -80,13 +81,6 @@ export default function PaginaEvento({ evento, grupos }) {
                         </p>
                     )}
 
-                    <p style={{ marginTop: "0.8rem", fontWeight: 600 }}>
-                        {formatarDataIntervalo(
-                            evento.data_inicio,
-                            evento.data_fim
-                        )}
-                    </p>
-
                     {!evento.todos_os_grupos && evento.grupos_envolvidos?.length > 0 && (
                         <div style={{ marginTop: "1rem" }}>
                             <h3 style={{ color: "#ff6136", marginBottom: "0.5rem" }}>
@@ -103,6 +97,45 @@ export default function PaginaEvento({ evento, grupos }) {
                         </div>
                     )}
                 </div>
+
+                {/* AGENDA DO EVENTO */}
+                {encontros.length > 0 && (
+                    <section style={{ marginBottom: "2.5rem" }}>
+                        <h2 style={{ color: "#ff6136" }}>
+                            Agenda do Evento
+                        </h2>
+
+                        <ul style={{ marginTop: "1rem" }}>
+                            {encontros.map((encontro: any) => (
+                                <li key={encontro.id} style={{ marginBottom: "1rem" }}>
+                                    <strong>
+                                        {encontro.data_legivel ||
+                                            formatarDataIntervalo(
+                                                encontro.data_inicio,
+                                                encontro.data_fim
+                                            )}
+                                    </strong>
+
+                                    {encontro.titulo && ` — ${encontro.titulo}`}
+
+                                    {(encontro.horario || encontro.local) && (
+                                        <div
+                                            style={{
+                                                fontSize: "0.9rem",
+                                                marginTop: "0.3rem",
+                                                color: "#555",
+                                            }}
+                                        >
+                                            {encontro.horario && <span>🕒 {encontro.horario}</span>}
+                                            {encontro.horario && encontro.local && " · "}
+                                            {encontro.local && <span>📍 {encontro.local}</span>}
+                                        </div>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
 
                 {/* DESCRIÇÃO */}
                 {evento.descricao && (
@@ -155,7 +188,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
         params: { id: e.id },
     }));
 
-    return { paths, fallback: false };
+    return { paths, fallback: "blocking" };
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
@@ -164,8 +197,24 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
     const evento = eventos.find(e => e.id === params?.id);
 
+    if (!evento) {
+        return { notFound: true };
+    }
+
+    // 🔵 buscar apenas encontros oficiais do evento
+    const { data: encontros } = await supabase
+        .from("encontros")
+        .select("*")
+        .eq("evento_id", evento.id)
+        .eq("nivel", "evento")
+        .order("data_inicio", { ascending: true });
+
     return {
-        props: { evento, grupos },
+        props: {
+            evento,
+            grupos,
+            encontros: encontros || [],
+        },
         revalidate: 60,
     };
 };

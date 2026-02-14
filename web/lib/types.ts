@@ -23,4 +23,5 @@ export type Encontro = {
     local?: string | null;
     tipo: "encontro_regular" | "evento_especial";
     visibilidade: "interno" | "publico";
+    evento_id?: string | null;
 };
