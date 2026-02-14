@@ -172,7 +172,24 @@ export default function PaginaEvento({ evento, grupos, encontros }: Props) {
                         <h2 style={{ color: "#c77e4a" }}>
                             Equipe Responsável
                         </h2>
-                        <p>{evento.equipe}</p>
+                        <div style={{ marginTop: "0.8rem" }}>
+                            {evento.equipe.map((nome: string) => (
+                                <span
+                                    key={nome}
+                                    style={{
+                                        display: "inline-block",
+                                        backgroundColor: "#f3ede3",
+                                        padding: "4px 10px",
+                                        borderRadius: "999px",
+                                        fontSize: "0.85rem",
+                                        marginRight: "6px",
+                                        marginBottom: "6px",
+                                    }}
+                                >
+                                    {nome}
+                                </span>
+                            ))}
+                        </div>
                     </section>
                 )}
 

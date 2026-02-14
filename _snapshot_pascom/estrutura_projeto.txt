@@ -1,5 +1,5 @@
 Listagem de caminhos de pasta para o volume Local Disk
-O número de série do volume é 0000027C 1CAC:BB1B
+O número de série do volume é 00000223 1CAC:BB1B
 C:.
 |   .gitignore
 |   atualizar-vercel.bat
@@ -80,6 +80,7 @@ C:.
 |   |   |       28b4f89eae0be8caebbb8dc9861e670320e61d
 |   |   |       
 |   |   +---08
+|   |   |       472bc1925c61c7e33b8f6f440561b1e3ce49c4
 |   |   |       661bb593cd8dadb0866f78d33a8e487e469b8a
 |   |   |       6988fb187c67446f9c1aa4daf5a53f0d337eb7
 |   |   |       7e30dffbb9eb8c29d97c83c0de4d644293e6a9
@@ -89,6 +90,7 @@ C:.
 |   |   |       d72057b6b319ee7ecd1e90832fbb20a000d2cb
 |   |   |       
 |   |   +---0a
+|   |   |       035e6c4f357562cd91f08118cf84be155dddbb
 |   |   |       d64f4730ee6500817142510e65b53cd4e46d04
 |   |   |       
 |   |   +---0b
@@ -102,8 +104,16 @@ C:.
 |   |   |       44a6573a1f93bdd834e205204edcd3fc0db065
 |   |   |       5c541092c65a3bd0b571b6e1d29dca0c16f1de
 |   |   |       
+|   |   +---0e
+|   |   |       4f0ac615c3fa87759277d7cb67c5c7f71bcb36
+|   |   |       
 |   |   +---11
+|   |   |       c6cdc2573f38b60ccb7139a5536b470594874b
 |   |   |       c90d745ecbbf747207de8b430f11b6b5aac71a
+|   |   |       
+|   |   +---12
+|   |   |       0caffb882f9afbbb649bb311ecd6961c26d61c
+|   |   |       e31e78ab3646872eb573f3bacf5d685ee52a29
 |   |   |       
 |   |   +---13
 |   |   |       06c227198d99cfcda4753691955e98269b72d6
@@ -178,11 +188,19 @@ C:.
 |   |   |       c0a21484c958b28903dcc89d57117cf92e859d
 |   |   |       
 |   |   +---25
+|   |   |       1b3a8ebc4cf5b787e0140f5c1cc0a3b254c5a2
 |   |   |       7db897283f8e1b0e609ea1fada4af49e04223e
 |   |   |       
 |   |   +---26
 |   |   |       b5bf0e327c62926ea4264c0241f4e0774ea357
 |   |   |       def6dd58100c6dd7ac4a91be4bd074c5fa6625
+|   |   |       
+|   |   +---27
+|   |   |       970b33ace36d3446b59e8851a190b965415edc
+|   |   |       d882dfcbf57e9c9941b6cfe9439b756f4f6328
+|   |   |       
+|   |   +---28
+|   |   |       6fefb42ea2773be58b4e2a256e5c3373bd2160
 |   |   |       
 |   |   +---29
 |   |   |       0e1f63793ca2924c230f47cd00a65ae8431413
@@ -194,6 +212,7 @@ C:.
 |   |   |       
 |   |   +---2b
 |   |   |       56e37d2254c13943c1c2a1f6c0adec170e2ec9
+|   |   |       676c3eb27b9968deb95001ea6bfcb19dc41f92
 |   |   |       e37f11c1717b01eb77ee9667d63b7e0b4fab8b
 |   |   |       
 |   |   +---2c
@@ -207,6 +226,9 @@ C:.
 |   |   |       079489b20c741c867210e481223e5a50e3c995
 |   |   |       80cacd1aa9aee1541f52e4a18dc05ed51f0738
 |   |   |       80ce10ecd72ba49ec502b41b363daf9c30a429
+|   |   |       
+|   |   +---32
+|   |   |       fd38448213555651a9a51360007f52f5c62e46
 |   |   |       
 |   |   +---33
 |   |   |       389350d254608770425fa0c7bfd4c17b5cec5e
@@ -250,6 +272,7 @@ C:.
 |   |   |       6063a392b14422dbaefdf3228b8693372248e6
 |   |   |       
 |   |   +---42
+|   |   |       3446389b6e89786b5154df7c8eadd2f84c05d8
 |   |   |       38b354bb288b2e864bbe25c8755a0e48450e3f
 |   |   |       47bda049c04f1741e245c3a86700d88a9d69cc
 |   |   |       714adbe09d9bd3371e676f066197bde976d17f
@@ -266,6 +289,7 @@ C:.
 |   |   |       
 |   |   +---45
 |   |   |       2da4ac2edcdc34877ec69f5c69940d739fcdcf
+|   |   |       d5de3d3303237bdd3c6d6174894f4d21713f0c
 |   |   |       
 |   |   +---46
 |   |   |       09f877ae0b2a85350075477d4c5b666cf6a59b
@@ -274,6 +298,7 @@ C:.
 |   |   +---47
 |   |   |       00cbb2abb0f22b1933f60be33129f9a98fb7d8
 |   |   |       10206f740abb54876685924cf27aa7e287bc1e
+|   |   |       1764933e8aeed2152b0c13aa79fe0e092a00f6
 |   |   |       61d2d59adb8f2bf2c181551971f665255b282c
 |   |   |       
 |   |   +---48
@@ -284,6 +309,7 @@ C:.
 |   |   +---4a
 |   |   |       5a4a2a8a2a5102b3141c4c00378ee726712ac0
 |   |   |       93ccc88b38d85274592ab9b72e484095125cbe
+|   |   |       c7ade07d56b8e750da1b0e2804028f0c6855d4
 |   |   |       
 |   |   +---4b
 |   |   |       9e9bdc5188c0fc26770625b08dac0799cd4e84
@@ -306,6 +332,10 @@ C:.
 |   |   +---52
 |   |   |       8029bdcbb7f87f7b752972fcbd8f44d9ef2ba3
 |   |   |       
+|   |   +---53
+|   |   |       1f8b5a81f959b55e5547ddad2a29c4942c4239
+|   |   |       344a15be5e7d39a3e27eb168abb6ea1ca08858
+|   |   |       
 |   |   +---54
 |   |   |       a0b0431b7d934be5f2deeb4e94ed8583ca56f1
 |   |   |       ff712cc60bc85ba37e150020e209a019fff955
@@ -318,10 +348,12 @@ C:.
 |   |   |       
 |   |   +---58
 |   |   |       7c3ec9f2c309c0e1c61a32293f91a015a8c9cd
+|   |   |       f97ca985de584abbc7813d7cb250c47cdb13eb
 |   |   |       
 |   |   +---59
 |   |   |       5a43fb12e90ba1df946e4e8c28397e33fdca20
 |   |   |       bec253f9268d6ce74f441070ce18c3f74ad9a3
+|   |   |       c36e1e04b767ab9deafafce603e33bfb89ef0e
 |   |   |       
 |   |   +---5a
 |   |   |       fe2dc72dc40bccf2cef69b7ff6dc77da820ebf
@@ -348,6 +380,8 @@ C:.
 |   |   |       
 |   |   +---60
 |   |   |       4ffe0b25ed09c5deefd77df1d26c52c5bf9b27
+|   |   |       9ec66d4d41c6fd9843e60ab09d498938c5837a
+|   |   |       e0bd4251337f46fafa654ce512ce27d6a50e64
 |   |   |       f235032aec19b8444ca17387dd2869926ef19e
 |   |   |       
 |   |   +---61
@@ -373,6 +407,7 @@ C:.
 |   |   |       294c75575e27337fa4a8f599b1d5b3f59cd654
 |   |   |       47d8847b8612ff96a8a9a9373c116bb9efb573
 |   |   |       64bf462856d41acba5b1c681ab01c40abad479
+|   |   |       ad863b591654385941a18aa31db647cc186ce1
 |   |   |       
 |   |   +---69
 |   |   |       a558c2dac82102d2d01ecb68a28fbf7022c058
@@ -391,6 +426,7 @@ C:.
 |   |   |       
 |   |   +---6d
 |   |   |       2c2d7e3d976add6a77659349e4c94b84ca3070
+|   |   |       d991270184f783f69fa5f34fa983e282bedf4b
 |   |   |       ff389604bbbb6917b6c85fff2aefed63a23998
 |   |   |       
 |   |   +---6f
@@ -401,9 +437,14 @@ C:.
 |   |   |       9cea2b59f3222f4830a756100e1f756b8a18af
 |   |   |       f3bb4afc3ab4901673ef1783e78e10d12e87d8
 |   |   |       
+|   |   +---72
+|   |   |       5275f2088fc53157b89fa8a8903d1f5f5c5508
+|   |   |       abcf9d0e7fa4b5d1daf5071a0b773351e017c4
+|   |   |       
 |   |   +---73
 |   |   |       093c088f1919a2dfc96826087b1572f3218216
 |   |   |       5aaf56aba21e7abe86b1ebb9c4fbcaafb16fb7
+|   |   |       7407de86f42a9d3ef911729eb4a7b22f7b0165
 |   |   |       785c7092415a115ae051600613b6e799a72672
 |   |   |       
 |   |   +---74
@@ -416,6 +457,7 @@ C:.
 |   |   +---76
 |   |   |       396a7c1a778078813a553534fa978518060ec4
 |   |   |       4c16dfe8476cbb861acf0577556cf47d97661e
+|   |   |       9a2cd8331c85bc516996f1758cbf7567a856b2
 |   |   |       
 |   |   +---77
 |   |   |       053960334e2e34dc584dea8019925c3b4ccca9
@@ -435,6 +477,8 @@ C:.
 |   |   |       3baeb43228b1291b3c444e4af8cda93c78324a
 |   |   |       
 |   |   +---7c
+|   |   |       54cc7983e00c064e5d64b0518f79b19fe0824a
+|   |   |       bac3d178b063bc63aef6881968e3a8cecda9e3
 |   |   |       bb614c4831fa37fb96eb2d399c599905a6b218
 |   |   |       befc6174ec1a36189d89de14094e9ea993574b
 |   |   |       deaecfdda0842793a3ee92f329d3001641363f
@@ -460,6 +504,9 @@ C:.
 |   |   |       
 |   |   +---82
 |   |   |       46616bd933032118fb06a279ee74d790a34c18
+|   |   |       
+|   |   +---83
+|   |   |       c53c17f5604955f5756ea69d3befdf7bddb672
 |   |   |       
 |   |   +---85
 |   |   |       553d3754781183a386eead6a53d7dd93cd9846
@@ -510,6 +557,8 @@ C:.
 |   |   |       
 |   |   +---94
 |   |   |       229e92953fe1c61d2ef26379afe37b8e18e158
+|   |   |       6de6cdf716ef464a265979b885e416c807f86c
+|   |   |       c6fade92daeaa00fce39ce830fda6f8504f5c2
 |   |   |       
 |   |   +---95
 |   |   |       07dff341fc5d9791ddd7b28a64270b610c84ed
@@ -520,6 +569,8 @@ C:.
 |   |   |       968e2c02352fe623c5cf5eb0cb549aa7645227
 |   |   |       
 |   |   +---98
+|   |   |       53c66df74f47c61edc8f8b2cc7c46ac9e8fc06
+|   |   |       90eccb3c1e4ade5c249ff6fef492e2b9690acb
 |   |   |       9b4c4760552c7df8b04ef06c2d00d26900298e
 |   |   |       
 |   |   +---9a
@@ -534,6 +585,7 @@ C:.
 |   |   |       
 |   |   +---a0
 |   |   |       45cae037171e78e1358e3e9d10b4f73dea5246
+|   |   |       882f85cc41a6709811dfbd810abeff23b6f4e4
 |   |   |       
 |   |   +---a1
 |   |   |       0d06d4f76211a8ca250c38fc24e4130cb27a95
@@ -563,15 +615,18 @@ C:.
 |   |   |       
 |   |   +---aa
 |   |   |       dfe1736848f6fb9c3d707ed344292f4e9182cc
+|   |   |       efee7ec78ab91932dc06550d512b583913e4f8
 |   |   |       
 |   |   +---ab
 |   |   |       8a82f3864b0603d3bf9607b329a034da9fcf26
 |   |   |       
 |   |   +---ac
+|   |   |       00e89900930b77acac09885da8071767997f05
 |   |   |       07c00c73648bcf6ca59a8888559997440968ae
 |   |   |       4550b85d52fddc3e0098e4aff0dcd119002b05
 |   |   |       
 |   |   +---ad
+|   |   |       3cd15a206dbc6290243a451ee50c2c1ef65fae
 |   |   |       969f695cd9c3cd981103114cea5dd61d195edd
 |   |   |       
 |   |   +---af
@@ -588,9 +643,11 @@ C:.
 |   |   |       b02c750dd6aa0430811275ec8b055d16fbf10b
 |   |   |       b2a44f6ebc70c450043c05a002e7a93ba5d651
 |   |   |       b4e0ee2473e593b2828aedd604c4d98dce0828
+|   |   |       b69f926ae5ca6ba47a6566af2193fd80647045
 |   |   |       
 |   |   +---b3
 |   |   |       354737d2d237815b4be90c59e98c316332280f
+|   |   |       f4128e4837c7ae7d3c1e0343579371dccadee2
 |   |   |       
 |   |   +---b4
 |   |   |       116feb283484bdf4baeb0a348338f71fe91db4
@@ -616,6 +673,7 @@ C:.
 |   |   |       1c0b3c1f8c956b85c43ac385de5f71ef9c91ee
 |   |   |       
 |   |   +---bc
+|   |   |       72b2ff11bd7ba130ba1f044b160a5b5cc09cc4
 |   |   |       ac1a2fa2c7af6f8e691e3573ee384d48cb9c5d
 |   |   |       d985e3fe7175aadb2536999695612cdc4f11f3
 |   |   |       
@@ -636,6 +694,7 @@ C:.
 |   |   |       
 |   |   +---c4
 |   |   |       1d51e0efa661fe355cdd9d6a1c1ecacc0651ed
+|   |   |       70dbb36662ef8d54b460a6145ba4b561e18215
 |   |   |       f5491a3d252a3b7d328475e510d140cee71e9a
 |   |   |       
 |   |   +---c5
@@ -643,6 +702,7 @@ C:.
 |   |   |       
 |   |   +---c7
 |   |   |       07e41b54a22909a5d795c95458f046667f4cba
+|   |   |       9d2a20cded8bae5b287aeede6fcb2aff7ee37e
 |   |   |       bcb4b1ee14cd5e25078c2c934529afdd2a7df9
 |   |   |       
 |   |   +---c9
@@ -658,9 +718,19 @@ C:.
 |   |   |       
 |   |   +---cd
 |   |   |       5e643c73eeeb61a26b488a5f294978fbf9bbd5
+|   |   |       be415902d420c13e8f871dbb9aac1ba69119ab
 |   |   |       c99063e61f04ffab8c04e6ae88e4fa759d848a
 |   |   |       d7062ce629f778e897cf67cd4628fcc5d09763
 |   |   |       fc38ebed0c115cb939ae849781d82d53d13b3d
+|   |   |       
+|   |   +---d2
+|   |   |       67d65c7a687af57d8b286e7c844736aa1ae8e6
+|   |   |       
+|   |   +---d3
+|   |   |       e9160cb855a8bae4c50e37c0e26f9718b22537
+|   |   |       
+|   |   +---d4
+|   |   |       525158118abb3d772c5be01cfb283a8714ecb1
 |   |   |       
 |   |   +---d5
 |   |   |       4d8f6e3d46bebb0abe81e5f31027c56fce3c6a
@@ -689,7 +759,9 @@ C:.
 |   |   |       404a498623080cb22a10a12d2cef31f20b1344
 |   |   |       
 |   |   +---dc
+|   |   |       11d4c3a4b730ae932926119c5ae7c4174de9b3
 |   |   |       991f9284ae1f83779ddb1a8621b7380c7a6785
+|   |   |       aeec2e0efbdd6ec39ddeab8f9ce245e7e3aee8
 |   |   |       f0c337df41a69c72ebad80ebd00b1a511d3ae7
 |   |   |       f5c1b8868c5c5a7124995d8f1099bf0065ca5b
 |   |   |       
@@ -718,9 +790,13 @@ C:.
 |   |   |       
 |   |   +---e6
 |   |   |       8d2c092422cd99604b87a33cc7b800e1d24e62
+|   |   |       9de29bb2d1d6434b8b29ae775ad8c2e48c5391
 |   |   |       
 |   |   +---e7
 |   |   |       84f825c7a986856321ef738934ed1907c4e6e3
+|   |   |       
+|   |   +---e8
+|   |   |       f376f1ca2f8cc7da77e38933442b5457c301e4
 |   |   |       
 |   |   +---e9
 |   |   |       9e9085d1b7a0a548a3cb536460d0544e18bf91
@@ -739,6 +815,9 @@ C:.
 |   |   |       0e47e31fa3d9a98a08c25c494309fe759bc0f7
 |   |   |       2c82293529257820071cf29a1cd5719530f764
 |   |   |       
+|   |   +---f0
+|   |   |       eb718fcbdeb5b71f6a5821ee429769695e8ae5
+|   |   |       
 |   |   +---f2
 |   |   |       52468dc577c99faaf11f4302217ca7031ee748
 |   |   |       
@@ -756,6 +835,7 @@ C:.
 |   |   |       
 |   |   +---f6
 |   |   |       930212d1c90ad88cab7c30f3502f3b3a16bdf7
+|   |   |       98a2d22aa79e48244ef7c1e8e62cc7bb68a7f4
 |   |   |       
 |   |   +---f8
 |   |   |       988d7368e12b9653b9de9110037eb083e969b1
@@ -772,6 +852,9 @@ C:.
 |   |   +---fc
 |   |   |       064b2935c00211fe59653d2513b6035cd374d9
 |   |   |       9e68bdd3f54424fd347999a0a9f8b989a5822b
+|   |   |       
+|   |   +---fd
+|   |   |       8a7351614c6db5672c4f97048c6d08a087d7f1
 |   |   |       
 |   |   +---info
 |   |   \---pack
@@ -801,10 +884,10 @@ C:.
 |       |       \---sessions
 |       +---FileContentIndex
 |       |       0608bcfd-a235-4d6e-bb3b-7134ba8a0611.vsidx
-|       |       26ed3836-e92d-4a1c-8396-95923db746d6.vsidx
-|       |       333ea14a-ec30-489c-af45-befe7eeedd20.vsidx
+|       |       394d7824-4003-4d21-a3d9-0f179690cf8b.vsidx
+|       |       58ad5c40-359f-4b80-ab35-1bf133bb8db5.vsidx
 |       |       9abb3976-af60-4e2e-b890-ac8c60861199.vsidx
-|       |       f5f5d75b-bdee-4886-b20b-0b5e3a40c3d2.vsidx
+|       |       ee09c61e-64f0-4fde-a6b9-c29a2fa8a814.vsidx
 |       |       
 |       \---v18
 |               DocumentLayout.backup.json
@@ -860,10 +943,16 @@ C:.
 |   |   
 |   +---.next
 |   |   |   build-manifest.json
-|   |   |   fallback-build-manifest.json
+|   |   |   BUILD_ID
+|   |   |   dynamic-css-manifest.json
+|   |   |   export-marker.json
+|   |   |   images-manifest.json
+|   |   |   next-minimal-server.js.nft.json
+|   |   |   next-server.js.nft.json
 |   |   |   package.json
 |   |   |   prerender-manifest.json
 |   |   |   react-loadable-manifest.json
+|   |   |   required-server-files.json
 |   |   |   routes-manifest.json
 |   |   |   trace
 |   |   |   
@@ -983,6 +1072,8 @@ C:.
 |   |   |               1.pack
 |   |   |               10.pack
 |   |   |               11.pack
+|   |   |               12.pack
+|   |   |               13.pack
 |   |   |               2.pack
 |   |   |               3.pack
 |   |   |               4.pack
@@ -994,329 +1085,273 @@ C:.
 |   |   |               index.pack
 |   |   |               index.pack.old
 |   |   |               
+|   |   +---diagnostics
+|   |   |       build-diagnostics.json
+|   |   |       framework.json
+|   |   |       
 |   |   +---server
+|   |   |   |   dynamic-css-manifest.js
 |   |   |   |   edge-runtime-webpack.js
+|   |   |   |   edge-runtime-webpack.js.map
+|   |   |   |   functions-config-manifest.json
 |   |   |   |   interception-route-rewrite-manifest.js
 |   |   |   |   middleware-build-manifest.js
 |   |   |   |   middleware-manifest.json
 |   |   |   |   middleware-react-loadable-manifest.js
 |   |   |   |   middleware.js
+|   |   |   |   middleware.js.map
 |   |   |   |   next-font-manifest.js
 |   |   |   |   next-font-manifest.json
 |   |   |   |   pages-manifest.json
 |   |   |   |   webpack-api-runtime.js
 |   |   |   |   webpack-runtime.js
-|   |   |   |   _error.js
 |   |   |   |   
-|   |   |   +---pages
-|   |   |   |   |   admin.js
-|   |   |   |   |   index.js
-|   |   |   |   |   livro.js
-|   |   |   |   |   _app.js
-|   |   |   |   |   _document.js
-|   |   |   |   |   _error.js
-|   |   |   |   |   
-|   |   |   |   +---admin
-|   |   |   |   |   |   eventos.js
-|   |   |   |   |   |   grupos.js
-|   |   |   |   |   |   login.js
-|   |   |   |   |   |   
-|   |   |   |   |   \---eventos
-|   |   |   |   |       |   novo.js
-|   |   |   |   |       |   
-|   |   |   |   |       +---editar
-|   |   |   |   |       |       [id].js
-|   |   |   |   |       |       
-|   |   |   |   |       \---[id]
-|   |   |   |   |           |   novo-encontro.js
-|   |   |   |   |           |   
-|   |   |   |   |           \---editar-encontro
-|   |   |   |   |                   [encontroId].js
-|   |   |   |   |                   
-|   |   |   |   +---api
-|   |   |   |   |   |   encontros.js
-|   |   |   |   |   |   eventos.js
-|   |   |   |   |   |   grupos.js
-|   |   |   |   |   |   
-|   |   |   |   |   +---admin
-|   |   |   |   |   |       login.js
-|   |   |   |   |   |       
-|   |   |   |   |   \---eventos
-|   |   |   |   |           ordenar.js
-|   |   |   |   |           
-|   |   |   |   +---grupos
-|   |   |   |   |   |   [slug].js
-|   |   |   |   |   |   
-|   |   |   |   |   \---[slug]
-|   |   |   |   |       |   editar.js
-|   |   |   |   |       |   
-|   |   |   |   |       \---editar-encontro
-|   |   |   |   |               [id].js
-|   |   |   |   |               
-|   |   |   |   \---livro
-|   |   |   |       |   calendario.js
-|   |   |   |       |   [slug].js
-|   |   |   |       |   
-|   |   |   |       \---evento
-|   |   |   |               [id].js
-|   |   |   |               
-|   |   |   +---static
-|   |   |   |   \---webpack
-|   |   |   |           633457081244afec._.hot-update.json
-|   |   |   |           
-|   |   |   \---vendor-chunks
-|   |   |           @swc.js
-|   |   |           next.js
-|   |   |           
+|   |   |   +---chunks
+|   |   |   |       169.js
+|   |   |   |       233.js
+|   |   |   |       341.js
+|   |   |   |       531.js
+|   |   |   |       537.js
+|   |   |   |       781.js
+|   |   |   |       
+|   |   |   \---pages
+|   |   |       |   404.html
+|   |   |       |   500.html
+|   |   |       |   admin.html
+|   |   |       |   admin.js.nft.json
+|   |   |       |   index.html
+|   |   |       |   index.js.nft.json
+|   |   |       |   livro.html
+|   |   |       |   livro.js
+|   |   |       |   livro.js.nft.json
+|   |   |       |   livro.json
+|   |   |       |   _app.js
+|   |   |       |   _app.js.nft.json
+|   |   |       |   _document.js
+|   |   |       |   _document.js.nft.json
+|   |   |       |   _error.js
+|   |   |       |   _error.js.nft.json
+|   |   |       |   
+|   |   |       +---admin
+|   |   |       |   |   eventos.js
+|   |   |       |   |   eventos.js.nft.json
+|   |   |       |   |   grupos.html
+|   |   |       |   |   grupos.js
+|   |   |       |   |   grupos.js.nft.json
+|   |   |       |   |   grupos.json
+|   |   |       |   |   login.html
+|   |   |       |   |   login.js.nft.json
+|   |   |       |   |   pdf.html
+|   |   |       |   |   pdf.js.nft.json
+|   |   |       |   |   preview.html
+|   |   |       |   |   preview.js.nft.json
+|   |   |       |   |   
+|   |   |       |   +---eventos
+|   |   |       |   |   |   novo.js
+|   |   |       |   |   |   novo.js.nft.json
+|   |   |       |   |   |   
+|   |   |       |   |   +---editar
+|   |   |       |   |   |       [id].js
+|   |   |       |   |   |       [id].js.nft.json
+|   |   |       |   |   |       
+|   |   |       |   |   \---[id]
+|   |   |       |   |       |   novo-encontro.js
+|   |   |       |   |       |   novo-encontro.js.nft.json
+|   |   |       |   |       |   
+|   |   |       |   |       \---editar-encontro
+|   |   |       |   |               [encontroId].js
+|   |   |       |   |               [encontroId].js.nft.json
+|   |   |       |   |               
+|   |   |       |   \---preview
+|   |   |       |       \---encontro
+|   |   |       |           |   [id].js
+|   |   |       |           |   [id].js.nft.json
+|   |   |       |           |   
+|   |   |       |           \---[id]
+|   |   |       |                   cartaz.js
+|   |   |       |                   cartaz.js.nft.json
+|   |   |       |                   
+|   |   |       +---api
+|   |   |       |   |   encontros.js
+|   |   |       |   |   encontros.js.nft.json
+|   |   |       |   |   eventos.js
+|   |   |       |   |   eventos.js.nft.json
+|   |   |       |   |   grupos.js
+|   |   |       |   |   grupos.js.nft.json
+|   |   |       |   |   hello.js
+|   |   |       |   |   hello.js.nft.json
+|   |   |       |   |   teste-supabase.js
+|   |   |       |   |   teste-supabase.js.nft.json
+|   |   |       |   |   
+|   |   |       |   +---admin
+|   |   |       |   |       login.js
+|   |   |       |   |       login.js.nft.json
+|   |   |       |   |       
+|   |   |       |   +---eventos
+|   |   |       |   |       ordenar.js
+|   |   |       |   |       ordenar.js.nft.json
+|   |   |       |   |       
+|   |   |       |   +---grupos
+|   |   |       |   |       mover.js
+|   |   |       |   |       mover.js.nft.json
+|   |   |       |   |       ordenar.js
+|   |   |       |   |       ordenar.js.nft.json
+|   |   |       |   |       
+|   |   |       |   \---pdf
+|   |   |       |           encontro.js
+|   |   |       |           encontro.js.nft.json
+|   |   |       |           
+|   |   |       +---grupos
+|   |   |       |   |   gam.html
+|   |   |       |   |   gam.json
+|   |   |       |   |   gimca-1.html
+|   |   |       |   |   gimca-1.json
+|   |   |       |   |   gimca-2.html
+|   |   |       |   |   gimca-2.json
+|   |   |       |   |   gimvi-adolescentes.html
+|   |   |       |   |   gimvi-adolescentes.json
+|   |   |       |   |   gimvi-criancas.html
+|   |   |       |   |   gimvi-criancas.json
+|   |   |       |   |   gimvi-jovens.html
+|   |   |       |   |   gimvi-jovens.json
+|   |   |       |   |   grupo-trilhas.html
+|   |   |       |   |   grupo-trilhas.json
+|   |   |       |   |   nova-constelacao.html
+|   |   |       |   |   nova-constelacao.json
+|   |   |       |   |   novo.html
+|   |   |       |   |   novo.js.nft.json
+|   |   |       |   |   [slug].js
+|   |   |       |   |   [slug].js.nft.json
+|   |   |       |   |   
+|   |   |       |   \---[slug]
+|   |   |       |       |   editar.js
+|   |   |       |       |   editar.js.nft.json
+|   |   |       |       |   novo-encontro.js
+|   |   |       |       |   novo-encontro.js.nft.json
+|   |   |       |       |   
+|   |   |       |       \---editar-encontro
+|   |   |       |               [id].js
+|   |   |       |               [id].js.nft.json
+|   |   |       |               
+|   |   |       \---livro
+|   |   |           |   calendario.html
+|   |   |           |   calendario.js
+|   |   |           |   calendario.js.nft.json
+|   |   |           |   calendario.json
+|   |   |           |   gam.html
+|   |   |           |   gam.json
+|   |   |           |   gimca-1.html
+|   |   |           |   gimca-1.json
+|   |   |           |   gimca-2.html
+|   |   |           |   gimca-2.json
+|   |   |           |   gimvi-adolescentes.html
+|   |   |           |   gimvi-adolescentes.json
+|   |   |           |   gimvi-criancas.html
+|   |   |           |   gimvi-criancas.json
+|   |   |           |   gimvi-jovens.html
+|   |   |           |   gimvi-jovens.json
+|   |   |           |   grupo-trilhas.html
+|   |   |           |   grupo-trilhas.json
+|   |   |           |   nova-constelacao.html
+|   |   |           |   nova-constelacao.json
+|   |   |           |   [slug].js
+|   |   |           |   [slug].js.nft.json
+|   |   |           |   
+|   |   |           \---evento
+|   |   |                   15956215-1c66-40dc-af45-0db1f9fce4b0.html
+|   |   |                   15956215-1c66-40dc-af45-0db1f9fce4b0.json
+|   |   |                   2aea4919-bfa5-4f60-8870-a0e05deed062.html
+|   |   |                   2aea4919-bfa5-4f60-8870-a0e05deed062.json
+|   |   |                   8a1ba62a-9617-420b-8e36-8d4411bce3bb.html
+|   |   |                   8a1ba62a-9617-420b-8e36-8d4411bce3bb.json
+|   |   |                   94a47b72-ad64-41b6-91c9-10ed03f297b6.html
+|   |   |                   94a47b72-ad64-41b6-91c9-10ed03f297b6.json
+|   |   |                   a50b8339-d339-4171-8dc3-7c1d7808e5be.html
+|   |   |                   a50b8339-d339-4171-8dc3-7c1d7808e5be.json
+|   |   |                   b82573c8-75d2-4c76-b670-dbc9f392fcc0.html
+|   |   |                   b82573c8-75d2-4c76-b670-dbc9f392fcc0.json
+|   |   |                   c6392d83-de3b-4d09-bffb-22cbb264aee3.html
+|   |   |                   c6392d83-de3b-4d09-bffb-22cbb264aee3.json
+|   |   |                   e33c6f69-a5f5-4907-8262-c3735a9f985f.html
+|   |   |                   e33c6f69-a5f5-4907-8262-c3735a9f985f.json
+|   |   |                   f8aade3c-eb49-4929-a604-e55380f5abef.html
+|   |   |                   f8aade3c-eb49-4929-a604-e55380f5abef.json
+|   |   |                   [id].js
+|   |   |                   [id].js.nft.json
+|   |   |                   
 |   |   +---static
 |   |   |   +---chunks
-|   |   |   |   |   main.js
-|   |   |   |   |   polyfills.js
-|   |   |   |   |   react-refresh.js
-|   |   |   |   |   webpack.js
-|   |   |   |   |   _error.js
-|   |   |   |   |   _pages-dir-browser_node_modules_next_dist_pages__app_js.js
-|   |   |   |   |   _pages-dir-browser_node_modules_next_dist_pages__error_js.js
+|   |   |   |   |   123.f3d27f38429d3ab5.js
+|   |   |   |   |   230-6f6dbb566cd5139b.js
+|   |   |   |   |   806.a7e9447414a53493.js
+|   |   |   |   |   953-01064613eef43758.js
+|   |   |   |   |   framework-acd67e14855de5a2.js
+|   |   |   |   |   main-df15ac55a213ee5c.js
+|   |   |   |   |   polyfills-42372ed130431b0a.js
+|   |   |   |   |   webpack-3670af3cb0bf9ccc.js
 |   |   |   |   |   
-|   |   |   |   +---fallback
-|   |   |   |   |   |   amp.js
-|   |   |   |   |   |   main.js
-|   |   |   |   |   |   react-refresh.js
-|   |   |   |   |   |   webpack.js
-|   |   |   |   |   |   _pages-dir-browser_node_modules_next_dist_pages__app_js.js
-|   |   |   |   |   |   _pages-dir-browser_node_modules_next_dist_pages__error_js.js
-|   |   |   |   |   |   
-|   |   |   |   |   \---pages
-|   |   |   |   |           _app.js
-|   |   |   |   |           _error.js
-|   |   |   |   |           
 |   |   |   |   \---pages
-|   |   |   |       |   admin.js
-|   |   |   |       |   index.js
-|   |   |   |       |   livro.js
-|   |   |   |       |   _app.js
-|   |   |   |       |   _error.js
+|   |   |   |       |   admin-68197bbcb08664e1.js
+|   |   |   |       |   index-31df6184467d26ef.js
+|   |   |   |       |   livro-2c0c3426285a079e.js
+|   |   |   |       |   _app-db493b867170d726.js
+|   |   |   |       |   _error-cf5db1610f7a1281.js
 |   |   |   |       |   
 |   |   |   |       +---admin
-|   |   |   |       |   |   eventos.js
-|   |   |   |       |   |   grupos.js
-|   |   |   |       |   |   login.js
+|   |   |   |       |   |   eventos-d309ce8bd64ad520.js
+|   |   |   |       |   |   grupos-52b571293b75ca70.js
+|   |   |   |       |   |   login-16c348197ade9b56.js
+|   |   |   |       |   |   pdf-3a598ea994d94e6b.js
+|   |   |   |       |   |   preview-f651e9a136d6a745.js
 |   |   |   |       |   |   
-|   |   |   |       |   \---eventos
-|   |   |   |       |       |   novo.js
-|   |   |   |       |       |   
-|   |   |   |       |       +---editar
-|   |   |   |       |       |       [id].js
-|   |   |   |       |       |       
-|   |   |   |       |       \---[id]
-|   |   |   |       |           |   novo-encontro.js
+|   |   |   |       |   +---eventos
+|   |   |   |       |   |   |   novo-2e6e251eb650935a.js
+|   |   |   |       |   |   |   
+|   |   |   |       |   |   +---editar
+|   |   |   |       |   |   |       [id]-d474b347a0ba1f25.js
+|   |   |   |       |   |   |       
+|   |   |   |       |   |   \---[id]
+|   |   |   |       |   |       |   novo-encontro-d488d8a5ea260f88.js
+|   |   |   |       |   |       |   
+|   |   |   |       |   |       \---editar-encontro
+|   |   |   |       |   |               [encontroId]-f024ceec5afe030e.js
+|   |   |   |       |   |               
+|   |   |   |       |   \---preview
+|   |   |   |       |       \---encontro
+|   |   |   |       |           |   [id]-d866bde13272baf6.js
 |   |   |   |       |           |   
-|   |   |   |       |           \---editar-encontro
-|   |   |   |       |                   [encontroId].js
+|   |   |   |       |           \---[id]
+|   |   |   |       |                   cartaz-7828bbb845628c38.js
 |   |   |   |       |                   
 |   |   |   |       +---grupos
-|   |   |   |       |   |   [slug].js
+|   |   |   |       |   |   novo-1abb1f5a8f474c71.js
+|   |   |   |       |   |   [slug]-dbf1254110af17d0.js
 |   |   |   |       |   |   
 |   |   |   |       |   \---[slug]
-|   |   |   |       |       |   editar.js
+|   |   |   |       |       |   editar-89c245396ba45717.js
+|   |   |   |       |       |   novo-encontro-81f84f1786065338.js
 |   |   |   |       |       |   
 |   |   |   |       |       \---editar-encontro
-|   |   |   |       |               [id].js
+|   |   |   |       |               [id]-6b90848d2111be4c.js
 |   |   |   |       |               
 |   |   |   |       \---livro
-|   |   |   |           |   calendario.js
-|   |   |   |           |   [slug].js
+|   |   |   |           |   calendario-ce0d8421213a93b1.js
+|   |   |   |           |   [slug]-242a6b171a241802.js
 |   |   |   |           |   
 |   |   |   |           \---evento
-|   |   |   |                   [id].js
+|   |   |   |                   [id]-c8e9533aa694c55d.js
 |   |   |   |                   
-|   |   |   +---development
-|   |   |   |       _buildManifest.js
-|   |   |   |       _ssgManifest.js
+|   |   |   +---css
+|   |   |   |       d0a305e53963de13.css
 |   |   |   |       
-|   |   |   \---webpack
-|   |   |           01e111234a57f605.webpack.hot-update.json
-|   |   |           030f4bece09ea627.webpack.hot-update.json
-|   |   |           0584e531cb65f17e.webpack.hot-update.json
-|   |   |           0692425dff4303a5.webpack.hot-update.json
-|   |   |           0711d996f4c9bd90.webpack.hot-update.json
-|   |   |           08c084f64ceb602a.webpack.hot-update.json
-|   |   |           09165c878baf0e83.webpack.hot-update.json
-|   |   |           0adbe98622c0166d.webpack.hot-update.json
-|   |   |           0e69e7423b7e5fd5.webpack.hot-update.json
-|   |   |           0fb2e2dc2710bb5a.webpack.hot-update.json
-|   |   |           100738d6bf4ee028.webpack.hot-update.json
-|   |   |           152d4583cc1948a9.webpack.hot-update.json
-|   |   |           1b265e83f9d1bc63.webpack.hot-update.json
-|   |   |           1dfc0076a00d85bc.webpack.hot-update.json
-|   |   |           1e4fd0ec40b372dc.webpack.hot-update.json
-|   |   |           1fb39257eb757c62.webpack.hot-update.json
-|   |   |           24b20501b1a757b9.webpack.hot-update.json
-|   |   |           283b537f0779034e.webpack.hot-update.json
-|   |   |           28ab2fd44cf2ab2c.webpack.hot-update.json
-|   |   |           2ace8b395ee97805.webpack.hot-update.json
-|   |   |           2b004e746d9c0236.webpack.hot-update.json
-|   |   |           2bf2fe89eca5a4d0.webpack.hot-update.json
-|   |   |           31e079db94576f87.webpack.hot-update.json
-|   |   |           340bb54fe2c4ab46.webpack.hot-update.json
-|   |   |           3606cc56e4cae977.webpack.hot-update.json
-|   |   |           39686d36e76aa644.webpack.hot-update.json
-|   |   |           3a8ba65f3bcf572d.webpack.hot-update.json
-|   |   |           3c2e6182a6bb4f88.webpack.hot-update.json
-|   |   |           3e64f297f527ad6c.webpack.hot-update.json
-|   |   |           3e917272fd01a5ec.webpack.hot-update.json
-|   |   |           40ccaec5b99e114c.webpack.hot-update.json
-|   |   |           4c5fea53b5c14203.webpack.hot-update.json
-|   |   |           51478844e1c0d9b8.webpack.hot-update.json
-|   |   |           537c73873af736c8.webpack.hot-update.json
-|   |   |           56be6ddb36134b8b.webpack.hot-update.json
-|   |   |           594ed1613e14c747.webpack.hot-update.json
-|   |   |           5a6de2c341ccf642.webpack.hot-update.json
-|   |   |           633457081244afec._.hot-update.json
-|   |   |           645b75f753cc9c4b.webpack.hot-update.json
-|   |   |           6568d2b53ff20dd0.webpack.hot-update.json
-|   |   |           698f96b047b562a1.webpack.hot-update.json
-|   |   |           6bf9e88a7934ba3f.webpack.hot-update.json
-|   |   |           779f3e2103724c43.webpack.hot-update.json
-|   |   |           794b5fb6c62f507c.webpack.hot-update.json
-|   |   |           79e64950c39781a5.webpack.hot-update.json
-|   |   |           7a706a3a7bb63e22.webpack.hot-update.json
-|   |   |           7d37d47ed85dae81.webpack.hot-update.json
-|   |   |           7d3b03ba938c42df.webpack.hot-update.json
-|   |   |           7dccc27d810e94b5.webpack.hot-update.json
-|   |   |           7fe7e715a4734941.webpack.hot-update.json
-|   |   |           830af383a289a6c1.webpack.hot-update.json
-|   |   |           89b1a049c86cf7d0.webpack.hot-update.json
-|   |   |           947d773bb8151161.webpack.hot-update.json
-|   |   |           9c051210e43234fe.webpack.hot-update.json
-|   |   |           9c9b3b72db83dab2.webpack.hot-update.json
-|   |   |           9e434d0db1eb911a.webpack.hot-update.json
-|   |   |           ab5003fea04e914d.webpack.hot-update.json
-|   |   |           adb2853693f3d1a2.webpack.hot-update.json
-|   |   |           b0e30ac58c80453a.webpack.hot-update.json
-|   |   |           b3b736a1b5304209.webpack.hot-update.json
-|   |   |           b591e96cbfe89a6d.webpack.hot-update.json
-|   |   |           b913d91f979cfd17.webpack.hot-update.json
-|   |   |           bb3eb2abc5aaa89c.webpack.hot-update.json
-|   |   |           c84e46ed47730a9d.webpack.hot-update.json
-|   |   |           cb2c7bfb60b9668b.webpack.hot-update.json
-|   |   |           cdeabd22f6180493.webpack.hot-update.json
-|   |   |           d063943e4225564e.webpack.hot-update.json
-|   |   |           d26655306b7b44c8.webpack.hot-update.json
-|   |   |           d49c32da2bbecd14.webpack.hot-update.json
-|   |   |           d4e10f7309fa83a2.webpack.hot-update.json
-|   |   |           d5f8cfa59dba2afa.webpack.hot-update.json
-|   |   |           d7a950acf73fef2a.webpack.hot-update.json
-|   |   |           d85a6adb307a6142.webpack.hot-update.json
-|   |   |           e01dabff888b4094.webpack.hot-update.json
-|   |   |           e431eaea2f3ce694.webpack.hot-update.json
-|   |   |           e4dea3a9d18205d9.webpack.hot-update.json
-|   |   |           e6ffaab9efe072ae.webpack.hot-update.json
-|   |   |           e71365fb96ace9b9.webpack.hot-update.json
-|   |   |           e8408a00895a6be6.webpack.hot-update.json
-|   |   |           e88930b2c9b11445.webpack.hot-update.json
-|   |   |           e93edfcff3fd5394.webpack.hot-update.json
-|   |   |           edc46c2454538e3b.webpack.hot-update.json
-|   |   |           f26fded884985569.webpack.hot-update.json
-|   |   |           f465b62f99e1a2a7.webpack.hot-update.json
-|   |   |           f46ad3523779f070.webpack.hot-update.json
-|   |   |           f86e62a94ce1f8f9.webpack.hot-update.json
-|   |   |           f9b1d783e65427df.webpack.hot-update.json
-|   |   |           webpack.01e111234a57f605.hot-update.js
-|   |   |           webpack.030f4bece09ea627.hot-update.js
-|   |   |           webpack.0584e531cb65f17e.hot-update.js
-|   |   |           webpack.0692425dff4303a5.hot-update.js
-|   |   |           webpack.0711d996f4c9bd90.hot-update.js
-|   |   |           webpack.08c084f64ceb602a.hot-update.js
-|   |   |           webpack.09165c878baf0e83.hot-update.js
-|   |   |           webpack.0adbe98622c0166d.hot-update.js
-|   |   |           webpack.0e69e7423b7e5fd5.hot-update.js
-|   |   |           webpack.0fb2e2dc2710bb5a.hot-update.js
-|   |   |           webpack.100738d6bf4ee028.hot-update.js
-|   |   |           webpack.152d4583cc1948a9.hot-update.js
-|   |   |           webpack.1b265e83f9d1bc63.hot-update.js
-|   |   |           webpack.1dfc0076a00d85bc.hot-update.js
-|   |   |           webpack.1e4fd0ec40b372dc.hot-update.js
-|   |   |           webpack.1fb39257eb757c62.hot-update.js
-|   |   |           webpack.24b20501b1a757b9.hot-update.js
-|   |   |           webpack.283b537f0779034e.hot-update.js
-|   |   |           webpack.28ab2fd44cf2ab2c.hot-update.js
-|   |   |           webpack.2ace8b395ee97805.hot-update.js
-|   |   |           webpack.2b004e746d9c0236.hot-update.js
-|   |   |           webpack.2bf2fe89eca5a4d0.hot-update.js
-|   |   |           webpack.31e079db94576f87.hot-update.js
-|   |   |           webpack.340bb54fe2c4ab46.hot-update.js
-|   |   |           webpack.3606cc56e4cae977.hot-update.js
-|   |   |           webpack.39686d36e76aa644.hot-update.js
-|   |   |           webpack.3a8ba65f3bcf572d.hot-update.js
-|   |   |           webpack.3c2e6182a6bb4f88.hot-update.js
-|   |   |           webpack.3e64f297f527ad6c.hot-update.js
-|   |   |           webpack.3e917272fd01a5ec.hot-update.js
-|   |   |           webpack.40ccaec5b99e114c.hot-update.js
-|   |   |           webpack.4c5fea53b5c14203.hot-update.js
-|   |   |           webpack.51478844e1c0d9b8.hot-update.js
-|   |   |           webpack.537c73873af736c8.hot-update.js
-|   |   |           webpack.56be6ddb36134b8b.hot-update.js
-|   |   |           webpack.594ed1613e14c747.hot-update.js
-|   |   |           webpack.5a6de2c341ccf642.hot-update.js
-|   |   |           webpack.645b75f753cc9c4b.hot-update.js
-|   |   |           webpack.6568d2b53ff20dd0.hot-update.js
-|   |   |           webpack.698f96b047b562a1.hot-update.js
-|   |   |           webpack.6bf9e88a7934ba3f.hot-update.js
-|   |   |           webpack.779f3e2103724c43.hot-update.js
-|   |   |           webpack.794b5fb6c62f507c.hot-update.js
-|   |   |           webpack.79e64950c39781a5.hot-update.js
-|   |   |           webpack.7a706a3a7bb63e22.hot-update.js
-|   |   |           webpack.7d37d47ed85dae81.hot-update.js
-|   |   |           webpack.7d3b03ba938c42df.hot-update.js
-|   |   |           webpack.7dccc27d810e94b5.hot-update.js
-|   |   |           webpack.7fe7e715a4734941.hot-update.js
-|   |   |           webpack.830af383a289a6c1.hot-update.js
-|   |   |           webpack.89b1a049c86cf7d0.hot-update.js
-|   |   |           webpack.947d773bb8151161.hot-update.js
-|   |   |           webpack.9c051210e43234fe.hot-update.js
-|   |   |           webpack.9c9b3b72db83dab2.hot-update.js
-|   |   |           webpack.9e434d0db1eb911a.hot-update.js
-|   |   |           webpack.ab5003fea04e914d.hot-update.js
-|   |   |           webpack.adb2853693f3d1a2.hot-update.js
-|   |   |           webpack.b0e30ac58c80453a.hot-update.js
-|   |   |           webpack.b3b736a1b5304209.hot-update.js
-|   |   |           webpack.b591e96cbfe89a6d.hot-update.js
-|   |   |           webpack.b913d91f979cfd17.hot-update.js
-|   |   |           webpack.bb3eb2abc5aaa89c.hot-update.js
-|   |   |           webpack.c84e46ed47730a9d.hot-update.js
-|   |   |           webpack.cb2c7bfb60b9668b.hot-update.js
-|   |   |           webpack.cdeabd22f6180493.hot-update.js
-|   |   |           webpack.d063943e4225564e.hot-update.js
-|   |   |           webpack.d26655306b7b44c8.hot-update.js
-|   |   |           webpack.d49c32da2bbecd14.hot-update.js
-|   |   |           webpack.d4e10f7309fa83a2.hot-update.js
-|   |   |           webpack.d5f8cfa59dba2afa.hot-update.js
-|   |   |           webpack.d7a950acf73fef2a.hot-update.js
-|   |   |           webpack.d85a6adb307a6142.hot-update.js
-|   |   |           webpack.e01dabff888b4094.hot-update.js
-|   |   |           webpack.e431eaea2f3ce694.hot-update.js
-|   |   |           webpack.e4dea3a9d18205d9.hot-update.js
-|   |   |           webpack.e6ffaab9efe072ae.hot-update.js
-|   |   |           webpack.e71365fb96ace9b9.hot-update.js
-|   |   |           webpack.e8408a00895a6be6.hot-update.js
-|   |   |           webpack.e88930b2c9b11445.hot-update.js
-|   |   |           webpack.e93edfcff3fd5394.hot-update.js
-|   |   |           webpack.edc46c2454538e3b.hot-update.js
-|   |   |           webpack.f26fded884985569.hot-update.js
-|   |   |           webpack.f465b62f99e1a2a7.hot-update.js
-|   |   |           webpack.f46ad3523779f070.hot-update.js
-|   |   |           webpack.f86e62a94ce1f8f9.hot-update.js
-|   |   |           webpack.f9b1d783e65427df.hot-update.js
+|   |   |   \---Os2wV2qQ0R-G1zpgTGNGf
+|   |   |           _buildManifest.js
+|   |   |           _ssgManifest.js
 |   |   |           
 |   |   \---types
 |   |           routes.d.ts
 |   |           validator.ts
 |   |           
-|   +---.vercel
-|   |       project.json
-|   |       README.txt
-|   |       
 |   +---docs
 |   |       CONCEITO_PASTORAL.md
 |   |       DECISOES_TECNICAS.md
