@@ -21,6 +21,8 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "../../lib/supabaseClient";
 
+import PixAlmoco from "../../components/PixAlmoco";
+
 type Props = {
     grupo: Grupo;
     grupos: Grupo[];
@@ -172,6 +174,9 @@ export default function CapituloLivro({
 
                   <h2 style={{ marginTop: "2rem" }}>Convite</h2>
                   <p>{grupo.convite_final}</p>
+
+                  <PixAlmoco />
+
               </div>
 
               {/* AGENDA */}
