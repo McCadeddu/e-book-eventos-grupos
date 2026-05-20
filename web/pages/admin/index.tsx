@@ -80,6 +80,11 @@ export default function AdminDashboard() {
             </Link>
           </li>
           <li>
+            <Link href="/livro/edicao/2027" target="_blank">
+              Ver rascunho atual de 2027
+            </Link>
+          </li>
+          <li>
             <Link href="/admin/preview">
               Pre-visualizar e-book em preparacao
             </Link>

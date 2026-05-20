@@ -54,6 +54,12 @@ export default function Preview({ anoPublicado, anoEmPreparacao }: Props) {
         </Link>
       </p>
 
+      <p style={{ color: "#555", maxWidth: "760px" }}>
+        Enquanto vocês montam a nova edição, o link oficial <strong>/livro</strong>
+        {" "}continua mostrando o ano publicado. O rascunho fica separado aqui,
+        para revisão interna, sem mexer no conteúdo divulgado ao público.
+      </p>
+
       <iframe
         src={`/livro/edicao/${anoEmPreparacao}`}
         style={{

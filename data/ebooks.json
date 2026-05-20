@@ -1,9 +1,19 @@
 {
   "ano_publicado": 2026,
-  "ano_em_preparacao": 2026,
+  "ano_em_preparacao": 2027,
   "edicoes": [
     {
       "ano": 2026,
+      "titulo": "Agenda dos Grupos e Eventos",
+      "subtitulo": "Comunidade de Belo Horizonte",
+      "botao_texto": "Abrir agenda",
+      "capas": [
+        "/villaregia-capa.png"
+      ],
+      "logo": "/villaregia-logo.png"
+    },
+    {
+      "ano": 2027,
       "titulo": "Agenda dos Grupos e Eventos",
       "subtitulo": "Comunidade de Belo Horizonte",
       "botao_texto": "Abrir agenda",
