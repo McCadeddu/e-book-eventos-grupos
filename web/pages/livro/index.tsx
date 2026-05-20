@@ -3,17 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
-import fs from "fs";
-import path from "path";
-
-type EbookConfig = {
-    ano: number;
-    titulo: string;
-    subtitulo: string;
-    botao_texto: string;
-    capas: string[];
-    logo: string;
-};
+import { carregarEbookAtual, EbookConfig } from "../../lib/ebook-config";
 
 type Props = {
     ebook: EbookConfig;
@@ -109,12 +99,7 @@ export default function CapaLivro({ ebook }: Props) {
 }
 
 export async function getStaticProps() {
-    const ebook = JSON.parse(
-        fs.readFileSync(
-            path.join(process.cwd(), "..", "data", "ebook.json"),
-            "utf-8"
-        )
-    );
+    const ebook = carregarEbookAtual();
 
     return {
         props: { ebook },

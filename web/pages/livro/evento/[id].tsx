@@ -8,17 +8,19 @@ import {
 import { getEventosStrict } from "../../../lib/db/eventos";
 import { getGruposOrdenadosStrict } from "../../../lib/db/grupos";
 import { formatarDataIntervalo } from "../../../lib/encontros-utils";
+import { getAnoAtualEbook, pertenceAoAno } from "../../../lib/ebook-config";
 
 import { Grupo } from "../../../lib/types";
 import { Encontro } from "../../../lib/encontros-utils";
 
 type Props = {
+    ano: number;
     evento: any;
     grupos: Grupo[];
     encontros: Encontro[];
 };
 
-export default function PaginaEvento({ evento, grupos, encontros }: Props) {
+export default function PaginaEvento({ ano, evento, grupos, encontros }: Props) {
     if (!evento) return null;
 
     const nomesGrupos = evento.todos_os_grupos
@@ -61,7 +63,7 @@ export default function PaginaEvento({ evento, grupos, encontros }: Props) {
                                 cursor: "pointer",
                             }}
                         >
-                            ← Voltar ao Calendário
+                            ← Voltar ao Calendário {ano}
                         </span>
                     </Link>
                 </div>
@@ -220,6 +222,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
+    const ano = getAnoAtualEbook();
     const eventos = await getEventosStrict();
     const grupos = await getGruposOrdenadosStrict();
 
@@ -230,10 +233,13 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     }
 
     // 🔵 buscar apenas encontros oficiais do evento
-    const encontros = await getEncontrosPorEventoStrict(evento.id);
+    const encontros = (await getEncontrosPorEventoStrict(evento.id)).filter(
+        (encontro) => pertenceAoAno(encontro.data_inicio, ano)
+    );
 
     return {
         props: {
+            ano,
             evento,
             grupos,
             encontros: encontros || [],

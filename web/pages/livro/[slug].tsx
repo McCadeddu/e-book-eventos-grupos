@@ -23,8 +23,10 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import PixAlmoco from "../../components/PixAlmoco";
+import { getAnoAtualEbook, pertenceAoAno } from "../../lib/ebook-config";
 
 type Props = {
+    ano: number;
     grupo: Grupo;
     grupos: Grupo[];
     encontros: Encontro[];
@@ -32,6 +34,7 @@ type Props = {
 };
 
 export default function CapituloLivro({
+  ano,
   grupo,
   grupos,
   encontros,
@@ -146,7 +149,7 @@ export default function CapituloLivro({
                           textDecoration: "none",
                       }}
                   >
-                      Voltar ao Calendário anual
+                      Voltar ao Calendário anual {ano}
                   </Link>
               </div>
 
@@ -355,6 +358,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
  */
 export const getStaticProps: GetStaticProps = async ({ params }) => {
     const slug = params?.slug as string;
+    const ano = getAnoAtualEbook();
 
     // 1️⃣ grupo atual
     const grupo = await getGrupoPorSlugStrict(slug);
@@ -366,7 +370,9 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     const grupos = await getGruposOrdenadosStrict();
 
     // 3️⃣ encontros próprios do grupo
-    const encontrosGrupo = await getEncontrosPorGrupoStrict(grupo.id);
+    const encontrosGrupo = (await getEncontrosPorGrupoStrict(grupo.id)).filter(
+        (encontro) => pertenceAoAno(encontro.data_inicio, ano)
+    );
 
     // 4️⃣ todos os eventos
     const eventos = await getEventosStrict();
@@ -386,10 +392,12 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
         if (data) {
             encontrosEventos.push(
-                ...data.map(e => ({
-                    ...e,
-                    nome_evento: evento.titulo, // 🔵 importante para prefixo
-                }))
+                ...data
+                    .filter((encontro) => pertenceAoAno(encontro.data_inicio, ano))
+                    .map(e => ({
+                        ...e,
+                        nome_evento: evento.titulo, // 🔵 importante para prefixo
+                    }))
             );
         }
     }
@@ -400,12 +408,17 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
         ...encontrosEventos,
     ];
 
+    const eventosDoGrupoNoAno = eventosDoGrupo.filter((evento: any) =>
+        todosEncontros.some((encontro) => encontro.evento_id === evento.id)
+    );
+
     return {
         props: {
+            ano,
             grupo,
             grupos,
             encontros: todosEncontros,
-            eventosDoGrupo,
+            eventosDoGrupo: eventosDoGrupoNoAno,
         },
         revalidate: 60,
     };

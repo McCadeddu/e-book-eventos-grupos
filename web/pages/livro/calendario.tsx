@@ -5,6 +5,7 @@ import { Grupo } from "../../lib/types";
 import { getGruposOrdenadosStrict } from "../../lib/db/grupos";
 import { getEncontrosStrict } from "../../lib/db/encontros";
 import { getEventosStrict } from "../../lib/db/eventos";
+import { getAnoAtualEbook, pertenceAoAno } from "../../lib/ebook-config";
 
 import {
   Encontro,
@@ -15,6 +16,7 @@ import {
 type ItemCalendario = Encontro;
 
 type Props = {
+  ano: number;
   grupos: Grupo[];
   encontros: ItemCalendario[];
   eventos: any[];
@@ -29,7 +31,7 @@ type LinhaAgrupada = {
   }[];
 };
 
-export default function CalendarioLivro({ grupos, encontros, eventos }: Props) {
+export default function CalendarioLivro({ ano, grupos, encontros, eventos }: Props) {
   const encontrosOrdenados = ordenarEncontrosPorData(encontros);
 
   function encontrosDoMes(mes: number) {
@@ -158,7 +160,7 @@ export default function CalendarioLivro({ grupos, encontros, eventos }: Props) {
         }}
       >
         <h1 style={{ color: "#4bbbc8", marginBottom: "0.5rem" }}>
-          Calendário Anual 2026
+          Calendário Anual {ano}
         </h1>
 
         <p style={{ color: "#3e4647", marginBottom: "2.5rem" }}>
@@ -283,11 +285,12 @@ export default function CalendarioLivro({ grupos, encontros, eventos }: Props) {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
+  const ano = getAnoAtualEbook();
   const grupos = await getGruposOrdenadosStrict();
 
   const encontros = (await getEncontrosStrict())
     .filter((e) => {
-      if (!e.data_inicio) return false;
+      if (!pertenceAoAno(e.data_inicio, ano)) return false;
 
       if (!e.evento_id) return true;
 
@@ -300,10 +303,13 @@ export const getStaticProps: GetStaticProps = async () => {
       data_legivel: e.data_legivel ?? null,
     }));
 
-  const eventos = await getEventosStrict();
+  const eventos = (await getEventosStrict()).filter((evento: any) =>
+    encontros.some((encontro) => encontro.evento_id === evento.id)
+  );
 
   return {
     props: {
+      ano,
       grupos,
       encontros,
       eventos: eventos ?? [],
