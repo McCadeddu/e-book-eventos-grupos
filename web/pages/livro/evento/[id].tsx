@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { GetStaticPaths, GetStaticProps } from "next";
-import { getEventos } from "../../../lib/db/eventos";
-import { getGruposOrdenados } from "../../../lib/db/grupos";
+import {
+    getEncontrosPorEventoStrict,
+} from "../../../lib/db/encontros";
+import { getEventosStrict } from "../../../lib/db/eventos";
+import { getGruposOrdenadosStrict } from "../../../lib/db/grupos";
 import { formatarDataIntervalo } from "../../../lib/encontros-utils";
-import { supabase } from "../../../lib/supabaseClient";
 
 import { Grupo } from "../../../lib/types";
 import { Encontro } from "../../../lib/encontros-utils";
@@ -208,7 +210,7 @@ export default function PaginaEvento({ evento, grupos, encontros }: Props) {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-    const eventos = await getEventos();
+    const eventos = await getEventosStrict();
 
     const paths = eventos.map(e => ({
         params: { id: e.id },
@@ -218,8 +220,8 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-    const eventos = await getEventos();
-    const grupos = await getGruposOrdenados();
+    const eventos = await getEventosStrict();
+    const grupos = await getGruposOrdenadosStrict();
 
     const evento = eventos.find(e => e.id === params?.id);
 
@@ -228,12 +230,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     }
 
     // 🔵 buscar apenas encontros oficiais do evento
-    const { data: encontros } = await supabase
-        .from("encontros")
-        .select("*")
-        .eq("evento_id", evento.id)
-        .eq("nivel", "evento")
-        .order("data_inicio", { ascending: true });
+    const encontros = await getEncontrosPorEventoStrict(evento.id);
 
     return {
         props: {

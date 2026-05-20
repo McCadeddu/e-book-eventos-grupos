@@ -2,6 +2,34 @@
 
 import { supabase } from "../supabaseClient";
 import { Grupo } from "../types";
+import fs from "fs";
+import path from "path";
+
+function criarErroDeConsulta(contexto: string, detalhes: unknown) {
+    const texto =
+        detalhes instanceof Error
+            ? detalhes.message
+            : JSON.stringify(detalhes);
+
+    return new Error(`${contexto}: ${texto}`);
+}
+
+function lerGruposFallback(): Grupo[] {
+    const caminho = path.join(
+        process.cwd(),
+        "..",
+        "data",
+        "grupos(nãousado).json"
+    );
+    const conteudo = fs.readFileSync(caminho, "utf-8");
+    const dados = JSON.parse(conteudo);
+
+    return (dados.grupos ?? []).map((grupo: Grupo, index: number) => ({
+        ...grupo,
+        ordem: grupo.ordem ?? index + 1,
+        equipe: Array.isArray(grupo.equipe) ? grupo.equipe : [],
+    }));
+}
 
 /**
  * Retorna todos os grupos ordenados pela coluna "ordem"
@@ -18,6 +46,27 @@ export async function getGruposOrdenados(): Promise<Grupo[]> {
     }
 
     return data as Grupo[];
+}
+
+export async function getGruposOrdenadosStrict(): Promise<Grupo[]> {
+    try {
+        const { data, error } = await supabase
+            .from("grupos")
+            .select("*")
+            .order("ordem", { ascending: true });
+
+        if (error) {
+            throw criarErroDeConsulta("Erro ao buscar grupos públicos", error);
+        }
+
+        return (data ?? []) as Grupo[];
+    } catch (error) {
+        console.warn(
+            "Usando fallback local para grupos públicos:",
+            error instanceof Error ? error.message : error
+        );
+        return lerGruposFallback();
+    }
 }
 
 /**
@@ -38,4 +87,33 @@ export async function getGrupoPorSlug(
     }
 
     return data as Grupo;
+}
+
+export async function getGrupoPorSlugStrict(
+    slug: string
+): Promise<Grupo | null> {
+    try {
+        const { data, error } = await supabase
+            .from("grupos")
+            .select("*")
+            .eq("slug", slug)
+            .single();
+
+        if (error) {
+            throw criarErroDeConsulta(
+                `Erro ao buscar grupo público pelo slug ${slug}`,
+                error
+            );
+        }
+
+        return (data as Grupo) ?? null;
+    } catch (error) {
+        console.warn(
+            `Usando fallback local para grupo público ${slug}:`,
+            error instanceof Error ? error.message : error
+        );
+        return (
+            lerGruposFallback().find((grupo) => grupo.slug === slug) ?? null
+        );
+    }
 }

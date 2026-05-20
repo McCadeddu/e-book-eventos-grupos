@@ -1,6 +1,34 @@
 ﻿// web/lib/db/encontros.ts
 import { supabase } from "../supabaseClient";
 import { Encontro } from "../types";
+import fs from "fs";
+import path from "path";
+
+function criarErroDeConsulta(contexto: string, detalhes: unknown) {
+    const texto =
+        detalhes instanceof Error
+            ? detalhes.message
+            : JSON.stringify(detalhes);
+
+    return new Error(`${contexto}: ${texto}`);
+}
+
+function lerEncontrosFallback(): Encontro[] {
+    const caminho = path.join(
+        process.cwd(),
+        "..",
+        "data",
+        "encontros(nãousado).json"
+    );
+    const conteudo = fs.readFileSync(caminho, "utf-8");
+    const dados = JSON.parse(conteudo);
+
+    return (dados.encontros ?? []).filter(
+        (encontro: Encontro) =>
+            typeof encontro.data_inicio === "string" &&
+            encontro.data_inicio.trim() !== ""
+    );
+}
 
 export async function getEncontros() {
     const { data, error } = await supabase
@@ -17,6 +45,28 @@ export async function getEncontros() {
     return data || [];
 }
 
+export async function getEncontrosStrict() {
+    try {
+        const { data, error } = await supabase
+            .from("encontros")
+            .select("*")
+            .not("data_inicio", "is", null)
+            .order("data_inicio", { ascending: true });
+
+        if (error) {
+            throw criarErroDeConsulta("Erro ao buscar encontros públicos", error);
+        }
+
+        return data || [];
+    } catch (error) {
+        console.warn(
+            "Usando fallback local para encontros públicos:",
+            error instanceof Error ? error.message : error
+        );
+        return lerEncontrosFallback();
+    }
+}
+
 export async function getEncontrosPorGrupo(
     grupoId: string
 ): Promise<Encontro[]> {
@@ -31,4 +81,58 @@ export async function getEncontrosPorGrupo(
     }
 
     return data as Encontro[];
+}
+
+export async function getEncontrosPorGrupoStrict(
+    grupoId: string
+): Promise<Encontro[]> {
+    try {
+        const { data, error } = await supabase
+            .from("encontros")
+            .select("*")
+            .eq("grupo_id", grupoId);
+
+        if (error) {
+            throw criarErroDeConsulta(
+                `Erro ao buscar encontros públicos do grupo ${grupoId}`,
+                error
+            );
+        }
+
+        return (data ?? []) as Encontro[];
+    } catch (error) {
+        console.warn(
+            `Usando fallback local para encontros do grupo ${grupoId}:`,
+            error instanceof Error ? error.message : error
+        );
+        return lerEncontrosFallback().filter(
+            (encontro) => encontro.grupo_id === grupoId
+        );
+    }
+}
+
+export async function getEncontrosPorEventoStrict(eventoId: string) {
+    try {
+        const { data, error } = await supabase
+            .from("encontros")
+            .select("*")
+            .eq("evento_id", eventoId)
+            .eq("nivel", "evento")
+            .order("data_inicio", { ascending: true });
+
+        if (error) {
+            throw criarErroDeConsulta(
+                `Erro ao buscar encontros públicos do evento ${eventoId}`,
+                error
+            );
+        }
+
+        return data || [];
+    } catch (error) {
+        console.warn(
+            `Sem encontros de evento no fallback para ${eventoId}:`,
+            error instanceof Error ? error.message : error
+        );
+        return [];
+    }
 }

@@ -5,11 +5,14 @@ import { GetStaticPaths, GetStaticProps } from "next";
 
 import { Grupo } from "../../lib/types";
 import {
-    getGruposOrdenados,
-    getGrupoPorSlug,
+    getGruposOrdenadosStrict,
+    getGrupoPorSlugStrict,
 } from "../../lib/db/grupos";
-import { getEncontrosPorGrupo } from "../../lib/db/encontros";
-import { getEventos } from "../../lib/db/eventos";
+import {
+    getEncontrosPorEventoStrict,
+    getEncontrosPorGrupoStrict,
+} from "../../lib/db/encontros";
+import { getEventosStrict } from "../../lib/db/eventos";
 
 import { ordenarEncontrosPorData } from "../../lib/encontros-utils";
 import { formatarDataIntervalo } from "../../lib/encontros-utils";
@@ -18,8 +21,6 @@ import { Encontro } from "../../lib/encontros-utils";
 
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-
-import { supabase } from "../../lib/supabaseClient";
 
 import PixAlmoco from "../../components/PixAlmoco";
 
@@ -337,7 +338,7 @@ export default function CapituloLivro({
  * 🔹 Gera os capítulos do livro com base nos grupos cadastrados (slug)
  */
 export const getStaticPaths: GetStaticPaths = async () => {
-    const grupos = await getGruposOrdenados();
+    const grupos = await getGruposOrdenadosStrict();
 
     const paths = grupos.map((g) => ({
         params: { slug: g.slug },
@@ -356,19 +357,19 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     const slug = params?.slug as string;
 
     // 1️⃣ grupo atual
-    const grupo = await getGrupoPorSlug(slug);
+    const grupo = await getGrupoPorSlugStrict(slug);
     if (!grupo) {
         return { notFound: true };
     }
 
     // 2️⃣ todos os grupos (para índice lateral)
-    const grupos = await getGruposOrdenados();
+    const grupos = await getGruposOrdenadosStrict();
 
     // 3️⃣ encontros próprios do grupo
-    const encontrosGrupo = await getEncontrosPorGrupo(grupo.id);
+    const encontrosGrupo = await getEncontrosPorGrupoStrict(grupo.id);
 
     // 4️⃣ todos os eventos
-    const eventos = await getEventos();
+    const eventos = await getEventosStrict();
 
     // 5️⃣ eventos que envolvem este grupo
     const eventosDoGrupo = eventos.filter((evento: any) =>
@@ -381,10 +382,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     const encontrosEventos: any[] = [];
 
     for (const evento of eventosDoGrupo) {
-        const { data } = await supabase
-            .from("encontros")
-            .select("*")
-            .eq("evento_id", evento.id);
+        const data = await getEncontrosPorEventoStrict(evento.id);
 
         if (data) {
             encontrosEventos.push(

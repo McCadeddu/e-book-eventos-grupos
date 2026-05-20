@@ -4,9 +4,9 @@ import Link from "next/link";
 import { GetStaticProps } from "next";
 
 import { Grupo } from "../../lib/types";
-import { getGruposOrdenados } from "../../lib/db/grupos";
-import { getEncontros } from "../../lib/db/encontros";
-import { getEventos } from "../../lib/db/eventos";
+import { getGruposOrdenadosStrict } from "../../lib/db/grupos";
+import { getEncontrosStrict } from "../../lib/db/encontros";
+import { getEventosStrict } from "../../lib/db/eventos";
 
 import { ordenarEncontrosPorData } from "../../lib/encontros-utils";
 import { formatarDataIntervalo } from "../../lib/encontros-utils";
@@ -266,9 +266,9 @@ export default function CalendarioLivro({ grupos, encontros, eventos }: Props) {
  * 🔹 Dados do calendário público
  */
 export const getStaticProps: GetStaticProps = async () => {
-    const grupos = await getGruposOrdenados();
+    const grupos = await getGruposOrdenadosStrict();
 
-    const encontros = (await getEncontros())
+    const encontros = (await getEncontrosStrict())
         .filter(e => {
             if (!e.data_inicio) return false;
 
@@ -283,7 +283,7 @@ export const getStaticProps: GetStaticProps = async () => {
             data_legivel: e.data_legivel ?? null,
         }));
 
-    const eventos = await getEventos();
+    const eventos = await getEventosStrict();
 
     return {
         props: {
