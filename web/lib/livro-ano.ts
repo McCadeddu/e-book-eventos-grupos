@@ -2,6 +2,13 @@ import { getEncontrosPorEventoStrict, getEncontrosPorGrupoStrict, getEncontrosSt
 import { getEventosStrict } from "./db/eventos";
 import { getGrupoPorSlugStrict, getGruposOrdenadosStrict } from "./db/grupos";
 import { carregarEbookPorAno, pertenceAoAno } from "./ebook-config";
+import {
+    aplicarEventoEdicao,
+    aplicarGrupoEdicao,
+    getEventosEdicao,
+    getGruposEdicao,
+} from "./edicao-publicacao";
+import { Evento } from "./eventos-types";
 
 export async function carregarCalendarioLivroPorAno(ano: number) {
     const ebook = await carregarEbookPorAno(ano);
@@ -10,7 +17,8 @@ export async function carregarCalendarioLivroPorAno(ano: number) {
         return null;
     }
 
-    const grupos = await getGruposOrdenadosStrict();
+    const gruposBase = await getGruposOrdenadosStrict();
+    const grupos = aplicarGrupoEdicao(gruposBase, await getGruposEdicao(ano));
     const encontros = (await getEncontrosStrict())
         .filter((e) => {
             if (!pertenceAoAno(e.data_inicio, ano)) return false;
@@ -26,7 +34,11 @@ export async function carregarCalendarioLivroPorAno(ano: number) {
             data_legivel: e.data_legivel ?? null,
         }));
 
-    const eventos = (await getEventosStrict()).filter((evento: any) =>
+    const eventosBase = (await getEventosStrict()) as Evento[];
+    const eventos = aplicarEventoEdicao(
+        eventosBase,
+        await getEventosEdicao(ano)
+    ).filter((evento: any) =>
         encontros.some((encontro) => encontro.evento_id === evento.id)
     );
 
@@ -40,17 +52,22 @@ export async function carregarCapituloLivroPorAno(ano: number, slug: string) {
         return null;
     }
 
-    const grupo = await getGrupoPorSlugStrict(slug);
+    const gruposBase = await getGruposOrdenadosStrict();
+    const grupos = aplicarGrupoEdicao(gruposBase, await getGruposEdicao(ano));
+    const grupo = grupos.find((item) => item.slug === slug) ?? null;
+
     if (!grupo) {
         return null;
     }
 
-    const grupos = await getGruposOrdenadosStrict();
     const encontrosGrupo = (await getEncontrosPorGrupoStrict(grupo.id)).filter(
         (encontro) => pertenceAoAno(encontro.data_inicio, ano)
     );
 
-    const eventos = await getEventosStrict();
+    const eventos = aplicarEventoEdicao(
+        (await getEventosStrict()) as Evento[],
+        await getEventosEdicao(ano)
+    );
     const eventosDoGrupo = eventos.filter(
         (evento: any) =>
             evento.todos_os_grupos ||
@@ -97,8 +114,14 @@ export async function carregarEventoLivroPorAno(ano: number, id: string) {
         return null;
     }
 
-    const eventos = await getEventosStrict();
-    const grupos = await getGruposOrdenadosStrict();
+    const eventos = aplicarEventoEdicao(
+        (await getEventosStrict()) as Evento[],
+        await getEventosEdicao(ano)
+    );
+    const grupos = aplicarGrupoEdicao(
+        await getGruposOrdenadosStrict(),
+        await getGruposEdicao(ano)
+    );
     const evento = eventos.find((item) => item.id === id);
 
     if (!evento) {
