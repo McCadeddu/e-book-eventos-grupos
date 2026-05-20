@@ -257,7 +257,7 @@ export default function CalendarioEdicao({ ano, grupos, encontros, eventos }: Pr
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-    const paths = listarAnosEbook().map((ano) => ({
+    const paths = (await listarAnosEbook()).map((ano) => ({
         params: { ano: String(ano) },
     }));
 

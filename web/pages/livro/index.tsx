@@ -99,7 +99,7 @@ export default function CapaLivro({ ebook }: Props) {
 }
 
 export async function getStaticProps() {
-    const ebook = carregarEbookAtual();
+    const ebook = await carregarEbookAtual();
 
     return {
         props: { ebook },

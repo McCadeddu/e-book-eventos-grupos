@@ -278,7 +278,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     const paths: { params: { ano: string; slug: string } }[] = [];
     const grupos = await getGruposOrdenadosStrict();
 
-    for (const ano of listarAnosEbook()) {
+    for (const ano of await listarAnosEbook()) {
         for (const grupo of grupos) {
             paths.push({
                 params: { ano: String(ano), slug: grupo.slug },

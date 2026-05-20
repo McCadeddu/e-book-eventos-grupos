@@ -358,7 +358,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
  */
 export const getStaticProps: GetStaticProps = async ({ params }) => {
     const slug = params?.slug as string;
-    const ano = getAnoAtualEbook();
+    const ano = await getAnoAtualEbook();
 
     // 1️⃣ grupo atual
     const grupo = await getGrupoPorSlugStrict(slug);

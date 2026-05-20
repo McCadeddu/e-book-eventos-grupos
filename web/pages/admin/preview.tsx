@@ -75,7 +75,7 @@ export default function Preview({ anoPublicado, anoEmPreparacao }: Props) {
 
 export const getStaticProps: GetStaticProps = async () => ({
   props: {
-    anoPublicado: getAnoPublicadoEbook(),
-    anoEmPreparacao: getAnoEmPreparacaoEbook(),
+    anoPublicado: await getAnoPublicadoEbook(),
+    anoEmPreparacao: await getAnoEmPreparacaoEbook(),
   },
 });

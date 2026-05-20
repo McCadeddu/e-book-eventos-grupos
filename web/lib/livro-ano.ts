@@ -4,7 +4,7 @@ import { getGrupoPorSlugStrict, getGruposOrdenadosStrict } from "./db/grupos";
 import { carregarEbookPorAno, pertenceAoAno } from "./ebook-config";
 
 export async function carregarCalendarioLivroPorAno(ano: number) {
-    const ebook = carregarEbookPorAno(ano);
+    const ebook = await carregarEbookPorAno(ano);
 
     if (!ebook) {
         return null;
@@ -34,7 +34,7 @@ export async function carregarCalendarioLivroPorAno(ano: number) {
 }
 
 export async function carregarCapituloLivroPorAno(ano: number, slug: string) {
-    const ebook = carregarEbookPorAno(ano);
+    const ebook = await carregarEbookPorAno(ano);
 
     if (!ebook) {
         return null;
@@ -91,7 +91,7 @@ export async function carregarCapituloLivroPorAno(ano: number, slug: string) {
 }
 
 export async function carregarEventoLivroPorAno(ano: number, id: string) {
-    const ebook = carregarEbookPorAno(ano);
+    const ebook = await carregarEbookPorAno(ano);
 
     if (!ebook) {
         return null;

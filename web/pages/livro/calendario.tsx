@@ -285,7 +285,7 @@ export default function CalendarioLivro({ ano, grupos, encontros, eventos }: Pro
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const ano = getAnoAtualEbook();
+  const ano = await getAnoAtualEbook();
   const grupos = await getGruposOrdenadosStrict();
 
   const encontros = (await getEncontrosStrict())

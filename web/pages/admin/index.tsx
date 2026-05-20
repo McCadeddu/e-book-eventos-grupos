@@ -59,6 +59,9 @@ export default function AdminDashboard() {
           <li>
             <Link href="/admin/grupos">Gerir grupos e encontros</Link>
           </li>
+          <li>
+            <Link href="/admin/edicoes">Gerir edicoes do e-book</Link>
+          </li>
         </ul>
       </section>
 

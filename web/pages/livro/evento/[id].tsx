@@ -222,7 +222,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-    const ano = getAnoAtualEbook();
+    const ano = await getAnoAtualEbook();
     const eventos = await getEventosStrict();
     const grupos = await getGruposOrdenadosStrict();
 

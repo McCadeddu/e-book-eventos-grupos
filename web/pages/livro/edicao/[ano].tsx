@@ -104,7 +104,7 @@ export default function CapaEdicaoLivro({ ebook }: Props) {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-    const paths = listarAnosEbook().map((ano) => ({
+    const paths = (await listarAnosEbook()).map((ano) => ({
         params: { ano: String(ano) },
     }));
 
@@ -116,7 +116,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
     const ano = Number(params?.ano);
-    const ebook = carregarEbookPorAno(ano);
+    const ebook = await carregarEbookPorAno(ano);
 
     if (!ebook) {
         return { notFound: true };

@@ -186,7 +186,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     const eventos = await getEventosStrict();
     const paths: { params: { ano: string; id: string } }[] = [];
 
-    for (const ano of listarAnosEbook()) {
+    for (const ano of await listarAnosEbook()) {
         for (const evento of eventos) {
             paths.push({
                 params: { ano: String(ano), id: evento.id },
