@@ -1,10 +1,16 @@
-// web/pages/admin/preview.tsx
-
+import Link from "next/link";
+import { GetStaticProps } from "next";
 import { useRouter } from "next/router";
+import { getAnoEmPreparacaoEbook, getAnoPublicadoEbook } from "../../lib/ebook-config";
 
-export default function Preview() {
+type Props = {
+  anoPublicado: number;
+  anoEmPreparacao: number;
+};
+
+export default function Preview({ anoPublicado, anoEmPreparacao }: Props) {
   const router = useRouter();
-  
+
   return (
     <main style={{ padding: "2rem" }}>
       <p style={{ marginBottom: "1.5rem" }}>
@@ -20,21 +26,36 @@ export default function Preview() {
             fontSize: "0.95rem",
           }}
         >
-          ← Voltar à administração dos grupos
+          Voltar à administração dos grupos
         </button>
       </p>
 
-      <h1>👁 Pré-visualização</h1>
+      <h1>Pré-visualização</h1>
 
       <p>
-        Esta área mostra como os conteúdos aparecerão
-        no e-book e nos materiais de divulgação.
+        Esta área mostra como os conteúdos aparecerão no e-book e nos
+        materiais de divulgação.
       </p>
 
-      <h2>📘 E-book</h2>
+      <h2>E-book</h2>
+
+      <p>
+        Publicado agora:{" "}
+        <Link href="/livro" target="_blank">
+          /livro
+        </Link>
+        {" "}({anoPublicado})
+      </p>
+
+      <p>
+        Ano em preparação:{" "}
+        <Link href={`/livro/edicao/${anoEmPreparacao}`} target="_blank">
+          {`/livro/edicao/${anoEmPreparacao}`}
+        </Link>
+      </p>
 
       <iframe
-        src="/livro"
+        src={`/livro/edicao/${anoEmPreparacao}`}
         style={{
           width: "100%",
           height: "80vh",
@@ -45,3 +66,10 @@ export default function Preview() {
     </main>
   );
 }
+
+export const getStaticProps: GetStaticProps = async () => ({
+  props: {
+    anoPublicado: getAnoPublicadoEbook(),
+    anoEmPreparacao: getAnoEmPreparacaoEbook(),
+  },
+});

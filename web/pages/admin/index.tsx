@@ -76,12 +76,12 @@ export default function AdminDashboard() {
         <ul>
           <li>
             <Link href="/livro" target="_blank">
-              Ver e-book publico
+              Ver e-book publico publicado
             </Link>
           </li>
           <li>
             <Link href="/admin/preview">
-              Pre-visualizar materiais (panfletos)
+              Pre-visualizar e-book em preparacao
             </Link>
           </li>
           <li>

@@ -11,7 +11,15 @@ export type EbookConfig = {
 };
 
 type EbookCollection = {
-    ano_atual: number;
+    ano_atual?: number;
+    ano_publicado?: number;
+    ano_em_preparacao?: number;
+    edicoes: EbookConfig[];
+};
+
+type EbookCollectionResolved = {
+    anoPublicado: number;
+    anoEmPreparacao: number;
     edicoes: EbookConfig[];
 };
 
@@ -19,18 +27,20 @@ function caminhoData(nomeArquivo: string) {
     return path.join(process.cwd(), "..", "data", nomeArquivo);
 }
 
-export function carregarEdicoesEbook(): {
-    anoAtual: number;
-    edicoes: EbookConfig[];
-} {
+export function carregarEdicoesEbook(): EbookCollectionResolved {
     const caminhoColecao = caminhoData("ebooks.json");
 
     if (fs.existsSync(caminhoColecao)) {
         const conteudo = fs.readFileSync(caminhoColecao, "utf-8");
         const dados = JSON.parse(conteudo) as EbookCollection;
+        const anoPublicado =
+            dados.ano_publicado ?? dados.ano_atual ?? dados.edicoes?.[0]?.ano ?? 0;
+        const anoEmPreparacao =
+            dados.ano_em_preparacao ?? anoPublicado;
 
         return {
-            anoAtual: dados.ano_atual,
+            anoPublicado,
+            anoEmPreparacao,
             edicoes: dados.edicoes ?? [],
         };
     }
@@ -40,30 +50,58 @@ export function carregarEdicoesEbook(): {
     const edicaoLegada = JSON.parse(conteudoLegado) as EbookConfig;
 
     return {
-        anoAtual: edicaoLegada.ano,
+        anoPublicado: edicaoLegada.ano,
+        anoEmPreparacao: edicaoLegada.ano,
         edicoes: [edicaoLegada],
     };
 }
 
-export function carregarEbookAtual() {
-    const { anoAtual, edicoes } = carregarEdicoesEbook();
-    const ebookAtual =
-        edicoes.find((edicao) => edicao.ano === anoAtual) ?? edicoes[0];
+function encontrarEdicaoOuFalhar(ano: number) {
+    const { edicoes } = carregarEdicoesEbook();
+    const edicao = edicoes.find((item) => item.ano === ano) ?? edicoes[0];
 
-    if (!ebookAtual) {
-        throw new Error("Nenhuma edição de e-book foi configurada.");
+    if (!edicao) {
+        throw new Error("Nenhuma edicao de e-book foi configurada.");
     }
 
-    return ebookAtual;
+    return edicao;
+}
+
+export function carregarEbookPublicado() {
+    const { anoPublicado } = carregarEdicoesEbook();
+    return encontrarEdicaoOuFalhar(anoPublicado);
+}
+
+export function carregarEbookEmPreparacao() {
+    const { anoEmPreparacao } = carregarEdicoesEbook();
+    return encontrarEdicaoOuFalhar(anoEmPreparacao);
+}
+
+export function carregarEbookAtual() {
+    return carregarEbookPublicado();
+}
+
+export function getAnoPublicadoEbook() {
+    return carregarEbookPublicado().ano;
+}
+
+export function getAnoEmPreparacaoEbook() {
+    return carregarEbookEmPreparacao().ano;
 }
 
 export function getAnoAtualEbook() {
-    return carregarEbookAtual().ano;
+    return getAnoPublicadoEbook();
 }
 
 export function carregarEbookPorAno(ano: number) {
     const { edicoes } = carregarEdicoesEbook();
     return edicoes.find((edicao) => edicao.ano === ano) ?? null;
+}
+
+export function listarAnosEbook() {
+    return carregarEdicoesEbook()
+        .edicoes.map((edicao) => edicao.ano)
+        .sort((a, b) => a - b);
 }
 
 export function pertenceAoAno(
