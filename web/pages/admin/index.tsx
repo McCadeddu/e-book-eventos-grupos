@@ -67,37 +67,79 @@ export default function AdminDashboard() {
 
       <section
         style={{
-          background: "#ffffff",
-          padding: "2rem",
-          borderRadius: "14px",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gap: "1.5rem",
           marginBottom: "2rem",
-          boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
         }}
       >
-        <h2 style={{ color: "#ff6136" }}>Publicacao</h2>
+        <div
+          style={{
+            background: "#ffffff",
+            padding: "2rem",
+            borderRadius: "14px",
+            boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+          }}
+        >
+          <h2 style={{ color: "#ff6136", marginTop: 0 }}>Publicacao atual</h2>
 
-        <ul>
-          <li>
-            <Link href="/livro" target="_blank">
-              Ver e-book publico publicado
-            </Link>
-          </li>
-          <li>
-            <Link href="/livro/edicao/2027" target="_blank">
-              Ver rascunho atual de 2027
-            </Link>
-          </li>
-          <li>
-            <Link href="/admin/preview">
-              Pre-visualizar e-book em preparacao
-            </Link>
-          </li>
-          <li>
-            <Link href="/admin/pdf">
-              Gerar PDFs
-            </Link>
-          </li>
-        </ul>
+          <p style={{ color: "#3e4647", fontSize: "0.95rem" }}>
+            Esta e a versao oficial em circulacao. E o conteudo certo para
+            Instagram, WhatsApp e divulgacao publica.
+          </p>
+
+          <ul>
+            <li>
+              <Link href="/livro" target="_blank">
+                Abrir e-book publicado
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/edicoes">
+                Trocar o ano publicado
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div
+          style={{
+            background: "#ffffff",
+            padding: "2rem",
+            borderRadius: "14px",
+            boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+          }}
+        >
+          <h2 style={{ color: "#548287", marginTop: 0 }}>Nova publicacao</h2>
+
+          <p style={{ color: "#3e4647", fontSize: "0.95rem" }}>
+            Aqui a equipe prepara o proximo ano com nova capa, novo icone e
+            novos compromissos, sem mexer no link publico atual.
+          </p>
+
+          <ul>
+            <li>
+              <Link href="/admin/edicoes">
+                Criar ou escolher o novo ano
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/preview">
+                Ver rascunho em preparacao
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/grupos">
+                Trabalhar grupos, encontros e eventos
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/pdf">
+                Gerar PDFs
+              </Link>
+            </li>
+          </ul>
+        </div>
       </section>
 
       <section
