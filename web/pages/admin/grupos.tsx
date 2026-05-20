@@ -153,8 +153,26 @@ export default function Home({ grupos, encontros, eventos }: Props) {
 
     const [ordemEventos, setOrdemEventos] = useState(eventos);
     const [modoEdicaoEventos, setModoEdicaoEventos] = useState(false);
+    const [gruposAbertos, setGruposAbertos] = useState<string[]>([]);
+    const [eventosAbertos, setEventosAbertos] = useState<string[]>([]);
 
     const router = useRouter();
+
+    function alternarGrupo(grupoId: string) {
+        setGruposAbertos((atuais) =>
+            atuais.includes(grupoId)
+                ? atuais.filter((id) => id !== grupoId)
+                : [...atuais, grupoId]
+        );
+    }
+
+    function alternarEvento(eventoId: string) {
+        setEventosAbertos((atuais) =>
+            atuais.includes(eventoId)
+                ? atuais.filter((id) => id !== eventoId)
+                : [...atuais, eventoId]
+        );
+    }
 
     // função para filtrar os encontros que pertencem a um grupo,
     // considerando tanto encontros normais (com grupo_id)
@@ -197,6 +215,28 @@ export default function Home({ grupos, encontros, eventos }: Props) {
             if (!hash) return;
 
             const el = document.getElementById(hash.replace("#", ""));
+            const id = hash.replace("#", "");
+
+            if (id.startsWith("grupo-")) {
+                const slug = id.replace("grupo-", "");
+                const grupo = grupos.find((item) => item.slug === slug);
+                if (grupo) {
+                    setGruposAbertos((atuais) =>
+                        atuais.includes(grupo.id) ? atuais : [...atuais, grupo.id]
+                    );
+                }
+            }
+
+            if (id.startsWith("evento-")) {
+                const eventoId = id.replace("evento-", "");
+                const evento = eventos.find((item) => item.id === eventoId);
+                if (evento) {
+                    setEventosAbertos((atuais) =>
+                        atuais.includes(evento.id) ? atuais : [...atuais, evento.id]
+                    );
+                }
+            }
+
             el?.scrollIntoView({ behavior: "smooth" });
         }
 
@@ -399,19 +439,35 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                             </button>
                         </Link>
                     </div>
-                    {ordemGrupos.map(grupo => (
+                    {ordemGrupos.map(grupo => {
+                        const encontrosGrupo = encontrosDoGrupo(grupo.id);
+                        const grupoAberto = gruposAbertos.includes(grupo.id);
+
+                        return (
                         <section
                             id={`grupo-${grupo.slug}`}
                             key={grupo.id}
                             style={{
                                 background: "#fff4d4f1",
                                 borderRadius: "10px",
-                                padding: "2rem",
-                                marginBottom: "2.5rem",
+                                padding: "1.1rem 1.4rem",
+                                marginBottom: "1rem",
                                 boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
                             }}
                         >
-                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", alignItems: "center" }}>
+                                <button
+                                    type="button"
+                                    onClick={() => alternarGrupo(grupo.id)}
+                                    style={{
+                                        background: "transparent",
+                                        border: "none",
+                                        padding: 0,
+                                        textAlign: "left",
+                                        cursor: "pointer",
+                                        flex: 1,
+                                    }}
+                                >
                                 <h2
                                     style={{
                                         margin: 0,
@@ -420,8 +476,12 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                         color: "#4bbbc8",
                                     }}
                                 >
-                                    {grupo.nome}
+                                    {grupoAberto ? "▾ " : "▸ "} {grupo.nome}
                                 </h2>
+                                <div style={{ marginTop: "0.25rem", fontSize: "0.9rem", color: "#725e50" }}>
+                                    {encontrosGrupo.length} encontro(s)
+                                </div>
+                                </button>
 
                                 <div
                                     style={{
@@ -467,17 +527,19 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                 </div>
                             </div>
 
+                            {grupoAberto && (
+                                <>
                             <p><em>{grupo.faixa_etaria}</em></p>
                             <p>{grupo.descricao}</p>
 
                             <h3 style={{ marginTop: "1.5rem" }}>Encontros</h3>
 
                             <ul>
-                                {encontrosDoGrupo(grupo.id).length === 0 && (
+                                {encontrosGrupo.length === 0 && (
                                     <li>Nenhum encontro cadastrado.</li>
                                 )}
 
-                                {encontrosDoGrupo(grupo.id).map(encontro => (
+                                {encontrosGrupo.map(encontro => (
                                     <li
                                         key={encontro.id}
                                         style={{
@@ -525,7 +587,7 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                             </button>
                                         </div>
                                     </li>
-                                ))}
+                                        ))}
                             </ul>
 
                             <div style={{ marginTop: "1rem" }}>
@@ -533,14 +595,17 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                     ➕ Novo encontro
                                 </Link>
                             </div>
+                                </>
+                            )}
                         </section>
-                    ))}
+                    )})}
                     <h2 style={{ marginTop: "3rem", color: "#ff6136" }}>
                         Eventos
                     </h2>
 
                     {ordemEventos.map((evento) => {
                         const encontrosEvento = encontrosDoEvento(evento.id);
+                        const eventoAberto = eventosAbertos.includes(evento.id);
 
                         return (
                             <section
@@ -549,12 +614,24 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                 style={{
                                     background: "#fff4d4f1",
                                     borderRadius: "10px",
-                                    padding: "2rem",
-                                    marginBottom: "2.5rem",
+                                    padding: "1.1rem 1.4rem",
+                                    marginBottom: "1rem",
                                     boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
                                 }}
                             >
-                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", alignItems: "center" }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => alternarEvento(evento.id)}
+                                        style={{
+                                            background: "transparent",
+                                            border: "none",
+                                            padding: 0,
+                                            textAlign: "left",
+                                            cursor: "pointer",
+                                            flex: 1,
+                                        }}
+                                    >
                                     <h2
                                         style={{
                                             margin: 0,
@@ -563,8 +640,12 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                             color: "#ff6136",
                                         }}
                                     >
-                                        {evento.titulo}
+                                        {eventoAberto ? "▾ " : "▸ "} {evento.titulo}
                                     </h2>
+                                    <div style={{ marginTop: "0.25rem", fontSize: "0.9rem", color: "#725e50" }}>
+                                        {encontrosEvento.length} encontro(s)
+                                    </div>
+                                    </button>
 
                                     <div style={{ display: "flex", gap: "1rem" }}>
                                         <Link href={`/admin/eventos/editar/${evento.id}`}>
@@ -595,6 +676,8 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                     </div>
                                 </div>
 
+                                {eventoAberto && (
+                                    <>
                                 {/* 🔵 ENCONTROS DO EVENTO */}
                                 <h3 style={{ marginTop: "1.5rem" }}>Encontros do Evento</h3>
 
@@ -688,6 +771,8 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                         ➕ Novo encontro
                                     </Link>
                                 </div>
+                                    </>
+                                )}
                             </section>
                         );
                     })}
