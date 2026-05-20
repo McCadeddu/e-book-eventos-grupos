@@ -1,29 +1,36 @@
-// web/pages/admin/login.tsx
-
 import { useState } from "react";
 import { useRouter } from "next/router";
 
 export default function LoginAdmin() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [erro, setErro] = useState<string | null>(null);
+  const [carregando, setCarregando] = useState(false);
   const router = useRouter();
 
   async function entrar(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
+    setCarregando(true);
 
-    const resposta = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
+    try {
+      const resposta = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const resultado = await resposta.json();
+      const resultado = await resposta.json();
 
-    if (resultado.sucesso) {
-      router.push("/admin");
-    } else {
-      setErro("Acesso permitido somente para e-mails @villaregia.org");
+      if (resultado.sucesso) {
+        router.push("/admin");
+      } else {
+        setErro(resultado.erro || "Não foi possível entrar.");
+      }
+    } catch {
+      setErro("Erro de conexão ao tentar entrar.");
+    } finally {
+      setCarregando(false);
     }
   }
 
@@ -46,7 +53,23 @@ export default function LoginAdmin() {
 
         <br /><br />
 
-        <button type="submit">Entrar</button>
+        <label>
+          Senha administrativa
+          <br />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{ width: "100%", marginTop: "0.5rem" }}
+          />
+        </label>
+
+        <br /><br />
+
+        <button type="submit" disabled={carregando}>
+          {carregando ? "Entrando..." : "Entrar"}
+        </button>
       </form>
 
       {erro && <p style={{ color: "darkred" }}>{erro}</p>}

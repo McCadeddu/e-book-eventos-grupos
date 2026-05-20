@@ -1,6 +1,7 @@
 ﻿// web/pages/api/eventos.ts
 
 import type { NextApiRequest, NextApiResponse } from "next";
+import { requireAdmin } from "../../lib/adminAuth";
 import { supabase } from "../../lib/supabaseClient";
 import { randomUUID } from "crypto";
 
@@ -12,6 +13,10 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
+    if (!requireAdmin(req, res)) {
+        return;
+    }
+
 
     /* =====================================================
        CRIAR EVENTO
