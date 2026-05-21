@@ -33,6 +33,10 @@ type Props = {
     eventosDoGrupo: any[];
 };
 
+function encontroPertenceAoEvento(encontro: any, eventoId: string) {
+    return encontro.evento_id === eventoId || encontro.grupo_id === eventoId;
+}
+
 export default function CapituloLivro({
   ano,
   grupo,
@@ -408,6 +412,23 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
                     }))
             );
         }
+
+        if (data?.length === 0) {
+            const fallbackGrupo = await getEncontrosPorGrupoStrict(evento.id);
+
+            encontrosEventos.push(
+                ...fallbackGrupo
+                    .filter(
+                        (encontro) =>
+                            encontro.visibilidade === "publico" &&
+                            pertenceAoAno(encontro.data_inicio, ano)
+                    )
+                    .map(e => ({
+                        ...e,
+                        nome_evento: evento.titulo,
+                    }))
+            );
+        }
     }
 
     // 7️⃣ unificar encontros do grupo + encontros dos eventos
@@ -417,7 +438,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     ];
 
     const eventosDoGrupoNoAno = eventosDoGrupo.filter((evento: any) =>
-        todosEncontros.some((encontro) => encontro.evento_id === evento.id)
+        todosEncontros.some((encontro) => encontroPertenceAoEvento(encontro, evento.id))
     );
 
     return {

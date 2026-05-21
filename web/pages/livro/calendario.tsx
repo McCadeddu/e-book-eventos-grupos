@@ -31,6 +31,10 @@ type LinhaAgrupada = {
   }[];
 };
 
+function encontroPertenceAoEvento(encontro: any, eventoId: string) {
+  return encontro.evento_id === eventoId || encontro.grupo_id === eventoId;
+}
+
 export default function CalendarioLivro({ ano, grupos, encontros, eventos }: Props) {
   const encontrosOrdenados = ordenarEncontrosPorData(encontros);
 
@@ -307,7 +311,7 @@ export const getStaticProps: GetStaticProps = async () => {
   const eventos = (await getEventosStrict()).filter(
     (evento: any) =>
       evento.visibilidade === "publico" &&
-      encontros.some((encontro) => encontro.evento_id === evento.id)
+      encontros.some((encontro) => encontroPertenceAoEvento(encontro, evento.id))
   );
 
   return {

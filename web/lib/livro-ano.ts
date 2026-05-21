@@ -10,6 +10,10 @@ import {
 } from "./edicao-publicacao";
 import { Evento } from "./eventos-types";
 
+function encontroPertenceAoEvento(encontro: any, eventoId: string) {
+    return encontro.evento_id === eventoId || encontro.grupo_id === eventoId;
+}
+
 export async function carregarCalendarioLivroPorAno(ano: number) {
     const ebook = await carregarEbookPorAno(ano);
 
@@ -42,7 +46,7 @@ export async function carregarCalendarioLivroPorAno(ano: number) {
     ).filter(
         (evento: any) =>
             evento.visibilidade === "publico" &&
-            encontros.some((encontro) => encontro.evento_id === evento.id)
+            encontros.some((encontro) => encontroPertenceAoEvento(encontro, evento.id))
     );
 
     return { ano, ebook, grupos, encontros, eventos };
@@ -99,11 +103,28 @@ export async function carregarCapituloLivroPorAno(ano: number, slug: string) {
                     }))
             );
         }
+
+        if (data?.length === 0) {
+            const fallbackGrupo = await getEncontrosPorGrupoStrict(evento.id);
+
+            encontrosEventos.push(
+                ...fallbackGrupo
+                    .filter(
+                        (encontro) =>
+                            encontro.visibilidade === "publico" &&
+                            pertenceAoAno(encontro.data_inicio, ano)
+                    )
+                    .map((encontro) => ({
+                        ...encontro,
+                        nome_evento: evento.titulo,
+                    }))
+            );
+        }
     }
 
     const encontros = [...encontrosGrupo, ...encontrosEventos];
     const eventosDoGrupoNoAno = eventosDoGrupo.filter((evento: any) =>
-        encontros.some((encontro) => encontro.evento_id === evento.id)
+        encontros.some((encontro) => encontroPertenceAoEvento(encontro, evento.id))
     );
 
     return {
@@ -137,10 +158,13 @@ export async function carregarEventoLivroPorAno(ano: number, id: string) {
         return null;
     }
 
-    const encontros = (await getEncontrosPorEventoStrict(evento.id)).filter(
-        (encontro) =>
+    const encontrosEvento = await getEncontrosPorEventoStrict(evento.id);
+    const encontrosGrupo = await getEncontrosPorGrupoStrict(evento.id);
+    const encontros = [...encontrosEvento, ...encontrosGrupo].filter(
+        (encontro, index, lista) =>
             encontro.visibilidade === "publico" &&
-            pertenceAoAno(encontro.data_inicio, ano)
+            pertenceAoAno(encontro.data_inicio, ano) &&
+            lista.findIndex((item) => item.id === encontro.id) === index
     );
 
     return {

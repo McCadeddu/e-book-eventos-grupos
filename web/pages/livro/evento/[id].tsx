@@ -4,6 +4,7 @@ import Link from "next/link";
 import { GetStaticPaths, GetStaticProps } from "next";
 import {
     getEncontrosPorEventoStrict,
+    getEncontrosPorGrupoStrict,
 } from "../../../lib/db/encontros";
 import { getEventosStrict } from "../../../lib/db/eventos";
 import { getGruposOrdenadosStrict } from "../../../lib/db/grupos";
@@ -233,10 +234,14 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     }
 
     // 🔵 buscar apenas encontros oficiais do evento
-    const encontros = (await getEncontrosPorEventoStrict(evento.id)).filter(
-        (encontro) =>
+    const encontros = [
+        ...(await getEncontrosPorEventoStrict(evento.id)),
+        ...(await getEncontrosPorGrupoStrict(evento.id)),
+    ].filter(
+        (encontro, index, lista) =>
             encontro.visibilidade === "publico" &&
-            pertenceAoAno(encontro.data_inicio, ano)
+            pertenceAoAno(encontro.data_inicio, ano) &&
+            lista.findIndex((item) => item.id === encontro.id) === index
     );
 
     return {
