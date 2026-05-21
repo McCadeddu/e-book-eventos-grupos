@@ -25,6 +25,8 @@ type FormEdicao = {
   logo: string;
 };
 
+type UploadKind = "logo" | "capa";
+
 function editarParaForm(edicao: EbookConfig): FormEdicao {
   return {
     titulo: edicao.titulo,
@@ -43,6 +45,7 @@ export default function AdminEdicoes() {
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [formularios, setFormularios] = useState<Record<number, FormEdicao>>({});
+  const [uploading, setUploading] = useState<Record<string, boolean>>({});
 
   async function carregar() {
     setErro(null);
@@ -81,6 +84,81 @@ export default function AdminEdicoes() {
         [campo]: valor,
       },
     }));
+  }
+
+  function lerArquivoComoDataUrl(file: File) {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Nao foi possivel ler a imagem selecionada."));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function enviarAsset(ano: number, tipo: UploadKind, files: FileList | null) {
+    const arquivo = files?.[0];
+    if (!arquivo) return;
+
+    const chaveUpload = `${ano}-${tipo}`;
+
+    setUploading((atual) => ({ ...atual, [chaveUpload]: true }));
+    setMensagem(null);
+    setErro(null);
+
+    try {
+      const dataUrl = await lerArquivoComoDataUrl(arquivo);
+      const resposta = await fetch("/api/admin/upload-asset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ano,
+          tipo,
+          fileName: arquivo.name,
+          dataUrl,
+        }),
+      });
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        setErro(dados.erro || "Nao foi possivel enviar a imagem.");
+        return;
+      }
+
+      if (tipo === "logo") {
+        atualizarFormulario(ano, "logo", dados.url);
+      } else {
+        const edicaoAtual = estado?.edicoes.find((edicao) => edicao.ano === ano);
+        const formularioAtual =
+          formularios[ano] ??
+          (edicaoAtual ? editarParaForm(edicaoAtual) : null);
+
+        if (!formularioAtual) {
+          setErro("Nao foi possivel localizar a edicao para adicionar a capa.");
+          return;
+        }
+
+        const linhas = formularioAtual.capasTexto
+          .split(/\r?\n/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+
+        atualizarFormulario(ano, "capasTexto", [...linhas, dados.url].join("\n"));
+      }
+
+      setMensagem(
+        tipo === "logo"
+          ? `Logo da edicao ${ano} enviado com sucesso.`
+          : `Nova capa enviada para a edicao ${ano}.`
+      );
+    } catch (error) {
+      setErro(
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel enviar a imagem."
+      );
+    } finally {
+      setUploading((atual) => ({ ...atual, [chaveUpload]: false }));
+    }
   }
 
   async function criarAno(e: React.FormEvent) {
@@ -350,6 +428,18 @@ export default function AdminEdicoes() {
                     placeholder="/villaregia-logo.png"
                     style={{ width: "100%", marginTop: "0.35rem" }}
                   />
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    onChange={(e) => enviarAsset(edicao.ano, "logo", e.target.files)}
+                    disabled={salvando || uploading[`${edicao.ano}-logo`]}
+                    style={{ width: "100%", marginTop: "0.5rem" }}
+                  />
+                  <small style={{ color: "#555" }}>
+                    {uploading[`${edicao.ano}-logo`]
+                      ? "Enviando logo..."
+                      : "Tambem pode enviar um novo logo por aqui."}
+                  </small>
                 </label>
               </div>
 
@@ -363,11 +453,18 @@ export default function AdminEdicoes() {
                   placeholder="/villaregia-capa-2027.png"
                   style={{ width: "100%", marginTop: "0.35rem" }}
                 />
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  onChange={(e) => enviarAsset(edicao.ano, "capa", e.target.files)}
+                  disabled={salvando || uploading[`${edicao.ano}-capa`]}
+                  style={{ width: "100%", marginTop: "0.6rem" }}
+                />
               </label>
 
               <p style={{ fontSize: "0.9rem", color: "#555" }}>
-                Use um caminho por linha. Exemplo: <code>/villaregia-capa-2027.png</code>.
-                As imagens precisam existir dentro de <code>web/public</code>.
+                Use um caminho ou URL por linha. Exemplo: <code>/villaregia-capa-2027.png</code>.
+                Se preferir, envie uma capa nova acima e ela sera adicionada automaticamente.
               </p>
 
               <button type="button" disabled={salvando} onClick={() => salvarEdicao(edicao.ano)}>
@@ -387,8 +484,10 @@ export default function AdminEdicoes() {
         }}
       >
         <strong>Importante:</strong> se a tela informar que a base online ainda
-        nao foi criada, basta executar o SQL de configuracao do Supabase. Posso
-        te orientar nisso em seguida.
+        nao foi criada, basta executar o SQL de configuracao do Supabase. Para
+        uploads de capa e logo, tambem e preciso criar o bucket
+        <code> ebook-assets </code> no Supabase Storage e configurar a variavel
+        <code> SUPABASE_SERVICE_ROLE_KEY </code> na Vercel.
       </section>
     </main>
   );
