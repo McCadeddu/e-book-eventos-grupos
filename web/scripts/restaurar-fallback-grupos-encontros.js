@@ -2,6 +2,44 @@ const { createClient } = require("@supabase/supabase-js");
 const fs = require("fs");
 const path = require("path");
 
+const EVENTOS_PROMOVIDOS = {
+    "afetividade-jovens": {
+        eventId: "6f6ac7f4-7c5c-4a79-9f9d-2b2fd3d0a101",
+        tipo: "retiro",
+        grupos_envolvidos: ["gimvi-adolescentes", "gimvi-jovens"],
+    },
+    jeshua: {
+        eventId: "d0c22f65-2453-4b5f-8300-f91f1dcff102",
+        tipo: "retiro",
+        grupos_envolvidos: ["gimvi-jovens"],
+    },
+    "grand-prix-formula-1": {
+        eventId: "3b33e0bb-2cb8-4d31-bf95-f6c2cb4ab103",
+        tipo: "retiro",
+        grupos_envolvidos: ["gimvi-adolescentes"],
+    },
+    cana: {
+        eventId: "0f0aa7de-a88e-4761-8f57-b7a211c9d104",
+        tipo: "retiro",
+        grupos_envolvidos: ["gimca-1", "gimca-2"],
+    },
+    "areia-ou-rocha": {
+        eventId: "1c250f5d-83f9-4473-b94a-ef6dfeef3105",
+        tipo: "retiro",
+        grupos_envolvidos: ["gimca-1", "gimca-2"],
+    },
+    "afetividade-casais": {
+        eventId: "fb334ac3-53d1-456a-8108-3d526511f106",
+        tipo: "retiro",
+        grupos_envolvidos: ["gimca-1", "gimca-2"],
+    },
+    emaus: {
+        eventId: "727bb9b1-3d38-49fb-a184-7f116f954107",
+        tipo: "retiro",
+        grupos_envolvidos: ["gam", "grupo-trilhas"],
+    },
+};
+
 function resolverArquivoEnv() {
     const argumento = process.argv.find((item) =>
         item.startsWith("--env-file=")
@@ -53,7 +91,9 @@ function lerJson(nomeArquivo) {
 function montarGrupos() {
     const grupos = lerJson("grupos(nãousado).json").grupos ?? [];
 
-    return grupos.map((grupo, index) => ({
+    return grupos
+        .filter((grupo) => !EVENTOS_PROMOVIDOS[grupo.id])
+        .map((grupo, index) => ({
         id: grupo.id,
         slug: grupo.slug,
         nome: grupo.nome,
@@ -64,7 +104,33 @@ function montarGrupos() {
         convite_final: grupo.convite_final ?? "",
         ordem: grupo.ordem ?? index + 1,
         categoria: grupo.categoria ?? "grupo",
-    }));
+        }));
+}
+
+function montarEventos() {
+    const grupos = lerJson("grupos(nãousado).json").grupos ?? [];
+
+    return Object.entries(EVENTOS_PROMOVIDOS).map(([grupoId, config]) => {
+        const grupo = grupos.find((item) => item.id === grupoId);
+
+        if (!grupo) {
+            throw new Error(`Grupo-base do evento ${grupoId} não encontrado.`);
+        }
+
+        return {
+            id: config.eventId,
+            tipo: config.tipo,
+            titulo: grupo.nome,
+            faixa_etaria: grupo.faixa_etaria ?? "",
+            descricao: grupo.descricao ?? "",
+            equipe: Array.isArray(grupo.equipe) ? grupo.equipe : [],
+            grupos_envolvidos: config.grupos_envolvidos ?? [],
+            todos_os_grupos: false,
+            objetivo_ano: grupo.objetivo_ano ?? "",
+            convite: grupo.convite_final ?? "",
+            visibilidade: "publico",
+        };
+    });
 }
 
 function montarEncontros() {
@@ -74,13 +140,19 @@ function montarEncontros() {
         .filter(
             (encontro) =>
                 typeof encontro.data_inicio === "string" &&
-                encontro.data_inicio.trim() !== "" &&
-                encontro.grupo_id
+                encontro.data_inicio.trim() !== ""
         )
-        .map((encontro) => ({
+        .map((encontro) => {
+            const promocao = encontro.grupo_id
+                ? EVENTOS_PROMOVIDOS[encontro.grupo_id]
+                : null;
+
+            return {
             id: encontro.id,
-            grupo_id: encontro.grupo_id,
-            evento_id: encontro.evento_id ?? null,
+            grupo_id: promocao ? null : encontro.grupo_id,
+            evento_id: promocao
+                ? promocao.eventId
+                : encontro.evento_id ?? null,
             tipo: encontro.tipo ?? "encontro_regular",
             data_inicio: encontro.data_inicio,
             data_fim: encontro.data_fim ?? null,
@@ -90,12 +162,13 @@ function montarEncontros() {
             titulo: encontro.titulo ?? null,
             descricao: encontro.descricao ?? null,
             visibilidade: encontro.visibilidade ?? "publico",
-            nivel: encontro.nivel ?? "evento",
+            nivel: promocao ? "evento" : encontro.nivel ?? "evento",
             mostrar_no_anual:
                 typeof encontro.mostrar_no_anual === "boolean"
                     ? encontro.mostrar_no_anual
                     : true,
-        }));
+            };
+        });
 }
 
 async function main() {
@@ -122,10 +195,12 @@ async function main() {
 
     const supabase = createClient(url, chave);
     const grupos = montarGrupos();
+    const eventos = montarEventos();
     const encontros = montarEncontros();
 
     console.log("Restauração preparada:");
     console.log(`- grupos do fallback: ${grupos.length}`);
+    console.log(`- eventos promovidos: ${eventos.length}`);
     console.log(`- encontros do fallback: ${encontros.length}`);
 
     if (!modoEscrita) {
@@ -143,6 +218,14 @@ async function main() {
         throw new Error(`Falha ao restaurar grupos: ${erroGrupos.message}`);
     }
 
+    const { error: erroEventos } = await supabase
+        .from("eventos")
+        .upsert(eventos, { onConflict: "id" });
+
+    if (erroEventos) {
+        throw new Error(`Falha ao restaurar eventos: ${erroEventos.message}`);
+    }
+
     const { error: erroEncontros } = await supabase
         .from("encontros")
         .upsert(encontros, { onConflict: "id" });
@@ -151,6 +234,21 @@ async function main() {
         throw new Error(
             `Falha ao restaurar encontros: ${erroEncontros.message}`
         );
+    }
+
+    const idsPromovidos = Object.keys(EVENTOS_PROMOVIDOS);
+
+    if (idsPromovidos.length > 0) {
+        const { error: erroLimpeza } = await supabase
+            .from("grupos")
+            .delete()
+            .in("id", idsPromovidos);
+
+        if (erroLimpeza) {
+            throw new Error(
+                `Falha ao remover grupos promovidos: ${erroLimpeza.message}`
+            );
+        }
     }
 
     console.log("Restauração concluída com sucesso.");

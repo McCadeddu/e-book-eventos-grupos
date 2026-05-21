@@ -1,5 +1,5 @@
 -- Restauracao gerada automaticamente a partir dos backups locais
--- Data: 2026-05-21T22:40:14.853Z
+-- Data: 2026-05-21T22:45:55.419Z
 begin;
 
 insert into public.grupos (
@@ -110,90 +110,6 @@ values
   'Venha participar ao grupo Trilhas!',
   8,
   'grupo'
-),
-(
-  'afetividade-jovens',
-  'afetividade-jovens',
-  'Afetividade Jovens',
-  '14 - 20 anos',
-  'Retiro de afetividade para os jovens',
-  'Descobrir a beleza de ser amados, amoráveis e puros aos olhos de Deus e da humanidade',
-  '["Lavínia e Adolfo"]'::jsonb,
-  '',
-  9,
-  'grupo'
-),
-(
-  'jeshua',
-  'jeshua',
-  'Jeshuá',
-  '16 - 27 anos',
-  'Retiro para jovens',
-  'Experiência transformativa do Amor de Deus',
-  '["Roberta","Marilene","Yasmin e Gustavo","Diego e Mariana","Magna","Maria Fernanda"]'::jsonb,
-  'Experimente quanto é bom ser filhos de Deus que salva!',
-  10,
-  'grupo'
-),
-(
-  'grand-prix-formula-1',
-  'grand-prix-formula-1',
-  'Grand Prix Formula 1',
-  '12 - 15 anos',
-  'Retiro de encontro profundo com Deus',
-  '',
-  '["Kátia e Leonardo","Cristiane","Isabela","Fernanda","Fernando e Fábia","Marilene"]'::jsonb,
-  '',
-  11,
-  'grupo'
-),
-(
-  'cana',
-  'cana',
-  'CANÁ',
-  'Casais',
-  'Retiro para casais',
-  '',
-  '["Catarina e Sérgio","Patrícia","Vanir","Meire e Deiverson","Adriana"]'::jsonb,
-  'Participe ao nosso retiro para casais!',
-  12,
-  'grupo'
-),
-(
-  'areia-ou-rocha',
-  'areia-ou-rocha',
-  'AREIA OU  ROCHA',
-  'Casais',
-  'Retiro para casais',
-  '',
-  '["Nádia e Paulo","Fernando e Eliane","Esenclever e Ana Paula","Márcia"]'::jsonb,
-  'Participe do nosso encontro!',
-  13,
-  'grupo'
-),
-(
-  'afetividade-casais',
-  'afetividade-casais',
-  'AFETIVIDADE  CASAIS',
-  'Casais',
-  'Retiro de afetividade para casais',
-  '',
-  '["P. Hernando","Harley","Karine","Nádia e Paulo","Liliane","Lincon"]'::jsonb,
-  'Participe do nosso encontro!',
-  14,
-  'grupo'
-),
-(
-  'emaus',
-  'emaus',
-  'EMAÚS',
-  'Adultos',
-  'Retiro de espiritualidade e renovação da própria vida profunda ',
-  'Sentir o amor de Deus na própria vida',
-  '["Maria e Wilson"]'::jsonb,
-  'Participe do retiro!',
-  15,
-  'grupo'
 )
 on conflict (id) do update set
   slug = excluded.slug,
@@ -205,6 +121,123 @@ on conflict (id) do update set
   convite_final = excluded.convite_final,
   ordem = excluded.ordem,
   categoria = excluded.categoria;
+
+insert into public.eventos (
+  id,
+  tipo,
+  titulo,
+  faixa_etaria,
+  descricao,
+  equipe,
+  grupos_envolvidos,
+  todos_os_grupos,
+  objetivo_ano,
+  convite,
+  visibilidade
+)
+values
+(
+  '6f6ac7f4-7c5c-4a79-9f9d-2b2fd3d0a101',
+  'retiro',
+  'Afetividade Jovens',
+  '14 - 20 anos',
+  'Retiro de afetividade para os jovens',
+  '["Lavínia e Adolfo"]'::jsonb,
+  '["gimvi-adolescentes","gimvi-jovens"]'::jsonb,
+  false,
+  'Descobrir a beleza de ser amados, amoráveis e puros aos olhos de Deus e da humanidade',
+  '',
+  'publico'
+),
+(
+  'd0c22f65-2453-4b5f-8300-f91f1dcff102',
+  'retiro',
+  'Jeshuá',
+  '16 - 27 anos',
+  'Retiro para jovens',
+  '["Roberta","Marilene","Yasmin e Gustavo","Diego e Mariana","Magna","Maria Fernanda"]'::jsonb,
+  '["gimvi-jovens"]'::jsonb,
+  false,
+  'Experiência transformativa do Amor de Deus',
+  'Experimente quanto é bom ser filhos de Deus que salva!',
+  'publico'
+),
+(
+  '3b33e0bb-2cb8-4d31-bf95-f6c2cb4ab103',
+  'retiro',
+  'Grand Prix Formula 1',
+  '12 - 15 anos',
+  'Retiro de encontro profundo com Deus',
+  '["Kátia e Leonardo","Cristiane","Isabela","Fernanda","Fernando e Fábia","Marilene"]'::jsonb,
+  '["gimvi-adolescentes"]'::jsonb,
+  false,
+  '',
+  '',
+  'publico'
+),
+(
+  '0f0aa7de-a88e-4761-8f57-b7a211c9d104',
+  'retiro',
+  'CANÁ',
+  'Casais',
+  'Retiro para casais',
+  '["Catarina e Sérgio","Patrícia","Vanir","Meire e Deiverson","Adriana"]'::jsonb,
+  '["gimca-1","gimca-2"]'::jsonb,
+  false,
+  '',
+  'Participe ao nosso retiro para casais!',
+  'publico'
+),
+(
+  '1c250f5d-83f9-4473-b94a-ef6dfeef3105',
+  'retiro',
+  'AREIA OU  ROCHA',
+  'Casais',
+  'Retiro para casais',
+  '["Nádia e Paulo","Fernando e Eliane","Esenclever e Ana Paula","Márcia"]'::jsonb,
+  '["gimca-1","gimca-2"]'::jsonb,
+  false,
+  '',
+  'Participe do nosso encontro!',
+  'publico'
+),
+(
+  'fb334ac3-53d1-456a-8108-3d526511f106',
+  'retiro',
+  'AFETIVIDADE  CASAIS',
+  'Casais',
+  'Retiro de afetividade para casais',
+  '["P. Hernando","Harley","Karine","Nádia e Paulo","Liliane","Lincon"]'::jsonb,
+  '["gimca-1","gimca-2"]'::jsonb,
+  false,
+  '',
+  'Participe do nosso encontro!',
+  'publico'
+),
+(
+  '727bb9b1-3d38-49fb-a184-7f116f954107',
+  'retiro',
+  'EMAÚS',
+  'Adultos',
+  'Retiro de espiritualidade e renovação da própria vida profunda ',
+  '["Maria e Wilson"]'::jsonb,
+  '["gam","grupo-trilhas"]'::jsonb,
+  false,
+  'Sentir o amor de Deus na própria vida',
+  'Participe do retiro!',
+  'publico'
+)
+on conflict (id) do update set
+  tipo = excluded.tipo,
+  titulo = excluded.titulo,
+  faixa_etaria = excluded.faixa_etaria,
+  descricao = excluded.descricao,
+  equipe = excluded.equipe,
+  grupos_envolvidos = excluded.grupos_envolvidos,
+  todos_os_grupos = excluded.todos_os_grupos,
+  objetivo_ano = excluded.objetivo_ano,
+  convite = excluded.convite,
+  visibilidade = excluded.visibilidade;
 
 insert into public.encontros (
   id,
@@ -1457,8 +1490,8 @@ values
 ),
 (
   'afetividade-jovens-2026-02-21',
-  'afetividade-jovens',
   null,
+  '6f6ac7f4-7c5c-4a79-9f9d-2b2fd3d0a101',
   'encontro_regular',
   '2026-02-21',
   '2026-02-22',
@@ -1473,8 +1506,8 @@ values
 ),
 (
   'jeshua-2026-03-20',
-  'jeshua',
   null,
+  'd0c22f65-2453-4b5f-8300-f91f1dcff102',
   'encontro_regular',
   '2026-03-20',
   '2026-03-22',
@@ -1489,8 +1522,8 @@ values
 ),
 (
   'jeshua-2026-09-25',
-  'jeshua',
   null,
+  'd0c22f65-2453-4b5f-8300-f91f1dcff102',
   'encontro_regular',
   '2026-09-25',
   '2026-09-27',
@@ -1505,8 +1538,8 @@ values
 ),
 (
   'grand-prix-formula-1-2026-05-15',
-  'grand-prix-formula-1',
   null,
+  '3b33e0bb-2cb8-4d31-bf95-f6c2cb4ab103',
   'encontro_regular',
   '2026-05-15',
   '2026-05-17',
@@ -1681,8 +1714,8 @@ values
 ),
 (
   'cana-2026-04-18',
-  'cana',
   null,
+  '0f0aa7de-a88e-4761-8f57-b7a211c9d104',
   'encontro_regular',
   '2026-04-18',
   '2026-04-19',
@@ -1697,8 +1730,8 @@ values
 ),
 (
   'areia-ou-rocha-2026-08-15',
-  'areia-ou-rocha',
   null,
+  '1c250f5d-83f9-4473-b94a-ef6dfeef3105',
   'encontro_regular',
   '2026-08-15',
   '2026-08-16',
@@ -1713,8 +1746,8 @@ values
 ),
 (
   'afetividade-casais-2026-08-29',
-  'afetividade-casais',
   null,
+  'fb334ac3-53d1-456a-8108-3d526511f106',
   'encontro_regular',
   '2026-08-29',
   '2026-08-30',
@@ -1937,8 +1970,8 @@ values
 ),
 (
   'emaus-2026-11-14',
-  'emaus',
   null,
+  '727bb9b1-3d38-49fb-a184-7f116f954107',
   'encontro_regular',
   '2026-11-14',
   '2026-11-15',
@@ -1997,5 +2030,8 @@ on conflict (id) do update set
   visibilidade = excluded.visibilidade,
   nivel = excluded.nivel,
   mostrar_no_anual = excluded.mostrar_no_anual;
+
+delete from public.grupos
+where id in ('afetividade-jovens', 'jeshua', 'grand-prix-formula-1', 'cana', 'areia-ou-rocha', 'afetividade-casais', 'emaus');
 
 commit;
