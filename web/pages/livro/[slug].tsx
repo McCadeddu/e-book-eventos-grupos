@@ -371,11 +371,15 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
     // 3️⃣ encontros próprios do grupo
     const encontrosGrupo = (await getEncontrosPorGrupoStrict(grupo.id)).filter(
-        (encontro) => pertenceAoAno(encontro.data_inicio, ano)
+        (encontro) =>
+            encontro.visibilidade === "publico" &&
+            pertenceAoAno(encontro.data_inicio, ano)
     );
 
     // 4️⃣ todos os eventos
-    const eventos = await getEventosStrict();
+    const eventos = (await getEventosStrict()).filter(
+        (evento: any) => evento.visibilidade === "publico"
+    );
 
     // 5️⃣ eventos que envolvem este grupo
     const eventosDoGrupo = eventos.filter((evento: any) =>
@@ -393,7 +397,11 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
         if (data) {
             encontrosEventos.push(
                 ...data
-                    .filter((encontro) => pertenceAoAno(encontro.data_inicio, ano))
+                    .filter(
+                        (encontro) =>
+                            encontro.visibilidade === "publico" &&
+                            pertenceAoAno(encontro.data_inicio, ano)
+                    )
                     .map(e => ({
                         ...e,
                         nome_evento: evento.titulo, // 🔵 importante para prefixo

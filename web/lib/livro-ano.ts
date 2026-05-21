@@ -21,6 +21,7 @@ export async function carregarCalendarioLivroPorAno(ano: number) {
     const grupos = aplicarGrupoEdicao(gruposBase, await getGruposEdicao(ano));
     const encontros = (await getEncontrosStrict())
         .filter((e) => {
+            if (e.visibilidade !== "publico") return false;
             if (!pertenceAoAno(e.data_inicio, ano)) return false;
 
             if (!e.evento_id) return true;
@@ -38,8 +39,10 @@ export async function carregarCalendarioLivroPorAno(ano: number) {
     const eventos = aplicarEventoEdicao(
         eventosBase,
         await getEventosEdicao(ano)
-    ).filter((evento: any) =>
-        encontros.some((encontro) => encontro.evento_id === evento.id)
+    ).filter(
+        (evento: any) =>
+            evento.visibilidade === "publico" &&
+            encontros.some((encontro) => encontro.evento_id === evento.id)
     );
 
     return { ano, ebook, grupos, encontros, eventos };
@@ -61,13 +64,15 @@ export async function carregarCapituloLivroPorAno(ano: number, slug: string) {
     }
 
     const encontrosGrupo = (await getEncontrosPorGrupoStrict(grupo.id)).filter(
-        (encontro) => pertenceAoAno(encontro.data_inicio, ano)
+        (encontro) =>
+            encontro.visibilidade === "publico" &&
+            pertenceAoAno(encontro.data_inicio, ano)
     );
 
     const eventos = aplicarEventoEdicao(
         (await getEventosStrict()) as Evento[],
         await getEventosEdicao(ano)
-    );
+    ).filter((evento) => evento.visibilidade === "publico");
     const eventosDoGrupo = eventos.filter(
         (evento: any) =>
             evento.todos_os_grupos ||
@@ -83,7 +88,11 @@ export async function carregarCapituloLivroPorAno(ano: number, slug: string) {
         if (data) {
             encontrosEventos.push(
                 ...data
-                    .filter((encontro) => pertenceAoAno(encontro.data_inicio, ano))
+                    .filter(
+                        (encontro) =>
+                            encontro.visibilidade === "publico" &&
+                            pertenceAoAno(encontro.data_inicio, ano)
+                    )
                     .map((encontro) => ({
                         ...encontro,
                         nome_evento: evento.titulo,
@@ -117,7 +126,7 @@ export async function carregarEventoLivroPorAno(ano: number, id: string) {
     const eventos = aplicarEventoEdicao(
         (await getEventosStrict()) as Evento[],
         await getEventosEdicao(ano)
-    );
+    ).filter((evento) => evento.visibilidade === "publico");
     const grupos = aplicarGrupoEdicao(
         await getGruposOrdenadosStrict(),
         await getGruposEdicao(ano)
@@ -129,7 +138,9 @@ export async function carregarEventoLivroPorAno(ano: number, id: string) {
     }
 
     const encontros = (await getEncontrosPorEventoStrict(evento.id)).filter(
-        (encontro) => pertenceAoAno(encontro.data_inicio, ano)
+        (encontro) =>
+            encontro.visibilidade === "publico" &&
+            pertenceAoAno(encontro.data_inicio, ano)
     );
 
     return {

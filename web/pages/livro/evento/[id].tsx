@@ -228,13 +228,15 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
     const evento = eventos.find(e => e.id === params?.id);
 
-    if (!evento) {
+    if (!evento || evento.visibilidade !== "publico") {
         return { notFound: true };
     }
 
     // 🔵 buscar apenas encontros oficiais do evento
     const encontros = (await getEncontrosPorEventoStrict(evento.id)).filter(
-        (encontro) => pertenceAoAno(encontro.data_inicio, ano)
+        (encontro) =>
+            encontro.visibilidade === "publico" &&
+            pertenceAoAno(encontro.data_inicio, ano)
     );
 
     return {

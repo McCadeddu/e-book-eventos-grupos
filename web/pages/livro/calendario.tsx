@@ -290,6 +290,7 @@ export const getStaticProps: GetStaticProps = async () => {
 
   const encontros = (await getEncontrosStrict())
     .filter((e) => {
+      if (e.visibilidade !== "publico") return false;
       if (!pertenceAoAno(e.data_inicio, ano)) return false;
 
       if (!e.evento_id) return true;
@@ -303,8 +304,10 @@ export const getStaticProps: GetStaticProps = async () => {
       data_legivel: e.data_legivel ?? null,
     }));
 
-  const eventos = (await getEventosStrict()).filter((evento: any) =>
-    encontros.some((encontro) => encontro.evento_id === evento.id)
+  const eventos = (await getEventosStrict()).filter(
+    (evento: any) =>
+      evento.visibilidade === "publico" &&
+      encontros.some((encontro) => encontro.evento_id === evento.id)
   );
 
   return {
