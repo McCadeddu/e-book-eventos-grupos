@@ -1,6 +1,7 @@
 // web/pages/admin/grupos.tsx
 
 import Link from "next/link";
+import type { GetServerSideProps } from "next";
 import { Grupo } from "../../lib/types";
 import { getGruposOrdenados } from "../../lib/db/grupos";
 import { getEncontros } from "../../lib/db/encontros";
@@ -973,13 +974,12 @@ export default function Home({ grupos, encontros, eventos }: Props) {
     );
 }
 
-export async function getStaticProps() {
+export const getServerSideProps: GetServerSideProps = async () => {
     const grupos = await getGruposOrdenados();
     const encontros = await getEncontros();
     const eventos = await getEventos();
 
     return {
         props: { grupos, encontros, eventos },
-        revalidate: 1,
     };
-}
+};

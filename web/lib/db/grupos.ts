@@ -35,17 +35,33 @@ function lerGruposFallback(): Grupo[] {
  * Retorna todos os grupos ordenados pela coluna "ordem"
  */
 export async function getGruposOrdenados(): Promise<Grupo[]> {
-    const { data, error } = await supabase
-        .from("grupos")
-        .select("*")
-        .order("ordem", { ascending: true });
+    try {
+        const { data, error } = await supabase
+            .from("grupos")
+            .select("*")
+            .order("ordem", { ascending: true });
 
-    if (error) {
-        console.error("Erro ao buscar grupos:", error);
-        return [];
+        if (error) {
+            throw criarErroDeConsulta("Erro ao buscar grupos", error);
+        }
+
+        const grupos = (data ?? []) as Grupo[];
+
+        if (grupos.length === 0) {
+            throw criarErroDeConsulta(
+                "Resposta vazia ao buscar grupos",
+                "nenhum grupo retornado"
+            );
+        }
+
+        return grupos;
+    } catch (error) {
+        console.warn(
+            "Usando fallback local para grupos administrativos:",
+            error instanceof Error ? error.message : error
+        );
+        return lerGruposFallback();
     }
-
-    return data as Grupo[];
 }
 
 export async function getGruposOrdenadosStrict(): Promise<Grupo[]> {
@@ -84,18 +100,30 @@ export async function getGruposOrdenadosStrict(): Promise<Grupo[]> {
 export async function getGrupoPorSlug(
     slug: string
 ): Promise<Grupo | null> {
-    const { data, error } = await supabase
-        .from("grupos")
-        .select("*")
-        .eq("slug", slug)
-        .single();
+    try {
+        const { data, error } = await supabase
+            .from("grupos")
+            .select("*")
+            .eq("slug", slug)
+            .single();
 
-    if (error) {
-        console.error("Erro ao buscar grupo por slug:", error);
-        return null;
+        if (error) {
+            throw criarErroDeConsulta(
+                `Erro ao buscar grupo pelo slug ${slug}`,
+                error
+            );
+        }
+
+        return (data as Grupo) ?? null;
+    } catch (error) {
+        console.warn(
+            `Usando fallback local para grupo administrativo ${slug}:`,
+            error instanceof Error ? error.message : error
+        );
+        return (
+            lerGruposFallback().find((grupo) => grupo.slug === slug) ?? null
+        );
     }
-
-    return data as Grupo;
 }
 
 export async function getGrupoPorSlugStrict(

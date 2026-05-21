@@ -31,18 +31,34 @@ function lerEncontrosFallback(): Encontro[] {
 }
 
 export async function getEncontros() {
-    const { data, error } = await supabase
-        .from("encontros")
-        .select("*")
-        .not("data_inicio", "is", null)   // 👈 ESSENCIAL
-        .order("data_inicio", { ascending: true });
+    try {
+        const { data, error } = await supabase
+            .from("encontros")
+            .select("*")
+            .not("data_inicio", "is", null)
+            .order("data_inicio", { ascending: true });
 
-    if (error) {
-        console.error(error);
-        return [];
+        if (error) {
+            throw criarErroDeConsulta("Erro ao buscar encontros", error);
+        }
+
+        const encontros = (data ?? []) as Encontro[];
+
+        if (encontros.length === 0) {
+            throw criarErroDeConsulta(
+                "Resposta vazia ao buscar encontros",
+                "nenhum encontro retornado"
+            );
+        }
+
+        return encontros;
+    } catch (error) {
+        console.warn(
+            "Usando fallback local para encontros administrativos:",
+            error instanceof Error ? error.message : error
+        );
+        return lerEncontrosFallback();
     }
-
-    return data || [];
 }
 
 export async function getEncontrosStrict() {

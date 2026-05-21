@@ -3,7 +3,8 @@
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { supabase } from "../../../lib/supabaseClient";
+import { getEventos } from "../../../lib/db/eventos";
+import { getGruposOrdenados } from "../../../lib/db/grupos";
 
 type Evento = {
     id: string;
@@ -174,19 +175,16 @@ export default function AdminEventos({ eventos, grupos }: Props) {
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-    const { data: eventos } = await supabase
-        .from("eventos")
-        .select("*")
-        .order("data_inicio", { ascending: true });
-
-    const { data: grupos } = await supabase
-        .from("grupos")
-        .select("id, nome");
+    const eventos = await getEventos();
+    const grupos = await getGruposOrdenados();
 
     return {
         props: {
-            eventos: eventos || [],
-            grupos: grupos || [],
+            eventos,
+            grupos: grupos.map((grupo) => ({
+                id: grupo.id,
+                nome: grupo.nome,
+            })),
         },
     };
 };

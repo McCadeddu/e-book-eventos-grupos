@@ -97,17 +97,33 @@ function lerEventosFallback() {
 }
 
 export async function getEventos() {
-    const { data, error } = await supabase
-        .from("eventos")
-        .select("*")
-        .order("ordem", { ascending: true });
+    try {
+        const { data, error } = await supabase
+            .from("eventos")
+            .select("*")
+            .order("ordem", { ascending: true });
 
-    if (error) {
-        console.error(error);
-        return [];
+        if (error) {
+            throw criarErroDeConsulta("Erro ao buscar eventos", error);
+        }
+
+        const eventos = data || [];
+
+        if (eventos.length === 0) {
+            throw criarErroDeConsulta(
+                "Resposta vazia ao buscar eventos",
+                "nenhum evento retornado"
+            );
+        }
+
+        return eventos;
+    } catch (error) {
+        console.warn(
+            "Usando fallback local para eventos administrativos:",
+            error instanceof Error ? error.message : error
+        );
+        return lerEventosFallback();
     }
-
-    return data || [];
 }
 
 export async function getEventosStrict() {
