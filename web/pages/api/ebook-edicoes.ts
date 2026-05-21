@@ -95,6 +95,44 @@ export default async function handler(
     }
 
     if (req.method === "PUT") {
+        if (req.body?.ano) {
+            const ano = Number(req.body.ano);
+
+            if (!Number.isInteger(ano) || ano < 2020) {
+                return res.status(400).json({ erro: "Ano da edicao invalido." });
+            }
+
+            const payloadEdicao = {
+                ano,
+                titulo: String(req.body.titulo || "").trim(),
+                subtitulo: String(req.body.subtitulo || "").trim(),
+                botao_texto: String(req.body.botao_texto || "").trim(),
+                capas: Array.isArray(req.body.capas)
+                    ? req.body.capas
+                    : [],
+                logo: String(req.body.logo || "").trim(),
+            };
+
+            if (!payloadEdicao.titulo) {
+                return res.status(400).json({ erro: "Titulo da edicao e obrigatorio." });
+            }
+
+            if (!payloadEdicao.capas.length) {
+                return res.status(400).json({ erro: "Informe pelo menos uma capa." });
+            }
+
+            const { error } = await supabase
+                .from("ebook_edicoes")
+                .upsert(payloadEdicao, { onConflict: "ano" });
+
+            if (error) {
+                return respostaInfraPendente(res, error.message);
+            }
+
+            await revalidarBasico(res, [ano]);
+            return res.status(200).json({ sucesso: true, ano });
+        }
+
         const anoPublicado = req.body?.anoPublicado
             ? Number(req.body.anoPublicado)
             : undefined;
