@@ -38,6 +38,7 @@ export default function EditarEvento({ evento, grupos, encontros }: Props) {
     const router = useRouter();
     const [status, setStatus] = useState<string | null>(null);
     const [todos, setTodos] = useState(evento.todos_os_grupos);
+    const [encontrosState, setEncontrosState] = useState(encontros);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -77,6 +78,37 @@ export default function EditarEvento({ evento, grupos, encontros }: Props) {
         } else {
             setStatus("Erro ao atualizar evento.");
         }
+    }
+
+    async function alternarVisibilidadeEncontro(encontro: Encontro) {
+        const novaVisibilidade =
+            encontro.visibilidade === "publico" ? "interno" : "publico";
+
+        const resposta = await fetch("/api/encontros", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                id: encontro.id,
+                grupo_id: encontro.grupo_id || null,
+                evento_id: encontro.evento_id || null,
+                visibilidade: novaVisibilidade,
+            }),
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resultado.sucesso) {
+            setStatus(resultado.erro || "Erro ao atualizar a visibilidade do encontro.");
+            return;
+        }
+
+        setEncontrosState((atuais) =>
+            atuais.map((item) =>
+                item.id === encontro.id
+                    ? { ...item, visibilidade: novaVisibilidade }
+                    : item
+            )
+        );
     }
 
     return (
@@ -249,8 +281,8 @@ export default function EditarEvento({ evento, grupos, encontros }: Props) {
                         name="visibilidade"
                         defaultValue={evento.visibilidade}
                     >
-                        <option value="publico">Público</option>
-                        <option value="interno">Interno</option>
+                        <option value="publico">Público no e-book</option>
+                        <option value="interno">Oculto no e-book</option>
                     </select>
 
                     <button
@@ -276,12 +308,12 @@ export default function EditarEvento({ evento, grupos, encontros }: Props) {
                     Calendário do Evento (Encontros)
                 </h2>
 
-                {encontros.length === 0 && (
+                {encontrosState.length === 0 && (
                     <p>Nenhum encontro cadastrado para este evento.</p>
                 )}
 
                 <ul>
-                    {encontros.map((encontro) => (
+                    {encontrosState.map((encontro) => (
                         <li
                             key={encontro.id}
                             style={{
@@ -299,6 +331,25 @@ export default function EditarEvento({ evento, grupos, encontros }: Props) {
                             {encontro.titulo && ` — ${encontro.titulo}`}
 
                             <div style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
+                                <span
+                                    style={{
+                                        display: "inline-block",
+                                        marginRight: "0.75rem",
+                                        fontSize: "0.75rem",
+                                        fontWeight: 700,
+                                        padding: "0.2rem 0.55rem",
+                                        borderRadius: "999px",
+                                        backgroundColor:
+                                            encontro.visibilidade === "publico"
+                                                ? "#0b6b45"
+                                                : "#7a2e0b",
+                                        color: "#ffffff",
+                                    }}
+                                >
+                                    {encontro.visibilidade === "publico"
+                                        ? "PUBLICO NO E-BOOK"
+                                        : "OCULTO NO E-BOOK"}
+                                </span>
 
                                 <Link
                                     href={`/admin/eventos/${evento.id}/editar-encontro/${encontro.id}`}
@@ -306,6 +357,21 @@ export default function EditarEvento({ evento, grupos, encontros }: Props) {
                                 >
                                     ✏️ Editar
                                 </Link>
+
+                                <button
+                                    onClick={() => alternarVisibilidadeEncontro(encontro)}
+                                    style={{
+                                        background: "none",
+                                        border: "none",
+                                        color: "#0b5c6b",
+                                        cursor: "pointer",
+                                        marginRight: "1rem",
+                                    }}
+                                >
+                                    {encontro.visibilidade === "publico"
+                                        ? "Ocultar no e-book"
+                                        : "Publicar no e-book"}
+                                </button>
 
                                 <button
                                     onClick={async () => {

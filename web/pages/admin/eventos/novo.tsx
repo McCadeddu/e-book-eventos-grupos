@@ -213,8 +213,8 @@ export default function NovoEvento({ grupos }: Props) {
                     <textarea name="convite" rows={2} />
 
                     <select name="visibilidade">
-                        <option value="publico">Público</option>
-                        <option value="interno">Interno</option>
+                        <option value="publico">Público no e-book</option>
+                        <option value="interno">Oculto no e-book</option>
                     </select>
 
                     <button

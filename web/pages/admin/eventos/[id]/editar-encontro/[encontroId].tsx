@@ -14,6 +14,7 @@ type Encontro = {
     titulo?: string;
     horario?: string;
     local?: string;
+    visibilidade: "publico" | "interno";
 };
 
 type Props = {
@@ -39,6 +40,7 @@ export default function EditarEncontroEvento({ encontro }: Props) {
             titulo: formData.get("titulo"),
             horario: formData.get("horario"),
             local: formData.get("local"),
+            visibilidade: formData.get("visibilidade"),
         };
 
         const resposta = await fetch("/api/encontros", {
@@ -75,6 +77,15 @@ export default function EditarEncontroEvento({ encontro }: Props) {
                 <input name="titulo" defaultValue={encontro.titulo} />
                 <input name="horario" defaultValue={encontro.horario} />
                 <input name="local" defaultValue={encontro.local} />
+
+                <label>
+                    Visibilidade no e-book
+                    <br />
+                    <select name="visibilidade" defaultValue={encontro.visibilidade}>
+                        <option value="publico">Público no e-book</option>
+                        <option value="interno">Oculto no e-book</option>
+                    </select>
+                </label>
 
                 <button type="submit">Salvar</button>
             </form>

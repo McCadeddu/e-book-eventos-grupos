@@ -158,6 +158,7 @@ type Props = {
 
 export default function Home({ grupos, encontros, eventos }: Props) {
     const [ordemGrupos, setOrdemGrupos] = useState(grupos);
+    const [listaEncontros, setListaEncontros] = useState(encontros);
     const [modoEdicao, setModoEdicao] = useState(false);
 
     const [ordemEventos, setOrdemEventos] = useState(eventos);
@@ -188,13 +189,13 @@ export default function Home({ grupos, encontros, eventos }: Props) {
     // quanto encontros que fazem parte de um evento (evento_id) que inclui o grupo
     function encontrosDoGrupo(grupoId: string) {
         return ordenarEncontrosPorData(
-            encontros.filter((e) => {
+            listaEncontros.filter((e) => {
                 // encontros normais do grupo
                 if (e.grupo_id === grupoId) return true;
 
                 // encontros que pertencem a um evento
                 if (e.evento_id) {
-                    const evento = eventos.find(ev => ev.id === e.evento_id);
+                    const evento = ordemEventos.find(ev => ev.id === e.evento_id);
 
                     if (!evento) return false;
 
@@ -213,7 +214,7 @@ export default function Home({ grupos, encontros, eventos }: Props) {
     // (e não o grupo_id, pois um evento pode incluir vários grupos)
     function encontrosDoEvento(eventoId: string) {
         return ordenarEncontrosPorData(
-            encontros.filter((e) => e.evento_id === eventoId)
+            listaEncontros.filter((e) => e.evento_id === eventoId)
         );
     }
 
@@ -313,6 +314,66 @@ export default function Home({ grupos, encontros, eventos }: Props) {
 
         setModoEdicaoEventos(false);
         router.replace(router.asPath);
+    }
+
+    async function alternarVisibilidadeEncontro(encontro: Encontro) {
+        const novaVisibilidade =
+            encontro.visibilidade === "publico" ? "interno" : "publico";
+
+        const resposta = await fetch("/api/encontros", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                id: encontro.id,
+                grupo_id: encontro.grupo_id || null,
+                evento_id: encontro.evento_id || null,
+                visibilidade: novaVisibilidade,
+            }),
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resultado.sucesso) {
+            alert(resultado.erro || "Nao foi possivel atualizar a visibilidade do encontro.");
+            return;
+        }
+
+        setListaEncontros((atuais) =>
+            atuais.map((item) =>
+                item.id === encontro.id
+                    ? { ...item, visibilidade: novaVisibilidade }
+                    : item
+            )
+        );
+    }
+
+    async function alternarVisibilidadeEvento(evento: any) {
+        const novaVisibilidade =
+            evento.visibilidade === "publico" ? "interno" : "publico";
+
+        const resposta = await fetch("/api/eventos", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                id: evento.id,
+                visibilidade: novaVisibilidade,
+            }),
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resultado.sucesso) {
+            alert(resultado.erro || "Nao foi possivel atualizar a visibilidade do evento.");
+            return;
+        }
+
+        setOrdemEventos((atuais) =>
+            atuais.map((item) =>
+                item.id === evento.id
+                    ? { ...item, visibilidade: novaVisibilidade }
+                    : item
+            )
+        );
     }
 
     return (
@@ -589,6 +650,22 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                             {" | "}
 
                                             <button
+                                                onClick={() => alternarVisibilidadeEncontro(encontro)}
+                                                style={{
+                                                    background: "transparent",
+                                                    border: "none",
+                                                    color: "#0b5c6b",
+                                                    cursor: "pointer",
+                                                }}
+                                            >
+                                                {encontro.visibilidade === "publico"
+                                                    ? "Ocultar no e-book"
+                                                    : "Publicar no e-book"}
+                                            </button>
+
+                                            {" | "}
+
+                                            <button
                                                 onClick={async () => {
                                                     if (!confirm("Excluir encontro?")) return;
 
@@ -690,6 +767,22 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                     </button>
 
                                     <div style={{ display: "flex", gap: "1rem" }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => alternarVisibilidadeEvento(evento)}
+                                            style={{
+                                                background: "none",
+                                                border: "none",
+                                                color: "#0b5c6b",
+                                                cursor: "pointer",
+                                                padding: 0,
+                                            }}
+                                        >
+                                            {evento.visibilidade === "publico"
+                                                ? "Ocultar no e-book"
+                                                : "Publicar no e-book"}
+                                        </button>
+
                                         <Link href={`/admin/eventos/editar/${evento.id}`}>
                                             ✏️ Editar evento
                                         </Link>
@@ -788,6 +881,22 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                                     >
                                                         ✏️ Editar
                                                     </Link>
+
+                                                    {" | "}
+
+                                                    <button
+                                                        onClick={() => alternarVisibilidadeEncontro(encontro)}
+                                                        style={{
+                                                            background: "transparent",
+                                                            border: "none",
+                                                            color: "#0b5c6b",
+                                                            cursor: "pointer",
+                                                        }}
+                                                    >
+                                                        {encontro.visibilidade === "publico"
+                                                            ? "Ocultar no e-book"
+                                                            : "Publicar no e-book"}
+                                                    </button>
 
                                                     {" | "}
 

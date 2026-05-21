@@ -105,8 +105,8 @@ export default function NovoEncontroEvento({ evento }: Props) {
                 <input name="local" placeholder="Local" />
 
                 <select name="visibilidade">
-                    <option value="publico">Público</option>
-                    <option value="interno">Interno</option>
+                    <option value="publico">Público no e-book</option>
+                    <option value="interno">Oculto no e-book</option>
                 </select>
 
                 <button type="submit">Salvar</button>

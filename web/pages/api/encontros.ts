@@ -12,6 +12,12 @@ function gerarIdEncontro() {
     return randomUUID();
 }
 
+function limparUndefined<T extends Record<string, unknown>>(objeto: T) {
+    return Object.fromEntries(
+        Object.entries(objeto).filter(([, valor]) => valor !== undefined)
+    );
+}
+
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
@@ -107,18 +113,19 @@ export default async function handler(
         }
 
         // normalização dos campos
-        const dadosAtualizados = {
+        const dadosAtualizados = limparUndefined({
             ...resto,
             grupo_id: grupo_id || null,
             evento_id: evento_id || null,
-            data_inicio,
-            data_fim: data_fim || null,
-            nivel: nivel || "evento",
+            data_inicio: data_inicio || undefined,
+            data_fim:
+                data_fim === undefined ? undefined : data_fim || null,
+            nivel: nivel || undefined,
             mostrar_no_anual:
                 nivel === "organizacao"
                     ? false
-                    : mostrar_no_anual ?? true,
-        };
+                    : mostrar_no_anual,
+        });
 
         const { error } = await supabase
             .from("encontros")

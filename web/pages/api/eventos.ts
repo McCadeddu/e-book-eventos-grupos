@@ -9,6 +9,12 @@ function gerarId() {
     return randomUUID();
 }
 
+function limparUndefined<T extends Record<string, unknown>>(objeto: T) {
+    return Object.fromEntries(
+        Object.entries(objeto).filter(([, valor]) => valor !== undefined)
+    );
+}
+
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
@@ -91,18 +97,21 @@ export default async function handler(
             return res.status(400).json({ erro: "ID ausente" });
         }
 
-        const dadosAtualizados = {
+        const dadosAtualizados = limparUndefined({
             ...resto,
-            titulo: titulo?.toUpperCase(),
+            titulo: titulo ? titulo.toUpperCase() : undefined,
             grupos_envolvidos: todos_os_grupos
                 ? []
                 : Array.isArray(grupos_envolvidos)
                     ? grupos_envolvidos
                     : grupos_envolvidos
                         ? [grupos_envolvidos]
-                        : [],
-            todos_os_grupos: !!todos_os_grupos,
-        };
+                        : undefined,
+            todos_os_grupos:
+                typeof todos_os_grupos === "boolean"
+                    ? todos_os_grupos
+                    : undefined,
+        });
 
         const { error } = await supabase
             .from("eventos")
