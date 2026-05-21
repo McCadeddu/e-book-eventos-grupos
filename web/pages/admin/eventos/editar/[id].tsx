@@ -8,6 +8,62 @@ import { getGruposOrdenados } from "../../../../lib/db/grupos";
 import { formatarDataIntervalo } from "../../../../lib/encontros-utils";
 import Link from "next/link";
 
+function BotaoVisibilidade({
+    publico,
+    onClick,
+}: {
+    publico: boolean;
+    onClick: () => void;
+}) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            aria-pressed={publico}
+            style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.55rem",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                color: publico ? "#0b6b45" : "#7a2e0b",
+                fontWeight: 600,
+                marginRight: "1rem",
+            }}
+        >
+            <span
+                aria-hidden="true"
+                style={{
+                    position: "relative",
+                    width: "44px",
+                    height: "24px",
+                    borderRadius: "999px",
+                    backgroundColor: publico ? "#0b6b45" : "#7a2e0b",
+                    transition: "background-color 150ms ease",
+                    boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.08)",
+                }}
+            >
+                <span
+                    style={{
+                        position: "absolute",
+                        top: "3px",
+                        left: publico ? "23px" : "3px",
+                        width: "18px",
+                        height: "18px",
+                        borderRadius: "50%",
+                        backgroundColor: "#ffffff",
+                        transition: "left 150ms ease",
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
+                    }}
+                />
+            </span>
+            <span>{publico ? "Público no e-book" : "Oculto no e-book"}</span>
+        </button>
+    );
+}
+
 type Grupo = {
     id: string;
     nome: string;
@@ -358,20 +414,10 @@ export default function EditarEvento({ evento, grupos, encontros }: Props) {
                                     ✏️ Editar
                                 </Link>
 
-                                <button
+                                <BotaoVisibilidade
+                                    publico={encontro.visibilidade === "publico"}
                                     onClick={() => alternarVisibilidadeEncontro(encontro)}
-                                    style={{
-                                        background: "none",
-                                        border: "none",
-                                        color: "#0b5c6b",
-                                        cursor: "pointer",
-                                        marginRight: "1rem",
-                                    }}
-                                >
-                                    {encontro.visibilidade === "publico"
-                                        ? "Ocultar no e-book"
-                                        : "Publicar no e-book"}
-                                </button>
+                                />
 
                                 <button
                                     onClick={async () => {

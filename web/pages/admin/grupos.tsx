@@ -52,6 +52,61 @@ function seloVisibilidade(visibilidade?: string) {
     };
 }
 
+function BotaoVisibilidade({
+    publico,
+    onClick,
+}: {
+    publico: boolean;
+    onClick: () => void;
+}) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            aria-pressed={publico}
+            style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.55rem",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                color: publico ? "#0b6b45" : "#7a2e0b",
+                fontWeight: 600,
+            }}
+        >
+            <span
+                aria-hidden="true"
+                style={{
+                    position: "relative",
+                    width: "44px",
+                    height: "24px",
+                    borderRadius: "999px",
+                    backgroundColor: publico ? "#0b6b45" : "#7a2e0b",
+                    transition: "background-color 150ms ease",
+                    boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.08)",
+                }}
+            >
+                <span
+                    style={{
+                        position: "absolute",
+                        top: "3px",
+                        left: publico ? "23px" : "3px",
+                        width: "18px",
+                        height: "18px",
+                        borderRadius: "50%",
+                        backgroundColor: "#ffffff",
+                        transition: "left 150ms ease",
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
+                    }}
+                />
+            </span>
+            <span>{publico ? "Público no e-book" : "Oculto no e-book"}</span>
+        </button>
+    );
+}
+
 // componente separado para os grupos,
 // que são listados na barra lateral esquerda, e também podem ser ordenados
 function ItemGrupo({
@@ -649,19 +704,10 @@ export default function Home({ grupos, encontros, eventos }: Props) {
 
                                             {" | "}
 
-                                            <button
+                                            <BotaoVisibilidade
+                                                publico={encontro.visibilidade === "publico"}
                                                 onClick={() => alternarVisibilidadeEncontro(encontro)}
-                                                style={{
-                                                    background: "transparent",
-                                                    border: "none",
-                                                    color: "#0b5c6b",
-                                                    cursor: "pointer",
-                                                }}
-                                            >
-                                                {encontro.visibilidade === "publico"
-                                                    ? "Ocultar no e-book"
-                                                    : "Publicar no e-book"}
-                                            </button>
+                                            />
 
                                             {" | "}
 
@@ -767,21 +813,10 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                     </button>
 
                                     <div style={{ display: "flex", gap: "1rem" }}>
-                                        <button
-                                            type="button"
+                                        <BotaoVisibilidade
+                                            publico={evento.visibilidade === "publico"}
                                             onClick={() => alternarVisibilidadeEvento(evento)}
-                                            style={{
-                                                background: "none",
-                                                border: "none",
-                                                color: "#0b5c6b",
-                                                cursor: "pointer",
-                                                padding: 0,
-                                            }}
-                                        >
-                                            {evento.visibilidade === "publico"
-                                                ? "Ocultar no e-book"
-                                                : "Publicar no e-book"}
-                                        </button>
+                                        />
 
                                         <Link href={`/admin/eventos/editar/${evento.id}`}>
                                             ✏️ Editar evento
@@ -884,19 +919,10 @@ export default function Home({ grupos, encontros, eventos }: Props) {
 
                                                     {" | "}
 
-                                                    <button
+                                                    <BotaoVisibilidade
+                                                        publico={encontro.visibilidade === "publico"}
                                                         onClick={() => alternarVisibilidadeEncontro(encontro)}
-                                                        style={{
-                                                            background: "transparent",
-                                                            border: "none",
-                                                            color: "#0b5c6b",
-                                                            cursor: "pointer",
-                                                        }}
-                                                    >
-                                                        {encontro.visibilidade === "publico"
-                                                            ? "Ocultar no e-book"
-                                                            : "Publicar no e-book"}
-                                                    </button>
+                                                    />
 
                                                     {" | "}
 
