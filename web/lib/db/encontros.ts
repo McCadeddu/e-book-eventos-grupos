@@ -57,7 +57,16 @@ export async function getEncontrosStrict() {
             throw criarErroDeConsulta("Erro ao buscar encontros públicos", error);
         }
 
-        return data || [];
+        const encontros = (data || []) as Encontro[];
+
+        if (encontros.length === 0) {
+            throw criarErroDeConsulta(
+                "Resposta vazia ao buscar encontros públicos",
+                "nenhum encontro retornado"
+            );
+        }
+
+        return encontros;
     } catch (error) {
         console.warn(
             "Usando fallback local para encontros públicos:",
@@ -99,7 +108,16 @@ export async function getEncontrosPorGrupoStrict(
             );
         }
 
-        return (data ?? []) as Encontro[];
+        const encontros = (data ?? []) as Encontro[];
+
+        if (encontros.length === 0) {
+            throw criarErroDeConsulta(
+                `Resposta vazia ao buscar encontros públicos do grupo ${grupoId}`,
+                "nenhum encontro retornado"
+            );
+        }
+
+        return encontros;
     } catch (error) {
         console.warn(
             `Usando fallback local para encontros do grupo ${grupoId}:`,
@@ -127,12 +145,23 @@ export async function getEncontrosPorEventoStrict(eventoId: string) {
             );
         }
 
-        return data || [];
+        const encontros = (data || []) as Encontro[];
+
+        if (encontros.length === 0) {
+            throw criarErroDeConsulta(
+                `Resposta vazia ao buscar encontros públicos do evento ${eventoId}`,
+                "nenhum encontro retornado"
+            );
+        }
+
+        return encontros;
     } catch (error) {
         console.warn(
-            `Sem encontros de evento no fallback para ${eventoId}:`,
+            `Usando fallback local para encontros do evento ${eventoId}:`,
             error instanceof Error ? error.message : error
         );
-        return [];
+        return lerEncontrosFallback().filter(
+            (encontro) => encontro.evento_id === eventoId
+        );
     }
 }

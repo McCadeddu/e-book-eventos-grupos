@@ -59,7 +59,16 @@ export async function getGruposOrdenadosStrict(): Promise<Grupo[]> {
             throw criarErroDeConsulta("Erro ao buscar grupos públicos", error);
         }
 
-        return (data ?? []) as Grupo[];
+        const grupos = (data ?? []) as Grupo[];
+
+        if (grupos.length === 0) {
+            throw criarErroDeConsulta(
+                "Resposta vazia ao buscar grupos públicos",
+                "nenhum grupo retornado"
+            );
+        }
+
+        return grupos;
     } catch (error) {
         console.warn(
             "Usando fallback local para grupos públicos:",
