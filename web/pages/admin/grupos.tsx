@@ -43,6 +43,15 @@ function labelData(encontro: Encontro): string {
     return "Data a definir";
 }
 
+function seloVisibilidade(visibilidade?: string) {
+    const oculto = visibilidade === "interno";
+
+    return {
+        label: oculto ? "OCULTO NO E-BOOK" : "PUBLICO NO E-BOOK",
+        backgroundColor: oculto ? "#7a2e0b" : "#0b6b45",
+    };
+}
+
 // componente separado para os grupos,
 // que são listados na barra lateral esquerda, e também podem ser ordenados
 function ItemGrupo({
@@ -539,7 +548,10 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                     <li>Nenhum encontro cadastrado.</li>
                                 )}
 
-                                {encontrosGrupo.map(encontro => (
+                                {encontrosGrupo.map(encontro => {
+                                    const visibilidade = seloVisibilidade(encontro.visibilidade);
+
+                                    return (
                                     <li
                                         key={encontro.id}
                                         style={{
@@ -551,7 +563,22 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                             boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
                                         }}
                                     >
-                                        <strong>{labelData(encontro)}</strong>
+                                        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+                                            <strong>{labelData(encontro)}</strong>
+                                            <span
+                                                style={{
+                                                    fontSize: "0.7rem",
+                                                    fontWeight: 700,
+                                                    padding: "0.2rem 0.5rem",
+                                                    borderRadius: "999px",
+                                                    backgroundColor: visibilidade.backgroundColor,
+                                                    color: "#ffffff",
+                                                    letterSpacing: "0.4px",
+                                                }}
+                                            >
+                                                {visibilidade.label}
+                                            </span>
+                                        </div>
                                         {encontro.titulo && ` — ${encontro.titulo}`}
 
                                         <div style={{ marginTop: "0.3rem", fontSize: "0.9rem" }}>
@@ -587,7 +614,8 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                             </button>
                                         </div>
                                     </li>
-                                        ))}
+                                        );
+                                })}
                             </ul>
 
                             <div style={{ marginTop: "1rem" }}>
@@ -606,6 +634,7 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                     {ordemEventos.map((evento) => {
                         const encontrosEvento = encontrosDoEvento(evento.id);
                         const eventoAberto = eventosAbertos.includes(evento.id);
+                        const visibilidadeEvento = seloVisibilidade(evento.visibilidade);
 
                         return (
                             <section
@@ -642,8 +671,21 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                     >
                                         {eventoAberto ? "▾ " : "▸ "} {evento.titulo}
                                     </h2>
-                                    <div style={{ marginTop: "0.25rem", fontSize: "0.9rem", color: "#725e50" }}>
-                                        {encontrosEvento.length} encontro(s)
+                                    <div style={{ marginTop: "0.25rem", fontSize: "0.9rem", color: "#725e50", display: "flex", gap: "0.6rem", alignItems: "center", flexWrap: "wrap" }}>
+                                        <span>{encontrosEvento.length} encontro(s)</span>
+                                        <span
+                                            style={{
+                                                fontSize: "0.7rem",
+                                                fontWeight: 700,
+                                                padding: "0.2rem 0.5rem",
+                                                borderRadius: "999px",
+                                                backgroundColor: visibilidadeEvento.backgroundColor,
+                                                color: "#ffffff",
+                                                letterSpacing: "0.4px",
+                                            }}
+                                        >
+                                            {visibilidadeEvento.label}
+                                        </span>
                                     </div>
                                     </button>
 
@@ -688,6 +730,7 @@ export default function Home({ grupos, encontros, eventos }: Props) {
 
                                     {encontrosEvento.map((encontro) => {
                                         const organizacao = encontro.nivel === "organizacao";
+                                        const visibilidade = seloVisibilidade(encontro.visibilidade);
 
                                         return (
                                             <li
@@ -721,6 +764,19 @@ export default function Home({ grupos, encontros, eventos }: Props) {
                                                         }}
                                                     >
                                                         {organizacao ? "ORGANIZAÇÃO" : "EVENTO"}
+                                                    </span>
+                                                    <span
+                                                        style={{
+                                                            fontSize: "0.7rem",
+                                                            fontWeight: 700,
+                                                            padding: "0.2rem 0.5rem",
+                                                            borderRadius: "999px",
+                                                            backgroundColor: visibilidade.backgroundColor,
+                                                            color: "#ffffff",
+                                                            letterSpacing: "0.4px",
+                                                        }}
+                                                    >
+                                                        {visibilidade.label}
                                                     </span>
                                                 </div>
 
