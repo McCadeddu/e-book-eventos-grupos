@@ -2,6 +2,7 @@
 
 import type { NextApiRequest, NextApiResponse } from "next";
 import { requireAdmin } from "../../lib/adminAuth";
+import { salvarBackupAutomatico } from "../../lib/adminBackup";
 import { supabase } from "../../lib/supabaseClient";
 import { randomUUID } from "crypto";
 
@@ -75,6 +76,12 @@ export default async function handler(
             return res.status(500).json({ erro: error.message });
         }
 
+        await salvarBackupAutomatico({
+            entidade: "eventos",
+            acao: "criar",
+            referenciaId: evento.id,
+        });
+
         await revalidar(res);
 
         return res.status(200).json({ sucesso: true });
@@ -123,6 +130,12 @@ export default async function handler(
             return res.status(500).json({ erro: error.message });
         }
 
+        await salvarBackupAutomatico({
+            entidade: "eventos",
+            acao: "editar",
+            referenciaId: id,
+        });
+
         await revalidar(res);
 
         return res.status(200).json({ sucesso: true });
@@ -148,6 +161,12 @@ export default async function handler(
             console.error(error);
             return res.status(500).json({ erro: error.message });
         }
+
+        await salvarBackupAutomatico({
+            entidade: "eventos",
+            acao: "excluir",
+            referenciaId: id,
+        });
 
         await revalidar(res);
 

@@ -2,6 +2,7 @@
 
 import type { NextApiRequest, NextApiResponse } from "next";
 import { requireAdmin } from "../../lib/adminAuth";
+import { salvarBackupAutomatico } from "../../lib/adminBackup";
 import { supabase } from "../../lib/supabaseClient";
 import { randomUUID } from "crypto";
 
@@ -112,6 +113,12 @@ export default async function handler(
             return res.status(500).json({ erro: error.message });
         }
 
+        await salvarBackupAutomatico({
+            entidade: "grupos",
+            acao: "criar",
+            referenciaId: grupo.id,
+        });
+
         await res.revalidate("/livro/calendario");
         await res.revalidate("/livro");
         await res.revalidate(`/livro/${grupo.slug}`);
@@ -162,6 +169,12 @@ export default async function handler(
             return res.status(500).json({ erro: error.message });
         }
 
+        await salvarBackupAutomatico({
+            entidade: "grupos",
+            acao: "editar",
+            referenciaId: id,
+        });
+
         await res.revalidate("/livro/calendario");
         await res.revalidate("/livro");
         await res.revalidate("/admin/grupos");
@@ -194,6 +207,12 @@ export default async function handler(
         if (erroGrupo) {
             return res.status(500).json({ erro: erroGrupo.message });
         }
+
+        await salvarBackupAutomatico({
+            entidade: "grupos",
+            acao: "excluir",
+            referenciaId: grupoId,
+        });
 
         await res.revalidate("/livro/calendario");
         await res.revalidate("/livro");
