@@ -95,6 +95,23 @@ function enriquecerEventosComDatas<T extends { id: string }>(eventos: T[]) {
     });
 }
 
+function normalizarEventoSerializable<T extends Record<string, any>>(evento: T) {
+    return {
+        ...evento,
+        faixa_etaria: evento.faixa_etaria ?? null,
+        descricao: evento.descricao ?? null,
+        equipe: Array.isArray(evento.equipe) ? evento.equipe : [],
+        objetivo_ano: evento.objetivo_ano ?? null,
+        convite: evento.convite ?? null,
+        grupos_envolvidos: Array.isArray(evento.grupos_envolvidos)
+            ? evento.grupos_envolvidos
+            : [],
+        todos_os_grupos: !!evento.todos_os_grupos,
+        data_inicio: evento.data_inicio ?? null,
+        data_fim: evento.data_fim ?? null,
+    };
+}
+
 async function enriquecerEventosComDatasDoBanco<T extends { id: string }>(
     eventos: T[]
 ) {
@@ -183,7 +200,9 @@ function lerEventosFallback() {
         }
     });
 
-    return enriquecerEventosComDatas(Array.from(mapa.values()));
+    return enriquecerEventosComDatas(Array.from(mapa.values())).map(
+        normalizarEventoSerializable
+    );
 }
 
 export async function getEventos() {
@@ -206,7 +225,9 @@ export async function getEventos() {
             );
         }
 
-        return enriquecerEventosComDatasDoBanco(eventos);
+        return (await enriquecerEventosComDatasDoBanco(eventos)).map(
+            normalizarEventoSerializable
+        );
     } catch (error) {
         console.warn(
             "Usando fallback local para eventos administrativos:",
@@ -236,7 +257,9 @@ export async function getEventosStrict() {
             );
         }
 
-        return enriquecerEventosComDatasDoBanco(eventos);
+        return (await enriquecerEventosComDatasDoBanco(eventos)).map(
+            normalizarEventoSerializable
+        );
     } catch (error) {
         console.warn(
             "Usando fallback local para eventos públicos:",
