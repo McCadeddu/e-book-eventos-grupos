@@ -2,10 +2,250 @@
   "ano": 2026,
   "eventos": [
     {
+      "id": "b87f34cf-d255-497e-8eb3-913533a6a384",
+      "titulo": "ENCONTRÃO CMV",
+      "tipo": "evento",
+      "categoria_principal": "comunidade",
+      "grupos_envolvidos": [],
+      "todos_os_grupos": true,
+      "data": "08/03/2026",
+      "horario": "9h00 - 14h00",
+      "local": "CMV Galpão",
+      "tema": "",
+      "descricao": "Uma manhã de comunhão, espiritualidade, formação e convivência fraterna, fortalecendo os laços que nos unem no propósito de servir e evangelizar.",
+      "observacoes": "Se você caminha conosco, esse momento é para você! 🙏🌎\n📅 Reserve o dia 8 de março de 2026 na sua agenda e participe!",
+      "visibilidade": "publico",
+      "responsaveis": [
+        "P. Siro",
+        "Roberta",
+        "Coordenadores dos Grupos"
+      ],
+      "campos_personalizados": {},
+      "criado_por": "sync-banco",
+      "data_criacao": "15/02/2026",
+      "ultima_atualizacao": "15/02/2026"
+    },
+    {
+      "id": "94a47b72-ad64-41b6-91c9-10ed03f297b6",
+      "titulo": "GRAND PRIX FÓRMULA 1",
+      "tipo": "evento",
+      "categoria_principal": "evento",
+      "grupos_envolvidos": [
+        "gimvi-adolescentes",
+        "gimvi-jovens"
+      ],
+      "todos_os_grupos": false,
+      "data": "01/03/2026",
+      "horario": "15h00 - 18h30",
+      "local": "CMV",
+      "tema": "",
+      "descricao": "Retiro de evangelização para adolescentes",
+      "observacoes": "Se você é adolescente e quer um encontro profundo com Deus, conhecer novos amigos para viver uma vida melhor, participe ao Grand Prix Formula 1: o sucesso é garantido!",
+      "visibilidade": "publico",
+      "responsaveis": [
+        "Kátia e Leonardo",
+        "Cristiane",
+        "Isabela",
+        "Fernanda",
+        "Fernando e Fábia",
+        "Marilene"
+      ],
+      "campos_personalizados": {},
+      "criado_por": "sync-banco",
+      "data_criacao": "13/02/2026",
+      "ultima_atualizacao": "13/02/2026"
+    },
+    {
+      "id": "b82573c8-75d2-4c76-b670-dbc9f392fcc0",
+      "titulo": "JESHUÁ",
+      "tipo": "evento",
+      "categoria_principal": "evento",
+      "grupos_envolvidos": [
+        "gimvi-jovens"
+      ],
+      "todos_os_grupos": false,
+      "data": "20/03/2026",
+      "horario": "Três dias",
+      "local": "CMV",
+      "tema": "",
+      "descricao": "Retiro de evangelização para Jovens",
+      "observacoes": "Se você é jovem e quer um encontro profundo com o Deus que salva, fazer novas amizades e viver uma vida melhor, participe ao Jeshuá!",
+      "visibilidade": "publico",
+      "responsaveis": [
+        "Roberta",
+        "Marilene",
+        "Yasmin e Gustavo",
+        "Diego e Mariana",
+        "Magna",
+        "Maria Fernanda"
+      ],
+      "campos_personalizados": {},
+      "criado_por": "sync-banco",
+      "data_criacao": "13/02/2026",
+      "ultima_atualizacao": "13/02/2026"
+    },
+    {
+      "id": "15956215-1c66-40dc-af45-0db1f9fce4b0",
+      "titulo": "AFETIVIDADE JOVENS",
+      "tipo": "evento",
+      "categoria_principal": "evento",
+      "grupos_envolvidos": [
+        "gimvi-adolescentes",
+        "gimvi-jovens"
+      ],
+      "todos_os_grupos": false,
+      "data": "21/02/2026",
+      "horario": "Dois dias",
+      "local": "CMV",
+      "tema": "",
+      "descricao": "Retiro de afetividade para os jovens",
+      "observacoes": "Viver o puro amor precisa de um encontro importante com o Amor, que é Deus. Venha descobrir como estar nessa pureza participando ao encontro de Afetividade Jovens!",
+      "visibilidade": "publico",
+      "responsaveis": [
+        "Lavínia e Adolfo"
+      ],
+      "campos_personalizados": {},
+      "criado_por": "sync-banco",
+      "data_criacao": "14/02/2026",
+      "ultima_atualizacao": "14/02/2026"
+    },
+    {
+      "id": "f8aade3c-eb49-4929-a604-e55380f5abef",
+      "titulo": "ARRAIÁ DO BETÂNIA",
+      "tipo": "evento",
+      "categoria_principal": "comunidade",
+      "grupos_envolvidos": [],
+      "todos_os_grupos": true,
+      "data": "04/07/2026",
+      "horario": "Dois dias",
+      "local": "Paróquia São Sebastião",
+      "tema": "",
+      "descricao": "Festa paroquial que envolve todos os grupos",
+      "observacoes": "Partecipe com alegria ao Arraiá do Betânia!",
+      "visibilidade": "publico",
+      "responsaveis": [
+        ""
+      ],
+      "campos_personalizados": {},
+      "criado_por": "sync-banco",
+      "data_criacao": "14/02/2026",
+      "ultima_atualizacao": "14/02/2026"
+    },
+    {
+      "id": "c6392d83-de3b-4d09-bffb-22cbb264aee3",
+      "titulo": "CANÁ",
+      "tipo": "evento",
+      "categoria_principal": "evento",
+      "grupos_envolvidos": [
+        "gimca-1",
+        "gimca-2"
+      ],
+      "todos_os_grupos": false,
+      "data": "13/03/2026",
+      "horario": "19h30 - 21h30",
+      "local": "CMV",
+      "tema": "",
+      "descricao": "Uma oportunidade de celebrar o amor! Um tempo de conversas, reflexões, falando de casais para casais. Um tempo para o amor, um tempo de olhar-se e revisitar-se. Um tempo a luz da palavra, de olhar e colocar Deus como terceira pessoa em cada matrimônio. E tantos outros encantos e surpresas!",
+      "observacoes": "Um final de semana que vale a pena viver! Venha participar!",
+      "visibilidade": "publico",
+      "responsaveis": [
+        "Catarina e Sérgio",
+        "Patrícia",
+        "Vanir",
+        "Meire e Deiverson",
+        "Adriana"
+      ],
+      "campos_personalizados": {},
+      "criado_por": "sync-banco",
+      "data_criacao": "14/02/2026",
+      "ultima_atualizacao": "14/02/2026"
+    },
+    {
+      "id": "8a1ba62a-9617-420b-8e36-8d4411bce3bb",
+      "titulo": "AFETIVIDADE CASAIS",
+      "tipo": "evento",
+      "categoria_principal": "evento",
+      "grupos_envolvidos": [
+        "gimca-1",
+        "gimca-2"
+      ],
+      "todos_os_grupos": false,
+      "data": "29/08/2026",
+      "horario": "Dois dias",
+      "local": "CMV",
+      "tema": "",
+      "descricao": "Um retiro para descobrir a Presença de Deus na vida a dois",
+      "observacoes": "Venha participar ao retiro Afetividade Casais!",
+      "visibilidade": "publico",
+      "responsaveis": [
+        "P. Hernando",
+        "Harley e Karine",
+        "Nádia e Paulo",
+        "Liliane e Lincon"
+      ],
+      "campos_personalizados": {},
+      "criado_por": "sync-banco",
+      "data_criacao": "14/02/2026",
+      "ultima_atualizacao": "14/02/2026"
+    },
+    {
+      "id": "2aea4919-bfa5-4f60-8870-a0e05deed062",
+      "titulo": "AREIA OU ROCHA",
+      "tipo": "evento",
+      "categoria_principal": "evento",
+      "grupos_envolvidos": [
+        "gimca-1",
+        "gimca-2"
+      ],
+      "todos_os_grupos": false,
+      "data": "15/08/2026",
+      "horario": "Dois dias",
+      "local": "CMV",
+      "tema": "",
+      "descricao": "Retiro para fortificar a relação do casal",
+      "observacoes": "Venha participar ao retiro Areia ou Rocha!",
+      "visibilidade": "publico",
+      "responsaveis": [
+        "Nádia e Paulo",
+        "Fernando e Eliane",
+        "Esenclever e Ana Paula",
+        "Márcia"
+      ],
+      "campos_personalizados": {},
+      "criado_por": "sync-banco",
+      "data_criacao": "14/02/2026",
+      "ultima_atualizacao": "14/02/2026"
+    },
+    {
+      "id": "e33c6f69-a5f5-4907-8262-c3735a9f985f",
+      "titulo": "EMAÚS",
+      "tipo": "evento",
+      "categoria_principal": "evento",
+      "grupos_envolvidos": [
+        "gam",
+        "grupo-trilhas"
+      ],
+      "todos_os_grupos": false,
+      "data": "14/11/2026",
+      "horario": "Dois dias",
+      "local": "CMV",
+      "tema": "",
+      "descricao": "Retiro para redescobrir o Amor de Deus e fortificar a própria vida",
+      "observacoes": "Venha participar ao retiro Emaús!",
+      "visibilidade": "publico",
+      "responsaveis": [
+        "Maria e Wilson"
+      ],
+      "campos_personalizados": {},
+      "criado_por": "sync-banco",
+      "data_criacao": "14/02/2026",
+      "ultima_atualizacao": "14/02/2026"
+    },
+    {
       "id": "5c0e6f63-3298-4f25-b754-4d3c88f7e201",
       "titulo": "Aniversário da Comunidade",
-      "tipo": "evento_comunitario",
-      "categoria_principal": "comunidade",
+      "tipo": "evento",
+      "categoria_principal": "evento",
       "grupos_envolvidos": [
         "gimvi-jovens",
         "gimca-1",
@@ -19,32 +259,16 @@
       "local": "CMV",
       "tema": "",
       "descricao": "Celebração do aniversário da Comunidade Missionária de Villaregia.",
-      "observacoes": "Encontro com a presidente da Comunidade Missionária de Villaregia, Briseida.",
+      "observacoes": "Juntos construímos a nossa família CMV!",
       "visibilidade": "publico",
-      "responsaveis": [],
+      "responsaveis": [
+        "P. Siro Opportuni",
+        "Coordenadores dos grupos"
+      ],
       "campos_personalizados": {},
-      "criado_por": "comunicazione.bh@villaregia.org",
+      "criado_por": "sync-banco",
       "data_criacao": "22/05/2026",
       "ultima_atualizacao": "22/05/2026"
-    },
-    {
-      "id": "evt-001",
-      "titulo": "Encontro do Grupo Jovem",
-      "tipo": "encontro_grupo",
-      "categoria_principal": "grupo",
-      "grupo_relacionado": "Grupo Jovem São Paulo",
-      "data": "15/02/2026",
-      "horario": "19h30 – 21h30",
-      "local": "Salão Paroquial",
-      "tema": "Chamados à Missão",
-      "descricao": "Encontro mensal de formação e partilha.",
-      "observacoes": "",
-      "visibilidade": "interno",
-      "responsaveis": ["Coordenação Grupo Jovem"],
-      "campos_personalizados": {},
-      "criado_por": "pascom@villaregia.org",
-      "data_criacao": "01/11/2025",
-      "ultima_atualizacao": "01/11/2025"
     }
   ]
 }
