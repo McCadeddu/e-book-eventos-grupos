@@ -592,34 +592,8 @@ function FormularioEncontro({
             ? String(formData.get("nivel") || nivel)
             : encontro?.nivel || "evento";
 
-        const payload = {
-            id: encontro?.id,
-            grupo_id: mostrarVinculoEvento
-                ? eventoSelecionado
-                    ? null
-                    : grupo?.id || encontro?.grupo_id || null
-                : null,
-            grupoId: mostrarVinculoEvento
-                ? eventoSelecionado
-                    ? null
-                    : grupo?.id || encontro?.grupo_id || null
-                : null,
-            evento_id: evento?.id || eventoSelecionado,
+        const basePayload = {
             tipo: formData.get("tipo"),
-            data_inicio:
-                String(formData.get("data_inicio") || formData.get("dataInicio") || "").trim() ||
-                encontro?.data_inicio ||
-                null,
-            dataInicio:
-                String(formData.get("data_inicio") || formData.get("dataInicio") || "").trim() ||
-                encontro?.data_inicio ||
-                null,
-            data_fim:
-                String(formData.get("data_fim") || formData.get("dataFim") || "").trim() || null,
-            dataFim:
-                String(formData.get("data_fim") || formData.get("dataFim") || "").trim() || null,
-            data_legivel: formData.get("data_legivel") || formData.get("dataLegivel") || "",
-            dataLegivel: formData.get("data_legivel") || formData.get("dataLegivel") || "",
             titulo: formData.get("titulo"),
             horario: formData.get("horario"),
             local: formData.get("local"),
@@ -630,6 +604,36 @@ function FormularioEncontro({
                     ? formData.get("mostrar_no_anual") === "on"
                     : encontro?.mostrar_no_anual ?? true,
         };
+
+        const payload = encontro
+            ? {
+                  ...basePayload,
+                  id: encontro.id,
+                  grupo_id: mostrarVinculoEvento
+                      ? eventoSelecionado
+                          ? null
+                          : grupo?.id || encontro.grupo_id || null
+                      : null,
+                  evento_id: evento?.id || eventoSelecionado,
+                  data_inicio:
+                      String(formData.get("data_inicio") || "").trim() ||
+                      encontro.data_inicio ||
+                      null,
+                  data_fim: String(formData.get("data_fim") || "").trim() || null,
+                  data_legivel: formData.get("data_legivel") || "",
+              }
+            : {
+                  ...basePayload,
+                  grupoId: mostrarVinculoEvento
+                      ? eventoSelecionado
+                          ? null
+                          : grupo?.id || null
+                      : null,
+                  evento_id: evento?.id || eventoSelecionado,
+                  dataInicio: String(formData.get("dataInicio") || "").trim() || null,
+                  dataFim: String(formData.get("dataFim") || "").trim() || null,
+                  dataLegivel: formData.get("dataLegivel") || "",
+              };
 
         const resultado = await onSubmit(payload);
 
