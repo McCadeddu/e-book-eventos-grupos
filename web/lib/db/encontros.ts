@@ -6,6 +6,15 @@ import path from "path";
 
 const EVENTO_ANIVERSARIO_DA_COMUNIDADE_ID =
     "5c0e6f63-3298-4f25-b754-4d3c88f7e201";
+const EVENTOS_PROMOVIDOS: Record<string, string> = {
+    "afetividade-jovens": "6f6ac7f4-7c5c-4a79-9f9d-2b2fd3d0a101",
+    jeshua: "d0c22f65-2453-4b5f-8300-f91f1dcff102",
+    "grand-prix-formula-1": "3b33e0bb-2cb8-4d31-bf95-f6c2cb4ab103",
+    cana: "0f0aa7de-a88e-4761-8f57-b7a211c9d104",
+    "areia-ou-rocha": "1c250f5d-83f9-4473-b94a-ef6dfeef3105",
+    "afetividade-casais": "fb334ac3-53d1-456a-8108-3d526511f106",
+    emaus: "727bb9b1-3d38-49fb-a184-7f116f954107",
+};
 
 function criarErroDeConsulta(contexto: string, detalhes: unknown) {
     const texto =
@@ -22,6 +31,18 @@ function ehEncontroDoAniversarioDaCmv(encontro: Encontro) {
         typeof encontro.titulo === "string" &&
         encontro.titulo.includes("Aniversário da CMV")
     );
+}
+
+function resolverEventoEspecial(encontro: Encontro) {
+    if (encontro.grupo_id && EVENTOS_PROMOVIDOS[encontro.grupo_id]) {
+        return EVENTOS_PROMOVIDOS[encontro.grupo_id];
+    }
+
+    if (ehEncontroDoAniversarioDaCmv(encontro)) {
+        return EVENTO_ANIVERSARIO_DA_COMUNIDADE_ID;
+    }
+
+    return null;
 }
 
 function lerEncontrosFallback(): Encontro[] {
@@ -41,14 +62,16 @@ function lerEncontrosFallback(): Encontro[] {
                 encontro.data_inicio.trim() !== ""
         )
         .map((encontro: Encontro) => {
-            if (!ehEncontroDoAniversarioDaCmv(encontro)) {
+            const eventoEspecialId = resolverEventoEspecial(encontro);
+
+            if (!eventoEspecialId) {
                 return encontro;
             }
 
             return {
                 ...encontro,
                 grupo_id: null as any,
-                evento_id: EVENTO_ANIVERSARIO_DA_COMUNIDADE_ID,
+                evento_id: eventoEspecialId,
                 nivel: "evento",
             };
         });
