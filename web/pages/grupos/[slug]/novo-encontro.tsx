@@ -22,25 +22,30 @@ export default function NovoEncontro({ grupo, eventos }: Props) {
     const [eventoId, setEventoId] = useState<string | null>(null);
 
     if (!grupo) {
-        return <p>Grupo não encontrado.</p>;
+        return <p>Grupo nao encontrado.</p>;
     }
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        setStatus(null);
 
         const formData = new FormData(event.currentTarget);
+        const eventoIdSelecionado =
+            String(formData.get("evento_id") || "").trim() || null;
+        const dataInicio = String(formData.get("dataInicio") || "").trim();
+        const dataFim = String(formData.get("dataFim") || "").trim();
 
         const dados = {
-            grupoId: grupo.id,
+            grupoId: eventoIdSelecionado ? null : grupo.id,
             tipo: formData.get("tipo"),
-            dataInicio: formData.get("dataInicio"),
-            dataFim: formData.get("dataFim"),
+            dataInicio,
+            dataFim: dataFim || null,
             dataLegivel: formData.get("dataLegivel"),
             titulo: formData.get("titulo"),
             horario: formData.get("horario"),
             local: formData.get("local"),
             visibilidade: formData.get("visibilidade"),
-            evento_id: formData.get("evento_id") || null,
+            evento_id: eventoIdSelecionado,
         };
 
         try {
@@ -55,10 +60,11 @@ export default function NovoEncontro({ grupo, eventos }: Props) {
             if (resultado.sucesso) {
                 setStatus("Encontro salvo com sucesso.");
                 formRef.current?.reset();
+                setEventoId(null);
                 return;
             }
 
-            setStatus("Erro ao salvar encontro.");
+            setStatus(resultado.erro || "Erro ao salvar encontro.");
         } catch (error) {
             console.error(error);
             setStatus("Erro inesperado ao salvar.");
@@ -97,7 +103,7 @@ export default function NovoEncontro({ grupo, eventos }: Props) {
                             fontWeight: 500,
                         }}
                     >
-                        Voltar à administração dos grupos
+                        Voltar a administracao dos grupos
                     </button>
                 </p>
 
@@ -140,24 +146,20 @@ export default function NovoEncontro({ grupo, eventos }: Props) {
                         </select>
                     </label>
 
-                    {!eventoId && (
-                        <>
-                            <input type="date" name="dataInicio" required />
-                            <input type="date" name="dataFim" />
-                        </>
-                    )}
+                    <input type="date" name="dataInicio" required />
+                    <input type="date" name="dataFim" />
 
                     <input
                         name="dataLegivel"
                         placeholder="Ex: 15-17 de maio · Grand Prix"
                     />
 
-                    <input name="titulo" placeholder="Título do encontro" />
-                    <input name="horario" placeholder="Horário" />
+                    <input name="titulo" placeholder="Titulo do encontro" />
+                    <input name="horario" placeholder="Horario" />
                     <input name="local" placeholder="Local" />
 
                     <select name="visibilidade">
-                        <option value="publico">Público no e-book</option>
+                        <option value="publico">Publico no e-book</option>
                         <option value="interno">Oculto no e-book</option>
                     </select>
 

@@ -22,21 +22,29 @@ export default function EditarEncontro({ encontro, eventos }: Props) {
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         setSalvando(true);
+        setStatus(null);
 
         const formData = new FormData(event.currentTarget);
+        const eventoIdSelecionado =
+            String(formData.get("evento_id") || "").trim() || null;
+        const dataInicio =
+            String(formData.get("data_inicio") || "").trim() ||
+            encontro.data_inicio ||
+            null;
+        const dataFimBruta = String(formData.get("data_fim") || "").trim();
 
         const dadosAtualizados = {
             id: encontro.id,
-            grupo_id: encontro.grupo_id,
+            grupo_id: eventoIdSelecionado ? null : encontro.grupo_id,
             tipo: formData.get("tipo"),
-            data_inicio: formData.get("data_inicio"),
-            data_fim: formData.get("data_fim") || null,
+            data_inicio: dataInicio,
+            data_fim: dataFimBruta || null,
             data_legivel: formData.get("data_legivel") || "",
             titulo: formData.get("titulo"),
             horario: formData.get("horario"),
             local: formData.get("local"),
             visibilidade: formData.get("visibilidade"),
-            evento_id: formData.get("evento_id") || null,
+            evento_id: eventoIdSelecionado,
         };
 
         const resposta = await fetch("/api/encontros", {
@@ -55,7 +63,7 @@ export default function EditarEncontro({ encontro, eventos }: Props) {
             return;
         }
 
-        setStatus("Erro ao atualizar encontro.");
+        setStatus(resultado.erro || "Erro ao atualizar encontro.");
         setSalvando(false);
     }
 
@@ -97,39 +105,38 @@ export default function EditarEncontro({ encontro, eventos }: Props) {
                     </select>
                 </label>
 
-                {!eventoId && (
-                    <>
-                        <br />
-                        <br />
+                <br />
+                <br />
 
-                        <label>
-                            Data de início
-                            <br />
-                            <input
-                                name="data_inicio"
-                                defaultValue={encontro.data_inicio || ""}
-                            />
-                        </label>
-
-                        <br />
-                        <br />
-
-                        <label>
-                            Data de fim
-                            <br />
-                            <input
-                                name="data_fim"
-                                defaultValue={encontro.data_fim || ""}
-                            />
-                        </label>
-                    </>
-                )}
+                <label>
+                    Data de inicio
+                    <br />
+                    <input
+                        type="date"
+                        name="data_inicio"
+                        defaultValue={encontro.data_inicio || ""}
+                        required
+                    />
+                </label>
 
                 <br />
                 <br />
 
                 <label>
-                    Data legível (opcional)
+                    Data de fim
+                    <br />
+                    <input
+                        type="date"
+                        name="data_fim"
+                        defaultValue={encontro.data_fim || ""}
+                    />
+                </label>
+
+                <br />
+                <br />
+
+                <label>
+                    Data legivel (opcional)
                     <br />
                     <input
                         name="data_legivel"
@@ -142,7 +149,7 @@ export default function EditarEncontro({ encontro, eventos }: Props) {
                 <br />
 
                 <label>
-                    Título
+                    Titulo
                     <br />
                     <input name="titulo" defaultValue={encontro.titulo || ""} />
                 </label>
@@ -151,7 +158,7 @@ export default function EditarEncontro({ encontro, eventos }: Props) {
                 <br />
 
                 <label>
-                    Horário
+                    Horario
                     <br />
                     <input name="horario" defaultValue={encontro.horario || ""} />
                 </label>
@@ -175,7 +182,7 @@ export default function EditarEncontro({ encontro, eventos }: Props) {
                         name="visibilidade"
                         defaultValue={encontro.visibilidade}
                     >
-                        <option value="publico">Público no e-book</option>
+                        <option value="publico">Publico no e-book</option>
                         <option value="interno">Oculto no e-book</option>
                     </select>
                 </label>
@@ -184,7 +191,7 @@ export default function EditarEncontro({ encontro, eventos }: Props) {
                 <br />
 
                 <button type="submit" disabled={salvando}>
-                    {salvando ? "Salvando..." : "Salvar alterações"}
+                    {salvando ? "Salvando..." : "Salvar alteracoes"}
                 </button>
             </form>
 
