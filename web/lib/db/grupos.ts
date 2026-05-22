@@ -5,6 +5,16 @@ import { Grupo } from "../types";
 import fs from "fs";
 import path from "path";
 
+const IDS_EVENTOS_PROMOVIDOS = new Set([
+    "afetividade-jovens",
+    "jeshua",
+    "grand-prix-formula-1",
+    "cana",
+    "areia-ou-rocha",
+    "afetividade-casais",
+    "emaus",
+]);
+
 function criarErroDeConsulta(contexto: string, detalhes: unknown) {
     const texto =
         detalhes instanceof Error
@@ -24,11 +34,13 @@ function lerGruposFallback(): Grupo[] {
     const conteudo = fs.readFileSync(caminho, "utf-8");
     const dados = JSON.parse(conteudo);
 
-    return (dados.grupos ?? []).map((grupo: Grupo, index: number) => ({
-        ...grupo,
-        ordem: grupo.ordem ?? index + 1,
-        equipe: Array.isArray(grupo.equipe) ? grupo.equipe : [],
-    }));
+    return (dados.grupos ?? [])
+        .filter((grupo: Grupo) => !IDS_EVENTOS_PROMOVIDOS.has(grupo.id))
+        .map((grupo: Grupo, index: number) => ({
+            ...grupo,
+            ordem: grupo.ordem ?? index + 1,
+            equipe: Array.isArray(grupo.equipe) ? grupo.equipe : [],
+        }));
 }
 
 /**
