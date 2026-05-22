@@ -10,6 +10,23 @@ function gerarId() {
     return randomUUID();
 }
 
+function normalizarListaTexto(valor: unknown) {
+    if (Array.isArray(valor)) {
+        return valor
+            .map((item) => String(item).trim())
+            .filter(Boolean);
+    }
+
+    if (typeof valor === "string") {
+        return valor
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean);
+    }
+
+    return [];
+}
+
 function limparUndefined<T extends Record<string, unknown>>(objeto: T) {
     return Object.fromEntries(
         Object.entries(objeto).filter(([, valor]) => valor !== undefined)
@@ -53,7 +70,7 @@ export default async function handler(
             titulo: titulo.toUpperCase(),
             faixa_etaria,
             descricao,
-            equipe,
+            equipe: normalizarListaTexto(equipe),
             grupos_envolvidos: todos_os_grupos
                 ? []
                 : Array.isArray(grupos_envolvidos)
@@ -97,6 +114,7 @@ export default async function handler(
             titulo,
             grupos_envolvidos,
             todos_os_grupos,
+            equipe,
             ...resto
         } = req.body;
 
@@ -107,6 +125,10 @@ export default async function handler(
         const dadosAtualizados = limparUndefined({
             ...resto,
             titulo: titulo ? titulo.toUpperCase() : undefined,
+            equipe:
+                equipe === undefined
+                    ? undefined
+                    : normalizarListaTexto(equipe),
             grupos_envolvidos: todos_os_grupos
                 ? []
                 : Array.isArray(grupos_envolvidos)
