@@ -72,15 +72,17 @@ function lerEventosFallback() {
         .filter((evento: any) => evento.visibilidade === "publico")
         .map((evento: any, index: number) => ({
             id: evento.id,
-            slug: evento.id,
+            slug: evento.slug ?? evento.id,
             titulo: evento.titulo,
-            faixa_etaria: undefined,
+            faixa_etaria: evento.faixa_etaria,
             descricao: evento.descricao,
             equipe: evento.responsaveis ?? [],
-            objetivo_ano: undefined,
+            objetivo_ano: evento.objetivo_ano,
             convite: evento.observacoes ?? "",
-            grupos_envolvidos: [],
-            todos_os_grupos: false,
+            grupos_envolvidos: Array.isArray(evento.grupos_envolvidos)
+                ? evento.grupos_envolvidos
+                : [],
+            todos_os_grupos: !!evento.todos_os_grupos,
             visibilidade: "publico" as const,
             ordem: 1000 + index,
         }));

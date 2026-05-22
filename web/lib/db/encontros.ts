@@ -4,6 +4,9 @@ import { Encontro } from "../types";
 import fs from "fs";
 import path from "path";
 
+const EVENTO_ANIVERSARIO_DA_COMUNIDADE_ID =
+    "5c0e6f63-3298-4f25-b754-4d3c88f7e201";
+
 function criarErroDeConsulta(contexto: string, detalhes: unknown) {
     const texto =
         detalhes instanceof Error
@@ -11,6 +14,14 @@ function criarErroDeConsulta(contexto: string, detalhes: unknown) {
             : JSON.stringify(detalhes);
 
     return new Error(`${contexto}: ${texto}`);
+}
+
+function ehEncontroDoAniversarioDaCmv(encontro: Encontro) {
+    return (
+        encontro.data_inicio === "2026-09-06" &&
+        typeof encontro.titulo === "string" &&
+        encontro.titulo.includes("Aniversário da CMV")
+    );
 }
 
 function lerEncontrosFallback(): Encontro[] {
@@ -23,11 +34,24 @@ function lerEncontrosFallback(): Encontro[] {
     const conteudo = fs.readFileSync(caminho, "utf-8");
     const dados = JSON.parse(conteudo);
 
-    return (dados.encontros ?? []).filter(
-        (encontro: Encontro) =>
-            typeof encontro.data_inicio === "string" &&
-            encontro.data_inicio.trim() !== ""
-    );
+    return (dados.encontros ?? [])
+        .filter(
+            (encontro: Encontro) =>
+                typeof encontro.data_inicio === "string" &&
+                encontro.data_inicio.trim() !== ""
+        )
+        .map((encontro: Encontro) => {
+            if (!ehEncontroDoAniversarioDaCmv(encontro)) {
+                return encontro;
+            }
+
+            return {
+                ...encontro,
+                grupo_id: null as any,
+                evento_id: EVENTO_ANIVERSARIO_DA_COMUNIDADE_ID,
+                nivel: "evento",
+            };
+        });
 }
 
 export async function getEncontros() {

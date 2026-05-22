@@ -39,6 +39,9 @@ const EVENTOS_PROMOVIDOS = {
     },
 };
 
+const EVENTO_ANIVERSARIO_DA_COMUNIDADE_ID =
+    "5c0e6f63-3298-4f25-b754-4d3c88f7e201";
+
 function lerJson(nomeArquivo) {
     const caminho = path.join(process.cwd(), "..", "data", nomeArquivo);
     return JSON.parse(fs.readFileSync(caminho, "utf-8"));
@@ -56,6 +59,11 @@ function sqlJson(valor) {
     return `${sqlTexto(JSON.stringify(valor ?? []))}::jsonb`;
 }
 
+function sqlTextArray(valor) {
+    const itens = Array.isArray(valor) ? valor : [];
+    return `ARRAY[${itens.map((item) => sqlTexto(item)).join(", ")}]::text[]`;
+}
+
 function sqlBoolean(valor) {
     return valor ? "true" : "false";
 }
@@ -66,6 +74,38 @@ function lerGrupos() {
 
 function lerEncontros() {
     return lerJson("encontros(nãousado).json").encontros ?? [];
+}
+
+function lerEventosArquivo() {
+    return (lerJson("eventos-2026.json").eventos ?? []).filter(
+        (evento) => evento.visibilidade === "publico"
+    );
+}
+
+function ehEncontroDoAniversarioDaCmv(encontro) {
+    return (
+        encontro.data_inicio === "2026-09-06" &&
+        typeof encontro.titulo === "string" &&
+        encontro.titulo.includes("Aniversário da CMV")
+    );
+}
+
+function resolverEventoEspecialDoEncontro(encontro) {
+    if (encontro.grupo_id && EVENTOS_PROMOVIDOS[encontro.grupo_id]) {
+        return {
+            eventId: EVENTOS_PROMOVIDOS[encontro.grupo_id].eventId,
+            nivel: "evento",
+        };
+    }
+
+    if (ehEncontroDoAniversarioDaCmv(encontro)) {
+        return {
+            eventId: EVENTO_ANIVERSARIO_DA_COMUNIDADE_ID,
+            nivel: "evento",
+        };
+    }
+
+    return null;
 }
 
 function montarSqlGrupos() {
@@ -81,7 +121,7 @@ function montarSqlGrupos() {
   ${sqlTexto(grupo.faixa_etaria ?? "")},
   ${sqlTexto(grupo.descricao ?? "")},
   ${sqlTexto(grupo.objetivo_ano ?? "")},
-  ${sqlJson(Array.isArray(grupo.equipe) ? grupo.equipe : [])},
+  ${sqlTextArray(Array.isArray(grupo.equipe) ? grupo.equipe : [])},
   ${sqlTexto(grupo.convite_final ?? "")},
   ${grupo.ordem ?? index + 1},
   ${sqlTexto(grupo.categoria ?? "grupo")}
@@ -116,7 +156,7 @@ on conflict (id) do update set
 
 function montarSqlEventos() {
     const grupos = lerGrupos();
-    const valores = Object.entries(EVENTOS_PROMOVIDOS).map(
+    const eventosPromovidos = Object.entries(EVENTOS_PROMOVIDOS).map(
         ([grupoId, config]) => {
             const grupo = grupos.find((item) => item.id === grupoId);
 
@@ -126,12 +166,11 @@ function montarSqlEventos() {
 
             return `(
   ${sqlTexto(config.eventId)},
-  ${sqlTexto(config.tipo)},
   ${sqlTexto(grupo.nome)},
   ${sqlTexto(grupo.faixa_etaria ?? "")},
   ${sqlTexto(grupo.descricao ?? "")},
-  ${sqlJson(Array.isArray(grupo.equipe) ? grupo.equipe : [])},
-  ${sqlJson(config.grupos_envolvidos ?? [])},
+  ${sqlTextArray(Array.isArray(grupo.equipe) ? grupo.equipe : [])},
+  ${sqlTextArray(config.grupos_envolvidos ?? [])},
   false,
   ${sqlTexto(grupo.objetivo_ano ?? "")},
   ${sqlTexto(grupo.convite_final ?? "")},
@@ -140,9 +179,23 @@ function montarSqlEventos() {
         }
     );
 
+    const eventosDoArquivo = lerEventosArquivo().map((evento) => `(
+  ${sqlTexto(evento.id)},
+  ${sqlTexto(evento.titulo ?? "")},
+  ${sqlTexto(evento.faixa_etaria ?? "")},
+  ${sqlTexto(evento.descricao ?? "")},
+  ${sqlTextArray(Array.isArray(evento.responsaveis) ? evento.responsaveis : [])},
+  ${sqlTextArray(Array.isArray(evento.grupos_envolvidos) ? evento.grupos_envolvidos : [])},
+  ${sqlBoolean(!!evento.todos_os_grupos)},
+  ${sqlTexto(evento.objetivo_ano ?? "")},
+  ${sqlTexto(evento.observacoes ?? "")},
+  ${sqlTexto(evento.visibilidade ?? "publico")}
+)`);
+
+    const valores = [...eventosPromovidos, ...eventosDoArquivo];
+
     return `insert into public.eventos (
   id,
-  tipo,
   titulo,
   faixa_etaria,
   descricao,
@@ -156,7 +209,6 @@ function montarSqlEventos() {
 values
 ${valores.join(",\n")}
 on conflict (id) do update set
-  tipo = excluded.tipo,
   titulo = excluded.titulo,
   faixa_etaria = excluded.faixa_etaria,
   descricao = excluded.descricao,
@@ -177,12 +229,10 @@ function montarSqlEncontros() {
         );
 
     const valores = encontros.map((encontro) => {
-        const promocao = encontro.grupo_id
-            ? EVENTOS_PROMOVIDOS[encontro.grupo_id]
-            : null;
-        const grupoId = promocao ? null : encontro.grupo_id;
-        const eventoId = promocao
-            ? promocao.eventId
+        const eventoEspecial = resolverEventoEspecialDoEncontro(encontro);
+        const grupoId = eventoEspecial ? null : encontro.grupo_id;
+        const eventoId = eventoEspecial
+            ? eventoEspecial.eventId
             : encontro.evento_id ?? null;
 
         return `(
@@ -198,7 +248,7 @@ function montarSqlEncontros() {
   ${sqlTexto(encontro.titulo ?? null)},
   ${sqlTexto(encontro.descricao ?? null)},
   ${sqlTexto(encontro.visibilidade ?? "publico")},
-  ${sqlTexto(promocao ? "evento" : encontro.nivel ?? "evento")},
+  ${sqlTexto(eventoEspecial?.nivel ?? encontro.nivel ?? "evento")},
   ${sqlBoolean(
       typeof encontro.mostrar_no_anual === "boolean"
           ? encontro.mostrar_no_anual
@@ -241,6 +291,83 @@ on conflict (id) do update set
   mostrar_no_anual = excluded.mostrar_no_anual;`;
 }
 
+function montarSqlEncontrosEmPartes(tamanhoParte = 25) {
+    const encontros = lerEncontros()
+        .filter(
+            (encontro) =>
+                typeof encontro.data_inicio === "string" &&
+                encontro.data_inicio.trim() !== ""
+        );
+
+    const statements = encontros.map((encontro) => {
+        const eventoEspecial = resolverEventoEspecialDoEncontro(encontro);
+        const grupoId = eventoEspecial ? null : encontro.grupo_id;
+        const eventoId = eventoEspecial
+            ? eventoEspecial.eventId
+            : encontro.evento_id ?? null;
+
+        return `insert into public.encontros (
+  id,
+  grupo_id,
+  evento_id,
+  tipo,
+  data_inicio,
+  data_fim,
+  data_legivel,
+  horario,
+  local,
+  titulo,
+  descricao,
+  visibilidade,
+  nivel,
+  mostrar_no_anual
+)
+values (
+  ${sqlTexto(encontro.id)},
+  ${sqlTexto(grupoId)},
+  ${sqlTexto(eventoId)},
+  ${sqlTexto(encontro.tipo ?? "encontro_regular")},
+  ${sqlTexto(encontro.data_inicio)},
+  ${sqlTexto(encontro.data_fim ?? null)},
+  ${sqlTexto(encontro.data_legivel ?? null)},
+  ${sqlTexto(encontro.horario ?? null)},
+  ${sqlTexto(encontro.local ?? null)},
+  ${sqlTexto(encontro.titulo ?? null)},
+  ${sqlTexto(encontro.descricao ?? null)},
+  ${sqlTexto(encontro.visibilidade ?? "publico")},
+  ${sqlTexto(eventoEspecial?.nivel ?? encontro.nivel ?? "evento")},
+  ${sqlBoolean(
+      typeof encontro.mostrar_no_anual === "boolean"
+          ? encontro.mostrar_no_anual
+          : true
+  )}
+)
+on conflict (id) do update set
+  grupo_id = excluded.grupo_id,
+  evento_id = excluded.evento_id,
+  tipo = excluded.tipo,
+  data_inicio = excluded.data_inicio,
+  data_fim = excluded.data_fim,
+  data_legivel = excluded.data_legivel,
+  horario = excluded.horario,
+  local = excluded.local,
+  titulo = excluded.titulo,
+  descricao = excluded.descricao,
+  visibilidade = excluded.visibilidade,
+  nivel = excluded.nivel,
+  mostrar_no_anual = excluded.mostrar_no_anual;`;
+    });
+
+    const partes = [];
+
+    for (let i = 0; i < statements.length; i += tamanhoParte) {
+        const bloco = statements.slice(i, i + tamanhoParte);
+        partes.push(bloco.join("\n\n"));
+    }
+
+    return partes;
+}
+
 function montarSqlLimpezaGruposPromovidos() {
     const ids = Object.keys(EVENTOS_PROMOVIDOS).map(sqlTexto).join(", ");
 
@@ -249,30 +376,62 @@ where id in (${ids});`;
 }
 
 function main() {
+    const pastaSql = path.join(process.cwd(), "..", "docs", "sql");
     const saida = path.join(
-        process.cwd(),
-        "..",
-        "docs",
-        "sql",
+        pastaSql,
         "restaurar-fallback-2026.sql"
     );
+    const saidaGrupos = path.join(
+        pastaSql,
+        "restaurar-fallback-2026-grupos.sql"
+    );
+    const saidaEventos = path.join(
+        pastaSql,
+        "restaurar-fallback-2026-eventos.sql"
+    );
+    const saidaEncontros = path.join(
+        pastaSql,
+        "restaurar-fallback-2026-encontros.sql"
+    );
+    const saidaLimpeza = path.join(
+        pastaSql,
+        "restaurar-fallback-2026-limpeza.sql"
+    );
+
+    const sqlGrupos = `${montarSqlGrupos()}\n`;
+    const sqlEventos = `${montarSqlEventos()}\n`;
+    const sqlEncontros = `${montarSqlEncontros()}\n`;
+    const sqlLimpeza = `${montarSqlLimpezaGruposPromovidos()}\n`;
+    const sqlEncontrosPartes = montarSqlEncontrosEmPartes();
 
     const conteudo = `-- Restauracao gerada automaticamente a partir dos backups locais
 -- Data: ${new Date().toISOString()}
 begin;
 
-${montarSqlGrupos()}
-
-${montarSqlEventos()}
-
-${montarSqlEncontros()}
-
-${montarSqlLimpezaGruposPromovidos()}
-
+${sqlGrupos}
+${sqlEventos}
+${sqlEncontros}
+${sqlLimpeza}
 commit;
 `;
 
     fs.writeFileSync(saida, conteudo, "utf-8");
+    fs.writeFileSync(saidaGrupos, sqlGrupos, "utf-8");
+    fs.writeFileSync(saidaEventos, sqlEventos, "utf-8");
+    fs.writeFileSync(saidaEncontros, sqlEncontros, "utf-8");
+    fs.writeFileSync(saidaLimpeza, sqlLimpeza, "utf-8");
+    sqlEncontrosPartes.forEach((parte, index) => {
+        fs.writeFileSync(
+            path.join(
+                pastaSql,
+                `restaurar-fallback-2026-encontros-parte-${String(
+                    index + 1
+                ).padStart(2, "0")}.sql`
+            ),
+            `${parte}\n`,
+            "utf-8"
+        );
+    });
     console.log(saida);
 }
 

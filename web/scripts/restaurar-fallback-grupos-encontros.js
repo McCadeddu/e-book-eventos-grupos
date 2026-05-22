@@ -40,6 +40,9 @@ const EVENTOS_PROMOVIDOS = {
     },
 };
 
+const EVENTO_ANIVERSARIO_DA_COMUNIDADE_ID =
+    "5c0e6f63-3298-4f25-b754-4d3c88f7e201";
+
 function resolverArquivoEnv() {
     const argumento = process.argv.find((item) =>
         item.startsWith("--env-file=")
@@ -88,6 +91,38 @@ function lerJson(nomeArquivo) {
     return JSON.parse(fs.readFileSync(caminho, "utf-8"));
 }
 
+function lerEventosArquivo() {
+    return (lerJson("eventos-2026.json").eventos ?? []).filter(
+        (evento) => evento.visibilidade === "publico"
+    );
+}
+
+function ehEncontroDoAniversarioDaCmv(encontro) {
+    return (
+        encontro.data_inicio === "2026-09-06" &&
+        typeof encontro.titulo === "string" &&
+        encontro.titulo.includes("Aniversário da CMV")
+    );
+}
+
+function resolverEventoEspecialDoEncontro(encontro) {
+    if (encontro.grupo_id && EVENTOS_PROMOVIDOS[encontro.grupo_id]) {
+        return {
+            eventId: EVENTOS_PROMOVIDOS[encontro.grupo_id].eventId,
+            nivel: "evento",
+        };
+    }
+
+    if (ehEncontroDoAniversarioDaCmv(encontro)) {
+        return {
+            eventId: EVENTO_ANIVERSARIO_DA_COMUNIDADE_ID,
+            nivel: "evento",
+        };
+    }
+
+    return null;
+}
+
 function montarGrupos() {
     const grupos = lerJson("grupos(nãousado).json").grupos ?? [];
 
@@ -110,7 +145,7 @@ function montarGrupos() {
 function montarEventos() {
     const grupos = lerJson("grupos(nãousado).json").grupos ?? [];
 
-    return Object.entries(EVENTOS_PROMOVIDOS).map(([grupoId, config]) => {
+    const eventosPromovidos = Object.entries(EVENTOS_PROMOVIDOS).map(([grupoId, config]) => {
         const grupo = grupos.find((item) => item.id === grupoId);
 
         if (!grupo) {
@@ -119,7 +154,6 @@ function montarEventos() {
 
         return {
             id: config.eventId,
-            tipo: config.tipo,
             titulo: grupo.nome,
             faixa_etaria: grupo.faixa_etaria ?? "",
             descricao: grupo.descricao ?? "",
@@ -131,6 +165,23 @@ function montarEventos() {
             visibilidade: "publico",
         };
     });
+
+    const eventosDoArquivo = lerEventosArquivo().map((evento) => ({
+        id: evento.id,
+        titulo: evento.titulo ?? "",
+        faixa_etaria: evento.faixa_etaria ?? "",
+        descricao: evento.descricao ?? "",
+        equipe: Array.isArray(evento.responsaveis) ? evento.responsaveis : [],
+        grupos_envolvidos: Array.isArray(evento.grupos_envolvidos)
+            ? evento.grupos_envolvidos
+            : [],
+        todos_os_grupos: !!evento.todos_os_grupos,
+        objetivo_ano: evento.objetivo_ano ?? "",
+        convite: evento.observacoes ?? "",
+        visibilidade: evento.visibilidade ?? "publico",
+    }));
+
+    return [...eventosPromovidos, ...eventosDoArquivo];
 }
 
 function montarEncontros() {
@@ -143,15 +194,13 @@ function montarEncontros() {
                 encontro.data_inicio.trim() !== ""
         )
         .map((encontro) => {
-            const promocao = encontro.grupo_id
-                ? EVENTOS_PROMOVIDOS[encontro.grupo_id]
-                : null;
+            const eventoEspecial = resolverEventoEspecialDoEncontro(encontro);
 
             return {
             id: encontro.id,
-            grupo_id: promocao ? null : encontro.grupo_id,
-            evento_id: promocao
-                ? promocao.eventId
+            grupo_id: eventoEspecial ? null : encontro.grupo_id,
+            evento_id: eventoEspecial
+                ? eventoEspecial.eventId
                 : encontro.evento_id ?? null,
             tipo: encontro.tipo ?? "encontro_regular",
             data_inicio: encontro.data_inicio,
@@ -162,7 +211,7 @@ function montarEncontros() {
             titulo: encontro.titulo ?? null,
             descricao: encontro.descricao ?? null,
             visibilidade: encontro.visibilidade ?? "publico",
-            nivel: promocao ? "evento" : encontro.nivel ?? "evento",
+            nivel: eventoEspecial?.nivel ?? encontro.nivel ?? "evento",
             mostrar_no_anual:
                 typeof encontro.mostrar_no_anual === "boolean"
                     ? encontro.mostrar_no_anual
