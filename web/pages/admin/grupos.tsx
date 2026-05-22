@@ -934,6 +934,75 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
         recarregar();
     }
 
+    async function persistirOrdemGrupos(novaOrdem: Grupo[]) {
+        setOrdemGrupos(novaOrdem);
+
+        const resposta = await fetch("/api/grupos/ordenar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ordem: novaOrdem.map((grupo, index) => ({
+                    id: grupo.id,
+                    ordem: index + 1,
+                })),
+            }),
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resultado.sucesso) {
+            alert(resultado.erro || "Nao foi possivel atualizar a ordem dos grupos.");
+            setOrdemGrupos(grupos);
+            return;
+        }
+    }
+
+    async function persistirOrdemEventos(novaOrdem: EventoAdmin[]) {
+        setOrdemEventos(novaOrdem);
+
+        const resposta = await fetch("/api/eventos/ordenar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ordem: novaOrdem.map((evento, index) => ({
+                    id: evento.id,
+                    ordem: index + 1,
+                })),
+            }),
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resultado.sucesso) {
+            alert(resultado.erro || "Nao foi possivel atualizar a ordem dos eventos.");
+            setOrdemEventos(eventos);
+        }
+    }
+
+    async function moverGrupo(grupoId: string, direcao: -1 | 1) {
+        const indiceAtual = ordemGrupos.findIndex((grupo) => grupo.id === grupoId);
+        const novoIndice = indiceAtual + direcao;
+
+        if (indiceAtual < 0 || novoIndice < 0 || novoIndice >= ordemGrupos.length) {
+            return;
+        }
+
+        const novaOrdem = arrayMove(ordemGrupos, indiceAtual, novoIndice);
+        await persistirOrdemGrupos(novaOrdem);
+    }
+
+    async function moverEvento(eventoId: string, direcao: -1 | 1) {
+        const indiceAtual = ordemEventos.findIndex((evento) => evento.id === eventoId);
+        const novoIndice = indiceAtual + direcao;
+
+        if (indiceAtual < 0 || novoIndice < 0 || novoIndice >= ordemEventos.length) {
+            return;
+        }
+
+        const novaOrdem = arrayMove(ordemEventos, indiceAtual, novoIndice);
+        await persistirOrdemEventos(novaOrdem);
+    }
+
     async function alternarVisibilidadeEncontro(encontro: Encontro) {
         const novaVisibilidade =
             encontro.visibilidade === "publico" ? "interno" : "publico";
@@ -1264,6 +1333,16 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                                         }}
                                     >
                                         <SecondaryButton
+                                            onClick={() => moverGrupo(grupo.id, -1)}
+                                        >
+                                            ↑ Subir
+                                        </SecondaryButton>
+                                        <SecondaryButton
+                                            onClick={() => moverGrupo(grupo.id, 1)}
+                                        >
+                                            ↓ Descer
+                                        </SecondaryButton>
+                                        <SecondaryButton
                                             onClick={() => {
                                                 fecharFormularios();
                                                 setEditandoGrupoId(grupo.id);
@@ -1577,6 +1656,16 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                                             publico={evento.visibilidade === "publico"}
                                             onClick={() => alternarVisibilidadeEvento(evento)}
                                         />
+                                        <SecondaryButton
+                                            onClick={() => moverEvento(evento.id, -1)}
+                                        >
+                                            ↑ Subir
+                                        </SecondaryButton>
+                                        <SecondaryButton
+                                            onClick={() => moverEvento(evento.id, 1)}
+                                        >
+                                            ↓ Descer
+                                        </SecondaryButton>
                                         <SecondaryButton
                                             onClick={() => {
                                                 fecharFormularios();
