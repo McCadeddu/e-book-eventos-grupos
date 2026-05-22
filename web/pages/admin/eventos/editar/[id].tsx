@@ -3,8 +3,9 @@
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { supabase } from "../../../../lib/supabaseClient";
 import { getGruposOrdenados } from "../../../../lib/db/grupos";
+import { getEventos } from "../../../../lib/db/eventos";
+import { getEncontros } from "../../../../lib/db/encontros";
 import { formatarDataIntervalo } from "../../../../lib/encontros-utils";
 import Link from "next/link";
 
@@ -466,30 +467,23 @@ export default function EditarEvento({ evento, grupos, encontros }: Props) {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const id = context.params?.id as string;
-
-    const { data: evento } = await supabase
-        .from("eventos")
-        .select("*")
-        .eq("id", id)
-        .single();
-
+    const eventos = await getEventos();
+    const evento = eventos.find((item: any) => item.id === id) ?? null;
     const grupos = await getGruposOrdenados();
 
     if (!evento) {
         return { notFound: true };
     }
 
-    const { data: encontros } = await supabase
-        .from("encontros")
-        .select("*")
-        .eq("evento_id", id)
-        .order("data_inicio", { ascending: true });
+    const encontros = (await getEncontros())
+        .filter((encontro) => encontro.evento_id === id)
+        .sort((a, b) => a.data_inicio.localeCompare(b.data_inicio));
 
     return {
         props: {
             evento,
             grupos,
-            encontros: encontros || [],
+            encontros,
         },
     };
 };

@@ -50,6 +50,90 @@ function lerEventosJsonFallback() {
     return Array.isArray(dados.eventos) ? dados.eventos : [];
 }
 
+function lerEncontrosFallback() {
+    const caminho = path.join(
+        process.cwd(),
+        "..",
+        "data",
+        "encontros(nãousado).json"
+    );
+
+    if (!fs.existsSync(caminho)) {
+        return [];
+    }
+
+    const conteudo = fs.readFileSync(caminho, "utf-8");
+    const dados = JSON.parse(conteudo);
+
+    return Array.isArray(dados.encontros) ? dados.encontros : [];
+}
+
+function enriquecerEventosComDatas<T extends { id: string }>(eventos: T[]) {
+    const encontros = lerEncontrosFallback().filter(
+        (encontro: any) =>
+            typeof encontro.data_inicio === "string" &&
+            encontro.data_inicio.trim() !== ""
+    );
+
+    return eventos.map((evento) => {
+        const encontrosDoEvento = encontros
+            .filter(
+                (encontro: any) =>
+                    encontro.evento_id === evento.id ||
+                    encontro.grupo_id === evento.id
+            )
+            .sort((a: any, b: any) => a.data_inicio.localeCompare(b.data_inicio));
+
+        const primeiro = encontrosDoEvento[0];
+        const ultimo = encontrosDoEvento[encontrosDoEvento.length - 1];
+
+        return {
+            ...evento,
+            data_inicio: primeiro?.data_inicio ?? null,
+            data_fim: ultimo?.data_fim ?? primeiro?.data_fim ?? null,
+        };
+    });
+}
+
+async function enriquecerEventosComDatasDoBanco<T extends { id: string }>(
+    eventos: T[]
+) {
+    try {
+        const { data, error } = await supabase
+            .from("encontros")
+            .select("evento_id, data_inicio, data_fim")
+            .not("data_inicio", "is", null)
+            .order("data_inicio", { ascending: true });
+
+        if (error) {
+            throw error;
+        }
+
+        const encontros = Array.isArray(data) ? data : [];
+
+        if (encontros.length === 0) {
+            return enriquecerEventosComDatas(eventos);
+        }
+
+        return eventos.map((evento) => {
+            const encontrosDoEvento = encontros.filter(
+                (encontro: any) => encontro.evento_id === evento.id
+            );
+
+            const primeiro = encontrosDoEvento[0];
+            const ultimo = encontrosDoEvento[encontrosDoEvento.length - 1];
+
+            return {
+                ...evento,
+                data_inicio: primeiro?.data_inicio ?? null,
+                data_fim: ultimo?.data_fim ?? primeiro?.data_fim ?? null,
+            };
+        });
+    } catch {
+        return enriquecerEventosComDatas(eventos);
+    }
+}
+
 function lerEventosFallback() {
     const eventosDeGrupos = lerGruposFallback()
         .filter((grupo) => IDS_EVENTOS_FALLBACK.has(grupo.id))
@@ -66,6 +150,8 @@ function lerEventosFallback() {
             todos_os_grupos: false,
             visibilidade: "publico" as const,
             ordem: 100 + index,
+            data_inicio: null,
+            data_fim: null,
         }));
 
     const eventosDoArquivo = lerEventosJsonFallback()
@@ -85,6 +171,8 @@ function lerEventosFallback() {
             todos_os_grupos: !!evento.todos_os_grupos,
             visibilidade: "publico" as const,
             ordem: 1000 + index,
+            data_inicio: null,
+            data_fim: null,
         }));
 
     const mapa = new Map<string, any>();
@@ -95,7 +183,7 @@ function lerEventosFallback() {
         }
     });
 
-    return Array.from(mapa.values());
+    return enriquecerEventosComDatas(Array.from(mapa.values()));
 }
 
 export async function getEventos() {
@@ -118,7 +206,7 @@ export async function getEventos() {
             );
         }
 
-        return eventos;
+        return enriquecerEventosComDatasDoBanco(eventos);
     } catch (error) {
         console.warn(
             "Usando fallback local para eventos administrativos:",
@@ -148,7 +236,7 @@ export async function getEventosStrict() {
             );
         }
 
-        return eventos;
+        return enriquecerEventosComDatasDoBanco(eventos);
     } catch (error) {
         console.warn(
             "Usando fallback local para eventos públicos:",
