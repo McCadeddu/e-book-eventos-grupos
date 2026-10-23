@@ -1,3 +1,4 @@
+import { carregarCapituloLivroPorAno } from "../../lib/livro-ano";
 // web/pages/livro/[slug].tsx
 
 import Link from "next/link";
@@ -6,14 +7,7 @@ import { GetStaticPaths, GetStaticProps } from "next";
 import { Grupo } from "../../lib/types";
 import {
     getGruposOrdenadosStrict,
-    getGrupoPorSlugStrict,
 } from "../../lib/db/grupos";
-import {
-    getEncontrosPorEventoStrict,
-    getEncontrosPorGrupoStrict,
-} from "../../lib/db/encontros";
-import { getEventosStrict } from "../../lib/db/eventos";
-
 import { ordenarEncontrosPorData } from "../../lib/encontros-utils";
 import { formatarDataIntervalo } from "../../lib/encontros-utils";
 
@@ -23,7 +17,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import PixAlmoco from "../../components/PixAlmoco";
-import { getAnoAtualEbook, pertenceAoAno } from "../../lib/ebook-config";
+import { getAnoAtualEbook } from "../../lib/ebook-config";
 
 type Props = {
     ano: number;
@@ -33,9 +27,7 @@ type Props = {
     eventosDoGrupo: any[];
 };
 
-function encontroPertenceAoEvento(encontro: any, eventoId: string) {
-    return encontro.evento_id === eventoId || encontro.grupo_id === eventoId;
-}
+
 
 export default function CapituloLivro({
   ano,
@@ -353,7 +345,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
     return {
         paths,
-        fallback: false,
+        fallback: "blocking",
     };
 };
 
@@ -361,94 +353,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
  * 🔹 Dados do capítulo do livro (grupo + encontros + eventos relacionados)
  */
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-    const slug = params?.slug as string;
-    const ano = await getAnoAtualEbook();
-
-    // 1️⃣ grupo atual
-    const grupo = await getGrupoPorSlugStrict(slug);
-    if (!grupo) {
-        return { notFound: true };
-    }
-
-    // 2️⃣ todos os grupos (para índice lateral)
-    const grupos = await getGruposOrdenadosStrict();
-
-    // 3️⃣ encontros próprios do grupo
-    const encontrosGrupo = (await getEncontrosPorGrupoStrict(grupo.id)).filter(
-        (encontro) =>
-            encontro.visibilidade === "publico" &&
-            pertenceAoAno(encontro.data_inicio, ano)
-    );
-
-    // 4️⃣ todos os eventos
-    const eventos = (await getEventosStrict()).filter(
-        (evento: any) => evento.visibilidade === "publico"
-    );
-
-    // 5️⃣ eventos que envolvem este grupo
-    const eventosDoGrupo = eventos.filter((evento: any) =>
-        evento.todos_os_grupos ||
-        (evento.grupos_envolvidos &&
-            evento.grupos_envolvidos.includes(grupo.id))
-    );
-
-    // 6️⃣ buscar encontros que pertencem aos eventos deste grupo (para mostrar na agenda, com prefixo do nome do evento)
-    const encontrosEventos: any[] = [];
-
-    for (const evento of eventosDoGrupo) {
-        const data = await getEncontrosPorEventoStrict(evento.id);
-
-        if (data) {
-            encontrosEventos.push(
-                ...data
-                    .filter(
-                        (encontro) =>
-                            encontro.visibilidade === "publico" &&
-                            pertenceAoAno(encontro.data_inicio, ano)
-                    )
-                    .map(e => ({
-                        ...e,
-                        nome_evento: evento.titulo, // 🔵 importante para prefixo
-                    }))
-            );
-        }
-
-        if (data?.length === 0) {
-            const fallbackGrupo = await getEncontrosPorGrupoStrict(evento.id);
-
-            encontrosEventos.push(
-                ...fallbackGrupo
-                    .filter(
-                        (encontro) =>
-                            encontro.visibilidade === "publico" &&
-                            pertenceAoAno(encontro.data_inicio, ano)
-                    )
-                    .map(e => ({
-                        ...e,
-                        nome_evento: evento.titulo,
-                    }))
-            );
-        }
-    }
-
-    // 7️⃣ unificar encontros do grupo + encontros dos eventos
-    const todosEncontros = [
-        ...encontrosGrupo,
-        ...encontrosEventos,
-    ];
-
-    const eventosDoGrupoNoAno = eventosDoGrupo.filter((evento: any) =>
-        todosEncontros.some((encontro) => encontroPertenceAoEvento(encontro, evento.id))
-    );
-
-    return {
-        props: {
-            ano,
-            grupo,
-            grupos,
-            encontros: todosEncontros,
-            eventosDoGrupo: eventosDoGrupoNoAno,
-        },
-        revalidate: 60,
-    };
+    const dados = await carregarCapituloLivroPorAno(await getAnoAtualEbook(), String(params?.slug));
+    if (!dados) return { notFound: true };
+    return { props: dados, revalidate: 60 };
 };

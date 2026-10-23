@@ -1,6 +1,5 @@
 import { Grupo } from "./types";
 import { Evento } from "./eventos-types";
-import { supabase } from "./supabaseClient";
 
 export type GrupoEdicao = {
     grupo_id: string;
@@ -31,40 +30,6 @@ export type EventoEdicao = {
 
 function valorOuOriginal<T>(overrideValue: T | null | undefined, originalValue: T): T {
     return overrideValue ?? originalValue;
-}
-
-export async function getGruposEdicao(ano: number): Promise<GrupoEdicao[]> {
-    try {
-        const { data, error } = await supabase
-            .from("grupo_edicoes")
-            .select("*")
-            .eq("ano", ano);
-
-        if (error) {
-            return [];
-        }
-
-        return (data ?? []) as GrupoEdicao[];
-    } catch {
-        return [];
-    }
-}
-
-export async function getEventosEdicao(ano: number): Promise<EventoEdicao[]> {
-    try {
-        const { data, error } = await supabase
-            .from("evento_edicoes")
-            .select("*")
-            .eq("ano", ano);
-
-        if (error) {
-            return [];
-        }
-
-        return (data ?? []) as EventoEdicao[];
-    } catch {
-        return [];
-    }
 }
 
 export function aplicarGrupoEdicao(

@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { getSupabaseAdminClient } from "./supabaseAdmin";
 
 type EntidadeBackup = "grupos" | "eventos" | "encontros";
-type AcaoBackup = "criar" | "editar" | "excluir";
+type AcaoBackup = "criar" | "editar" | "excluir" | "preparar-edicao";
 
 type BackupMetadata = {
     entidade: EntidadeBackup;
@@ -13,23 +13,32 @@ type BackupMetadata = {
 async function carregarSnapshotAtual() {
     const client = getBackupClient();
 
-    const [gruposResp, eventosResp, encontrosResp] = await Promise.all([
+    const [gruposResp, eventosResp, encontrosResp, gruposEdicao, eventosEdicao, edicoes, estado] = await Promise.all([
         client.from("grupos").select("*").order("ordem", { ascending: true }),
         client.from("eventos").select("*").order("ordem", { ascending: true }),
         client
             .from("encontros")
             .select("*")
             .order("data_inicio", { ascending: true }),
+        client.from("grupo_edicoes").select("*"),
+        client.from("evento_edicoes").select("*"),
+        client.from("ebook_edicoes").select("*"),
+        client.from("ebook_estado").select("*"),
     ]);
 
     if (gruposResp.error) throw gruposResp.error;
     if (eventosResp.error) throw eventosResp.error;
     if (encontrosResp.error) throw encontrosResp.error;
+    for (const resposta of [gruposEdicao, eventosEdicao, edicoes, estado]) if (resposta.error) throw resposta.error;
 
     return {
         grupos: gruposResp.data ?? [],
         eventos: eventosResp.data ?? [],
         encontros: encontrosResp.data ?? [],
+        grupo_edicoes: gruposEdicao.data ?? [],
+        evento_edicoes: eventosEdicao.data ?? [],
+        ebook_edicoes: edicoes.data ?? [],
+        ebook_estado: estado.data ?? [],
     };
 }
 
@@ -72,7 +81,7 @@ export async function salvarBackupAutomatico(metadata: BackupMetadata) {
 
         const payload = {
             id: randomUUID(),
-            versao: 2,
+            versao: 3,
             origem: "admin-online",
             entidade: metadata.entidade,
             acao: metadata.acao,

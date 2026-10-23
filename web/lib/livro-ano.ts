@@ -1,177 +1,37 @@
-import { getEncontrosPorEventoStrict, getEncontrosPorGrupoStrict, getEncontrosStrict } from "./db/encontros";
-import { getEventosStrict } from "./db/eventos";
-import { getGrupoPorSlugStrict, getGruposOrdenadosStrict } from "./db/grupos";
-import { carregarEbookPorAno, pertenceAoAno } from "./ebook-config";
-import {
-    aplicarEventoEdicao,
-    aplicarGrupoEdicao,
-    getEventosEdicao,
-    getGruposEdicao,
-} from "./edicao-publicacao";
-import { Evento } from "./eventos-types";
-
-function encontroPertenceAoEvento(encontro: any, eventoId: string) {
-    return encontro.evento_id === eventoId || encontro.grupo_id === eventoId;
-}
+import { carregarConteudoPublicoAnual } from "./conteudo-anual";
+import { carregarEbookPorAno } from "./ebook-config";
 
 export async function carregarCalendarioLivroPorAno(ano: number) {
     const ebook = await carregarEbookPorAno(ano);
-
-    if (!ebook) {
-        return null;
-    }
-
-    const gruposBase = await getGruposOrdenadosStrict();
-    const grupos = aplicarGrupoEdicao(gruposBase, await getGruposEdicao(ano));
-    const encontros = (await getEncontrosStrict())
-        .filter((e) => {
-            if (e.visibilidade !== "publico") return false;
-            if (!pertenceAoAno(e.data_inicio, ano)) return false;
-
-            if (!e.evento_id) return true;
-
-            return e.nivel === "evento" && e.mostrar_no_anual === true;
-        })
-        .map((e) => ({
-            ...e,
-            data_inicio: e.data_inicio ?? null,
-            data_fim: e.data_fim ?? null,
-            data_legivel: e.data_legivel ?? null,
-        }));
-
-    const eventosBase = (await getEventosStrict()) as Evento[];
-    const eventos = aplicarEventoEdicao(
-        eventosBase,
-        await getEventosEdicao(ano)
-    ).filter(
-        (evento: any) =>
-            evento.visibilidade === "publico" &&
-            encontros.some((encontro) => encontroPertenceAoEvento(encontro, evento.id))
-    );
-
-    return { ano, ebook, grupos, encontros, eventos };
+    if (!ebook) return null;
+    const conteudo = await carregarConteudoPublicoAnual(ano);
+    const encontros = conteudo.encontros.filter(e => !e.evento_id || (e.nivel === "evento" && e.mostrar_no_anual === true));
+    const eventos = conteudo.eventos.filter(e => encontros.some(m => m.evento_id === e.id));
+    return { ano, ebook, grupos: conteudo.grupos, encontros, eventos };
 }
 
 export async function carregarCapituloLivroPorAno(ano: number, slug: string) {
     const ebook = await carregarEbookPorAno(ano);
-
-    if (!ebook) {
-        return null;
-    }
-
-    const gruposBase = await getGruposOrdenadosStrict();
-    const grupos = aplicarGrupoEdicao(gruposBase, await getGruposEdicao(ano));
-    const grupo = grupos.find((item) => item.slug === slug) ?? null;
-
-    if (!grupo) {
-        return null;
-    }
-
-    const encontrosGrupo = (await getEncontrosPorGrupoStrict(grupo.id)).filter(
-        (encontro) =>
-            encontro.visibilidade === "publico" &&
-            pertenceAoAno(encontro.data_inicio, ano)
-    );
-
-    const eventos = aplicarEventoEdicao(
-        (await getEventosStrict()) as Evento[],
-        await getEventosEdicao(ano)
-    ).filter((evento) => evento.visibilidade === "publico");
-    const eventosDoGrupo = eventos.filter(
-        (evento: any) =>
-            evento.todos_os_grupos ||
-            (evento.grupos_envolvidos &&
-                evento.grupos_envolvidos.includes(grupo.id))
-    );
-
-    const encontrosEventos: any[] = [];
-
-    for (const evento of eventosDoGrupo) {
-        const data = await getEncontrosPorEventoStrict(evento.id);
-
-        if (data) {
-            encontrosEventos.push(
-                ...data
-                    .filter(
-                        (encontro) =>
-                            encontro.visibilidade === "publico" &&
-                            pertenceAoAno(encontro.data_inicio, ano)
-                    )
-                    .map((encontro) => ({
-                        ...encontro,
-                        nome_evento: evento.titulo,
-                    }))
-            );
-        }
-
-        if (data?.length === 0) {
-            const fallbackGrupo = await getEncontrosPorGrupoStrict(evento.id);
-
-            encontrosEventos.push(
-                ...fallbackGrupo
-                    .filter(
-                        (encontro) =>
-                            encontro.visibilidade === "publico" &&
-                            pertenceAoAno(encontro.data_inicio, ano)
-                    )
-                    .map((encontro) => ({
-                        ...encontro,
-                        nome_evento: evento.titulo,
-                    }))
-            );
-        }
-    }
-
-    const encontros = [...encontrosGrupo, ...encontrosEventos];
-    const eventosDoGrupoNoAno = eventosDoGrupo.filter((evento: any) =>
-        encontros.some((encontro) => encontroPertenceAoEvento(encontro, evento.id))
-    );
-
-    return {
-        ano,
-        ebook,
-        grupo,
-        grupos,
-        encontros,
-        eventosDoGrupo: eventosDoGrupoNoAno,
-    };
+    if (!ebook) return null;
+    const conteudo = await carregarConteudoPublicoAnual(ano);
+    const grupo = conteudo.grupos.find(g => g.slug === slug);
+    if (!grupo) return null;
+    const relacionados = conteudo.eventos.filter(e => e.todos_os_grupos || e.grupos_envolvidos?.includes(grupo.id));
+    const ids = new Set(relacionados.map(e => e.id));
+    const porId = new Map(conteudo.eventos.map(e => [e.id, e]));
+    const encontros = conteudo.encontros.filter(e => e.evento_id ? ids.has(e.evento_id) : e.grupo_id === grupo.id)
+        .map(e => e.evento_id ? { ...e, nome_evento: porId.get(e.evento_id)?.titulo || "" } : e);
+    const unicos = [...new Map(encontros.map(e => [e.id, e])).values()];
+    return { ano, ebook, grupo, grupos: conteudo.grupos, encontros: unicos,
+        eventosDoGrupo: relacionados.filter(e => unicos.some(m => m.evento_id === e.id)) };
 }
 
 export async function carregarEventoLivroPorAno(ano: number, id: string) {
     const ebook = await carregarEbookPorAno(ano);
-
-    if (!ebook) {
-        return null;
-    }
-
-    const eventos = aplicarEventoEdicao(
-        (await getEventosStrict()) as Evento[],
-        await getEventosEdicao(ano)
-    ).filter((evento) => evento.visibilidade === "publico");
-    const grupos = aplicarGrupoEdicao(
-        await getGruposOrdenadosStrict(),
-        await getGruposEdicao(ano)
-    );
-    const evento = eventos.find((item) => item.id === id);
-
-    if (!evento) {
-        return null;
-    }
-
-    const encontrosEvento = await getEncontrosPorEventoStrict(evento.id);
-    const encontrosGrupo = await getEncontrosPorGrupoStrict(evento.id);
-    const encontros = [...encontrosEvento, ...encontrosGrupo].filter(
-        (encontro, index, lista) =>
-            encontro.visibilidade === "publico" &&
-            pertenceAoAno(encontro.data_inicio, ano) &&
-            lista.findIndex((item) => item.id === encontro.id) === index
-    );
-
-    return {
-        ano,
-        ebook,
-        evento,
-        grupos,
-        encontros,
-    };
+    if (!ebook) return null;
+    const conteudo = await carregarConteudoPublicoAnual(ano);
+    const evento = conteudo.eventos.find(e => e.id === id);
+    if (!evento) return null;
+    return { ano, ebook, evento, grupos: conteudo.grupos,
+        encontros: conteudo.encontros.filter(e => e.evento_id === id && e.nivel === "evento") };
 }

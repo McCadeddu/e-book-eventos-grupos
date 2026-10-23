@@ -5,10 +5,12 @@ import { useEnvioFormulario } from "./useEnvioFormulario";
 
 export default function FormularioGrupo({
     grupo,
+    ano,
     submitLabel,
     onSubmit,
     onCancel,
 }: {
+    ano: number;
     grupo?: Grupo;
     submitLabel: string;
     onSubmit: (payload: Record<string, unknown>) => Promise<ResultadoAcao>;
@@ -21,6 +23,7 @@ export default function FormularioGrupo({
 
         const formData = new FormData(event.currentTarget);
         await enviar({
+            anoPastoral: ano,
             id: grupo?.id,
             slug: grupo?.slug,
             nome: formData.get("nome"),
@@ -38,6 +41,7 @@ export default function FormularioGrupo({
             title={grupo ? `Editar grupo: ${grupo.nome}` : "Novo grupo"}
             color="#4bbbc8"
         >
+            <p>Conteúdo da edição {ano}. As alterações serão salvas somente neste ano.</p>
             <form data-setor="grupo" onSubmit={handleSubmit} style={{ display: "grid", gap: "0.85rem" }}>
                 <input
                     name="nome"

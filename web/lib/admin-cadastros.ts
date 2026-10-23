@@ -29,6 +29,7 @@ export async function enviarAcaoAdmin(
         }
         return {
             sucesso: true,
+            aviso: typeof dados.aviso === "string" ? dados.aviso : undefined,
             grupoSlug: typeof dados.grupo?.slug === "string" ? dados.grupo.slug : undefined,
             eventoId: typeof dados.evento?.id === "string" ? dados.evento.id : undefined,
         };

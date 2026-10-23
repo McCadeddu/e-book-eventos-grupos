@@ -1,11 +1,9 @@
+import { carregarCalendarioLivroPorAno } from "../../lib/livro-ano";
 import Link from "next/link";
 import { GetStaticProps } from "next";
 
 import { Grupo } from "../../lib/types";
-import { getGruposOrdenadosStrict } from "../../lib/db/grupos";
-import { getEncontrosStrict } from "../../lib/db/encontros";
-import { getEventosStrict } from "../../lib/db/eventos";
-import { getAnoAtualEbook, pertenceAoAno } from "../../lib/ebook-config";
+import { getAnoAtualEbook } from "../../lib/ebook-config";
 
 import {
   Encontro,
@@ -31,9 +29,7 @@ type LinhaAgrupada = {
   }[];
 };
 
-function encontroPertenceAoEvento(encontro: any, eventoId: string) {
-  return encontro.evento_id === eventoId || encontro.grupo_id === eventoId;
-}
+
 
 export default function CalendarioLivro({ ano, grupos, encontros, eventos }: Props) {
   const encontrosOrdenados = ordenarEncontrosPorData(encontros);
@@ -289,38 +285,7 @@ export default function CalendarioLivro({ ano, grupos, encontros, eventos }: Pro
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const ano = await getAnoAtualEbook();
-  const grupos = await getGruposOrdenadosStrict();
-
-  const encontros = (await getEncontrosStrict())
-    .filter((e) => {
-      if (e.visibilidade !== "publico") return false;
-      if (!pertenceAoAno(e.data_inicio, ano)) return false;
-
-      if (!e.evento_id) return true;
-
-      return e.nivel === "evento" && e.mostrar_no_anual === true;
-    })
-    .map((e) => ({
-      ...e,
-      data_inicio: e.data_inicio ?? null,
-      data_fim: e.data_fim ?? null,
-      data_legivel: e.data_legivel ?? null,
-    }));
-
-  const eventos = (await getEventosStrict()).filter(
-    (evento: any) =>
-      evento.visibilidade === "publico" &&
-      encontros.some((encontro) => encontroPertenceAoEvento(encontro, evento.id))
-  );
-
-  return {
-    props: {
-      ano,
-      grupos,
-      encontros,
-      eventos: eventos ?? [],
-    },
-    revalidate: 60,
-  };
+  const dados = await carregarCalendarioLivroPorAno(await getAnoAtualEbook());
+  if (!dados) return { notFound: true };
+  return { props: dados, revalidate: 60 };
 };

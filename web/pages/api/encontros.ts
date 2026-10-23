@@ -1,3 +1,4 @@
+import { revalidarEdicaoAnual } from "../../lib/revalidacao-anual";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { randomUUID } from "crypto";
 import { requireAdminClient } from "../../lib/adminApi";
@@ -234,5 +235,5 @@ export default async function handler(
 async function revalidarBasico(res: NextApiResponse, anoPastoral: number | null) {
     await res.revalidate("/livro/calendario");
     await res.revalidate("/livro");
-    if (anoPastoral) await res.revalidate(`/livro/edicao/${anoPastoral}/calendario`);
+    if (anoPastoral) await revalidarEdicaoAnual(res, anoPastoral);
 }

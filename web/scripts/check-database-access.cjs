@@ -20,12 +20,12 @@ async function main() {
     const admin = createClient(url, serverKey, options);
     let falhas = 0;
 
-    for (const tabela of ["admin_backups", "encontros"]) {
-        let consulta = anon.from(tabela).select("id", { head: true, count: "exact" });
+    for (const tabela of ["admin_backups", "encontros", "grupo_edicoes", "evento_edicoes"]) {
+        let consulta = anon.from(tabela).select(tabela.endsWith("_edicoes") ? "ano" : "id", { head: true, count: "exact" });
         if (tabela === "encontros") consulta = consulta.eq("visibilidade", "interno");
         const resultado = await consulta;
         const acesso = avaliarLeituraPublica(resultado);
-        console.log(JSON.stringify({ teste: tabela === "encontros" ? "encontros_internos_anonimos" : "backups_anonimos",
+        console.log(JSON.stringify({ teste: tabela === "encontros" ? "encontros_internos_anonimos" : `${tabela}_anonimos`,
             acesso, status: resultado.status, registros_acessiveis: resultado.count }));
         if (acesso !== "bloqueado") falhas++;
     }

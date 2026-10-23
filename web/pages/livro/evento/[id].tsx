@@ -1,15 +1,11 @@
+import { carregarEventoLivroPorAno } from "../../../lib/livro-ano";
 ﻿// web/pages/livro/evento/[id].tsx
 
 import Link from "next/link";
 import { GetStaticPaths, GetStaticProps } from "next";
-import {
-    getEncontrosPorEventoStrict,
-    getEncontrosPorGrupoStrict,
-} from "../../../lib/db/encontros";
 import { getEventosStrict } from "../../../lib/db/eventos";
-import { getGruposOrdenadosStrict } from "../../../lib/db/grupos";
 import { formatarDataIntervalo } from "../../../lib/encontros-utils";
-import { getAnoAtualEbook, pertenceAoAno } from "../../../lib/ebook-config";
+import { getAnoAtualEbook } from "../../../lib/ebook-config";
 
 import { Grupo } from "../../../lib/types";
 import { Encontro } from "../../../lib/encontros-utils";
@@ -223,34 +219,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-    const ano = await getAnoAtualEbook();
-    const eventos = await getEventosStrict();
-    const grupos = await getGruposOrdenadosStrict();
-
-    const evento = eventos.find(e => e.id === params?.id);
-
-    if (!evento || evento.visibilidade !== "publico") {
-        return { notFound: true };
-    }
-
-    // 🔵 buscar apenas encontros oficiais do evento
-    const encontros = [
-        ...(await getEncontrosPorEventoStrict(evento.id)),
-        ...(await getEncontrosPorGrupoStrict(evento.id)),
-    ].filter(
-        (encontro, index, lista) =>
-            encontro.visibilidade === "publico" &&
-            pertenceAoAno(encontro.data_inicio, ano) &&
-            lista.findIndex((item) => item.id === encontro.id) === index
-    );
-
-    return {
-        props: {
-            ano,
-            evento,
-            grupos,
-            encontros: encontros || [],
-        },
-        revalidate: 60,
-    };
+    const dados = await carregarEventoLivroPorAno(await getAnoAtualEbook(), String(params?.id));
+    if (!dados) return { notFound: true };
+    return { props: dados, revalidate: 60 };
 };

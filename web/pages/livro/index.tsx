@@ -103,5 +103,6 @@ export async function getStaticProps() {
 
     return {
         props: { ebook },
+        revalidate: 60,
     };
 }

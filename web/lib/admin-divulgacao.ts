@@ -38,6 +38,16 @@ export async function carregarDivulgacaoEncontro(id: string): Promise<DadosDivul
     const ano = encontro.data_inicio?.slice(0, 4);
     const query = ano && /^\d{4}$/.test(ano) ? `?ano=${ano}` : "";
     const parent = responsavel as { id: string; titulo?: string; nome?: string; slug?: string };
+    if (ano && /^\d{4}$/.test(ano)) {
+        const { data: edicao, error: erroEdicao } = await client
+            .from(evento ? "evento_edicoes" : "grupo_edicoes")
+            .select(evento ? "titulo" : "nome")
+            .eq(evento ? "evento_id" : "grupo_id", parent.id).eq("ano", Number(ano)).maybeSingle();
+        if (erroEdicao) throw new Error("Não foi possível carregar a apresentação anual do encontro.");
+        const editorial = edicao as { titulo?: string | null; nome?: string | null } | null;
+        if (evento && editorial?.titulo != null) parent.titulo = editorial.titulo;
+        if (!evento && editorial?.nome != null) parent.nome = editorial.nome;
+    }
     const ancora = evento ? `evento-${parent.id}` : `grupo-${parent.slug}`;
     return {
         encontro,

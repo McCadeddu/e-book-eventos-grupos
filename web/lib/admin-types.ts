@@ -12,5 +12,5 @@ export type EventoAdmin = {
 };
 
 export type ResultadoAcao =
-    | { sucesso: true; grupoSlug?: string; eventoId?: string }
+    | { sucesso: true; aviso?: string; grupoSlug?: string; eventoId?: string }
     | { sucesso: false; erro: string };

@@ -6,11 +6,13 @@ import { useEnvioFormulario } from "./useEnvioFormulario";
 
 export default function FormularioEvento({
     evento,
+    ano,
     grupos,
     submitLabel,
     onSubmit,
     onCancel,
 }: {
+    ano: number;
     evento?: EventoAdmin;
     grupos: Grupo[];
     submitLabel: string;
@@ -27,6 +29,7 @@ export default function FormularioEvento({
         const gruposSelecionados = todos ? [] : formData.getAll("grupos_envolvidos");
 
         await enviar({
+            anoPastoral: ano,
             id: evento?.id,
             titulo: formData.get("titulo"),
             faixa_etaria: formData.get("faixa_etaria"),
@@ -46,6 +49,7 @@ export default function FormularioEvento({
             title={evento ? `Editar evento: ${evento.titulo}` : "Novo evento"}
             color="#ff6136"
         >
+            <p>Conteúdo da edição {ano}. As alterações serão salvas somente neste ano.</p>
             <form data-setor="evento" onSubmit={handleSubmit} style={{ display: "grid", gap: "0.85rem" }}>
                 <input
                     name="titulo"

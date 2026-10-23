@@ -1,9 +1,7 @@
 import { getSupabaseAdminClient } from "./supabaseAdmin";
 import { carregarEdicoesEbook } from "./ebook-config";
-import { getGruposOrdenados } from "./db/grupos";
-import { getEventos } from "./db/eventos";
+import { carregarConteudoAnual } from "./conteudo-anual";
 import { lerAnoPastoral } from "./ano-pastoral";
-import type { Encontro } from "./types";
 
 /** Empty years remain empty: never substitute meetings from a local fallback. */
 export async function carregarAgendaAdministrativa(anoSolicitado: unknown) {
@@ -14,19 +12,6 @@ export async function carregarAgendaAdministrativa(anoSolicitado: unknown) {
 
     if (!ano || !anos.includes(ano)) return null;
 
-    const [grupos, eventos, resposta] = await Promise.all([
-        getGruposOrdenados(),
-        getEventos(),
-        client.from("encontros").select("*")
-            .gte("data_inicio", `${ano}-01-01`)
-            .lt("data_inicio", `${ano + 1}-01-01`)
-            .order("data_inicio", { ascending: true }),
-    ]);
-
-    if (resposta.error) throw new Error("Não foi possível carregar os encontros do ano selecionado.");
-
-    return {
-        ano, anos, anoPublicado: colecao.anoPublicado,
-        grupos, eventos, encontros: (resposta.data ?? []) as Encontro[],
-    };
+    const conteudo = await carregarConteudoAnual(ano);
+    return { ano, anos, anoPublicado: colecao.anoPublicado, ...conteudo };
 }

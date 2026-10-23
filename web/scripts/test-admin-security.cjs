@@ -130,6 +130,10 @@ test("API guard authenticates before creating a privileged client and reports mi
 
 function fakeClient(label, calls, data) {
     return {
+        async rpc(name, args) {
+            calls.push({ client: label, table: "rpc:" + name, mutations: [["rpc", args]] });
+            return { data: { sucesso: true, grupo: { id: "g", slug: "grupo" }, evento: { id: "e" } }, error: null };
+        },
         from(table) {
             const call = { client: label, table, mutations: [] };
             calls.push(call);
@@ -137,7 +141,7 @@ function fakeClient(label, calls, data) {
             const bounds = [];
             const query = {
                 select() { return query; }, eq() { return query; }, not() { return query; },
-                order() { return query; }, limit() { return query; },
+                order() { return query; }, limit() { return query; }, range() { return query; },
                 gte(column, value) { bounds.push((row) => row[column] >= value); return query; },
                 lt(column, value) { bounds.push((row) => row[column] < value); return query; },
                 single() { single = true; return query; }, maybeSingle() { single = true; return query; },
@@ -202,7 +206,7 @@ test("pastoral years validate real dates and allow intervals crossing the end of
 
 test("2027 starts empty without importing 2026 dates and keeps the existing groups and events", async () => {
     const calls = [];
-    const data = { encontros: [{ id: "old", data_inicio: "2026-07-01" }] };
+    const data = { grupos: [{ id: "g" }], eventos: [{ id: "retreat" }], encontros: [{ id: "old", data_inicio: "2026-07-01" }] };
     const client = fakeClient("admin", calls, data);
     const { carregarAgendaAdministrativa } = load("lib/admin-ano.ts", {
         "./supabaseAdmin": { getSupabaseAdminClient: () => client },
@@ -240,6 +244,7 @@ test("the 2027 editor cannot change or delete 2026 meetings and never stores yea
         const handler = load("pages/api/encontros.ts", {
             "./supabaseAdmin": { getSupabaseAdminClient: () => client },
             "../../lib/adminBackup": { salvarBackupAutomatico: async () => ({ sucesso: true }) },
+            "../../lib/revalidacao-anual": { revalidarEdicaoAnual: async (res, ano) => { await res.revalidate(`/livro/edicao/${ano}/calendario`); return true; } },
         }).default;
         const response = apiResponse();
         await handler({ method: scenario.method, headers: { cookie: "adminAuth=" + auth.createAdminSession("admin@example.org", secret) }, body: { ...scenario.body, anoPastoral: 2027 } }, response);
@@ -253,8 +258,8 @@ test("the 2027 editor cannot change or delete 2026 meetings and never stores yea
 
 test("all seven write APIs reject visitors and route authenticated changes through the server client", async () => {
     for (const scenario of [
-        { file: "grupos.ts", method: "POST", body: { nome: "Teste isolado" } },
-        { file: "eventos.ts", method: "POST", body: { titulo: "Teste isolado" } },
+        { file: "grupos.ts", method: "POST", body: { nome: "Teste isolado", anoPastoral: 2027 } },
+        { file: "eventos.ts", method: "POST", body: { titulo: "Teste isolado", anoPastoral: 2027 } },
         { file: "encontros.ts", method: "POST", body: { tipo: "encontro_regular", dataInicio: "2026-01-01", grupoId: "g" } },
         { file: "grupos/ordenar.ts", method: "POST", body: { ordem: [{ id: "g", ordem: 1 }] } },
         { file: "grupos/mover.ts", method: "POST", body: { grupoId: "g", direcao: "baixo" }, data: { grupos: [{ id: "g", ordem: 1 }, { id: "h", ordem: 2 }] } },
@@ -264,9 +269,14 @@ test("all seven write APIs reject visitors and route authenticated changes throu
         const calls = [];
         let factories = 0;
         const client = fakeClient("admin", calls, scenario.data || {});
-        const mocks = { "./supabaseAdmin": { getSupabaseAdminClient() { factories++; return client; } } };
+        const mocks = {
+            "./supabaseAdmin": { getSupabaseAdminClient() { factories++; return client; } },
+            "./adminBackup": { salvarBackupAutomatico: async () => ({ sucesso: true }) },
+            "./revalidacao-anual": { revalidarEdicaoAnual: async () => true },
+        };
         for (const prefix of ["../../", "../../../"]) {
             mocks[prefix + "lib/adminBackup"] = { salvarBackupAutomatico: async () => ({ sucesso: true }) };
+            mocks[prefix + "lib/revalidacao-anual"] = { revalidarEdicaoAnual: async () => true };
             mocks[prefix + "lib/ebook-config"] = { carregarEdicoesEbook: async () => ({ edicoes: [] }) };
             mocks[prefix + "lib/supabaseClient"] = { supabase: { from() { throw new Error("Public client used for a write"); } } };
         }
@@ -348,7 +358,7 @@ test("legacy routes converge on one annual editor and preserve the meeting's act
 test("each sector has one form implementation with the fields needed for both creation and editing", () => {
     const React = require("react");
     const { renderToStaticMarkup } = require("react-dom/server");
-    const common = { submitLabel: "Salvar", onSubmit: async () => ({ sucesso: true }), onCancel() {} };
+    const common = { ano: 2027, submitLabel: "Salvar", onSubmit: async () => ({ sucesso: true }), onCancel() {} };
     const group = load("components/admin/FormularioGrupo.tsx").default;
     const event = load("components/admin/FormularioEvento.tsx").default;
     const meeting = load("components/admin/FormularioEncontro.tsx").default;
@@ -401,7 +411,7 @@ test("disclosure uses current group or event ownership and preserves the meeting
         const data = await carregarDivulgacaoEncontro("m");
         assert.equal(data.grupo.nome, event ? "Retiro" : "Grupo");
         assert.equal(data.voltarHref, `/admin/grupos?ano=2026#${event ? "evento-e" : "grupo-grupo"}`);
-        assert.deepEqual(calls.map(x => x.table), ["encontros", event ? "eventos" : "grupos"]);
+        assert.deepEqual(calls.map(x => x.table), ["encontros", event ? "eventos" : "grupos", event ? "evento_edicoes" : "grupo_edicoes"]);
         assert.ok(calls.every(x => x.mutations.length === 0));
     }
     const { carregarDivulgacaoEncontro } = load("lib/admin-divulgacao.ts", {
@@ -607,4 +617,140 @@ test("events with no accessible meetings keep their dates empty instead of inher
     assert.equal(result[0].data_inicio, null);
     assert.equal(result[0].data_fim, null);
     assert.equal(events.fileReads(), 0);
+});
+
+
+test("annual validation requires a year, preserves cleared fields and rejects arbitrary columns", () => {
+    const { validarCadastroAnual } = load("lib/admin-edicoes.ts", {
+        "./adminBackup": {}, "./revalidacao-anual": {},
+    });
+    for (const body of [null, [], { id: "g", nome: "Novo" }, { id: "g", anoPastoral: 2027, ordem: 1 },
+        { id: "g", anoPastoral: 2027, equipe: [9] }, { id: "g", anoPastoral: 2027, nome: " " }]) {
+        assert.ok(validarCadastroAnual("grupos", body, false).erro);
+    }
+    const result = validarCadastroAnual("grupos", { id: "g", slug: "immutable", anoPastoral: 2027, objetivo_ano: "", equipe: [] }, false);
+    assert.equal(result.ano, 2027);
+    assert.equal(result.dados.objetivo_ano, "");
+    assert.equal(result.dados.equipe.length, 0);
+    assert.equal(Object.hasOwn(result.dados, "slug"), false);
+    assert.equal(Object.hasOwn(result.dados, "anoPastoral"), false);
+    const created = validarCadastroAnual("grupos", { anoPastoral: 2027, nome: " Grupo Árvore " }, true);
+    assert.equal(created.dados.slug, "grupo-arvore");
+    const event = validarCadastroAnual("eventos", { id: "e", anoPastoral: 2027, todos_os_grupos: false, visibilidade: "interno" }, false);
+    assert.equal(event.dados.todos_os_grupos, false);
+});
+
+test("annual API uses only the transactional RPC and refuses missing infrastructure without global writes", async () => {
+    for (const [error, expected] of [[null, 200], [{ code: "PGRST202" }, 503], [{ code: "22023" }, 400], [{ code: "23505" }, 409], [{ code: "P0002" }, 404]]) {
+        let rpc = 0;
+        const client = { from() { throw Error("Global table write attempted"); }, async rpc(name, args) {
+            rpc++; assert.equal(name, "pascom_salvar_cadastro_anual"); assert.equal(args.p_ano, 2027);
+            assert.equal(args.p_dados.objetivo_ano, ""); assert.equal(args.p_criar, false);
+            return { error, data: error ? null : { sucesso: true, grupo: { id: "g", slug: "grupo" } } };
+        } };
+        const api = load("lib/admin-edicoes.ts", {
+            "./adminBackup": { salvarBackupAutomatico: async () => ({ sucesso: true }) },
+            "./revalidacao-anual": { revalidarEdicaoAnual: async () => true },
+        });
+        const res = apiResponse();
+        await api.salvarCadastroAnualApi("grupos", { method: "PUT", body: { id: "g", anoPastoral: 2027, objetivo_ano: "" } }, res, client);
+        assert.equal(res.code, expected); assert.equal(rpc, 1);
+        const invalid = apiResponse();
+        await api.salvarCadastroAnualApi("grupos", { method: "PUT", body: { id: "g", nome: "Wrong year context" } }, invalid, client);
+        assert.equal(invalid.code, 400); assert.equal(rpc, 1);
+    }
+});
+
+function annualClient(rows) {
+    return { from(table) {
+        const checks = [];
+        const q = { select() { return q; }, order() { return q; },
+            eq(k,v) { checks.push(r => r[k] === v); return q; },
+            gte(k,v) { checks.push(r => r[k] >= v); return q; },
+            lt(k,v) { checks.push(r => r[k] < v); return q; },
+            then(resolve,reject) { return Promise.resolve({ data: (rows[table] || []).filter(r => checks.every(c => c(r))), error: null }).then(resolve,reject); },
+        }; return q;
+    } };
+}
+
+test("annual loading isolates 2027 content and does not change 2026 or inherit cleared values", async () => {
+    const rows = {
+        grupos: [{ id: "g", slug: "grupo", nome: "Original", equipe: ["Original"], objetivo_ano: "Global" }],
+        eventos: [{ id: "e", titulo: "Retiro", visibilidade: "publico" }],
+        grupo_edicoes: [{ grupo_id: "g", ano: 2026, objetivo_ano: "Objetivo 2026", equipe: ["Equipe 2026"] },
+            { grupo_id: "g", ano: 2027, objetivo_ano: "", equipe: [] }],
+        evento_edicoes: [{ evento_id: "e", ano: 2027, visibilidade: "interno" }],
+        encontros: [{ id: "old", grupo_id: "g", data_inicio: "2026-03-01", visibilidade: "publico" }],
+    };
+    const snapshot = JSON.stringify(rows);
+    const helper = load("lib/conteudo-anual.ts", {
+        "./supabaseAdmin": { getSupabaseAdminClient: () => annualClient(rows) },
+        "./ebook-config": { pertenceAoAno: (date, year) => date?.startsWith(year + "-") },
+    });
+    const before = await helper.carregarConteudoAnual(2026);
+    const next = await helper.carregarConteudoAnual(2027);
+    assert.equal(before.grupos[0].objetivo_ano, "Objetivo 2026");
+    assert.equal(next.grupos[0].objetivo_ano, ""); assert.equal(next.grupos[0].equipe.length, 0);
+    assert.equal(before.eventos[0].visibilidade, "publico"); assert.equal(next.eventos[0].visibilidade, "interno");
+    assert.equal(next.encontros.length, 0); assert.equal(JSON.stringify(rows), snapshot);
+});
+
+test("public annual props exclude internal owners and unknown private columns before serialization", () => {
+    const { filtrarConteudoPublico } = load("lib/conteudo-anual.ts", {
+        "./ebook-config": { pertenceAoAno: (date, year) => date?.startsWith(year + "-") },
+    });
+    const data = filtrarConteudoPublico(2027, {
+        grupos: [{ id: "g", nome: "Public", admin_note: "SECRET_GROUP" }],
+        eventos: [{ id: "e", visibilidade: "publico", admin_note: "SECRET_EVENT" }, { id: "hidden", visibilidade: "interno", titulo: "SECRET_PARENT" }],
+        encontros: [
+            { id: "ok", grupo_id: "g", visibilidade: "publico", data_inicio: "2027-03-01", admin_note: "SECRET_MEETING" },
+            { id: "private", grupo_id: "g", visibilidade: "interno", data_inicio: "2027-03-01" },
+            { id: "child", evento_id: "hidden", visibilidade: "publico", data_inicio: "2027-03-01" },
+            { id: "old", grupo_id: "g", visibilidade: "publico", data_inicio: "2026-03-01" },
+        ],
+    });
+    assert.equal(data.encontros.length, 1); assert.equal(data.eventos.length, 1);
+    assert.ok(!JSON.stringify(data).includes("SECRET"));
+});
+
+test("organization meetings appear once in involved group chapters, not as official event meetings", async () => {
+    const conteudo = { grupos: [{ id: "g", slug: "grupo" }], eventos: [{ id: "e", grupos_envolvidos: ["g"], titulo: "Retiro" }],
+        encontros: [{ id: "official", evento_id: "e", nivel: "evento", mostrar_no_anual: true }, { id: "org", evento_id: "e", nivel: "organizacao", mostrar_no_anual: false }] };
+    const livro = load("lib/livro-ano.ts", {
+        "./conteudo-anual": { carregarConteudoPublicoAnual: async () => conteudo },
+        "./ebook-config": { carregarEbookPorAno: async ano => ({ ano }) },
+    });
+    assert.equal((await livro.carregarCapituloLivroPorAno(2027,"grupo")).encontros.length, 2);
+    assert.equal((await livro.carregarEventoLivroPorAno(2027,"e")).encontros.length, 1);
+    assert.equal((await livro.carregarCalendarioLivroPorAno(2027)).encontros.length, 1);
+});
+
+test("annual revalidation refreshes all indexes only in the edited year and legacy pages only for the published year", async () => {
+    const helper = load("lib/revalidacao-anual.ts", {
+        "./supabaseAdmin": { getSupabaseAdminClient: () => annualClient({ grupos: [{ slug: "grupo" }], eventos: [{ id: "e" }] }) },
+        "./ebook-config": { carregarEdicoesEbook: async () => ({ anoPublicado: 2026 }) },
+    });
+    const next = apiResponse(); assert.equal(await helper.revalidarEdicaoAnual(next,2027), true);
+    assert.ok(next.revalidations.includes("/livro/edicao/2027/grupo/grupo"));
+    assert.ok(next.revalidations.includes("/livro/edicao/2027/evento/e"));
+    assert.ok(!next.revalidations.includes("/livro"));
+    assert.ok(!next.revalidations.some(p => p.includes("2026")));
+    const published = apiResponse(); assert.equal(await helper.revalidarEdicaoAnual(published,2026),true);
+    assert.ok(published.revalidations.includes("/livro/grupo"));
+    assert.ok(published.revalidations.includes("/livro/evento/e"));
+});
+
+test("version 3 backups retain annual editorial content as well as base records", async () => {
+    const calls = [];
+    const backup = load("lib/adminBackup.ts", {
+        "./supabaseAdmin": { getSupabaseAdminClient: () => fakeClient("admin",calls,{
+            grupos: [{ id:"g" }], eventos: [], encontros: [],
+            grupo_edicoes: [{ grupo_id:"g", ano:2027, objetivo_ano:"Annual" }],
+            evento_edicoes: [], ebook_edicoes: [{ ano:2027 }], ebook_estado: [{ id:"principal" }],
+        }) },
+    });
+    assert.equal((await backup.salvarBackupAutomatico({ entidade:"grupos", acao:"editar" })).sucesso,true);
+    const record = calls.find(c => c.table === "admin_backups" && c.mutations.length).mutations[0][1];
+    assert.equal(record.versao,3); assert.equal(record.payload.grupo_edicoes[0].objetivo_ano,"Annual");
+    assert.equal(record.payload.ebook_edicoes[0].ano,2027);
 });

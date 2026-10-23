@@ -318,6 +318,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
             }
             try {
                 await aoConcluir?.();
+                if (resultado.aviso) setErroAcao(resultado.aviso);
             } catch {
                 setErroAcao("Ação concluída. Recarregue a página para conferir a atualização.");
             }
@@ -484,7 +485,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
 
     async function alternarVisibilidadeEvento(evento: EventoAdmin) {
         const novaVisibilidade = evento.visibilidade === "publico" ? "interno" : "publico";
-        await executarAcao("/api/eventos", "PUT", { id: evento.id, visibilidade: novaVisibilidade }, () => {
+        await executarAcao("/api/eventos", "PUT", { id: evento.id, anoPastoral: ano, visibilidade: novaVisibilidade }, () => {
             setOrdemEventos((atuais) => atuais.map((item) =>
                 item.id === evento.id ? { ...item, visibilidade: novaVisibilidade } : item));
         });
@@ -493,6 +494,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
     async function salvarSetor(setor: SetorCadastro, metodo: "POST" | "PUT", payload: Record<string, unknown>): Promise<ResultadoAcao> {
         const resultado = await salvarCadastro(setor, metodo, payload);
         if (!resultado.sucesso) return resultado;
+        setErroAcao(resultado.aviso || "");
         const slug = resultado.grupoSlug || (typeof payload.slug === "string" ? payload.slug : undefined);
         const eventoId = resultado.eventoId || (typeof payload.id === "string" ? payload.id : undefined);
         const ancora = setor === "grupos" && slug ? `#grupo-${slug}` : setor === "eventos" && eventoId ? `#evento-${eventoId}` : undefined;
@@ -532,7 +534,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                 </select>
                 <p role="status">{mudandoAno ? "Carregando agenda..." : `${listaEncontros.length} encontro(s) em ${ano}.`}</p>
                 {encontros.length === 0 && <p>Agenda sem datas em {ano}. Abra um grupo, evento ou retiro e use “Novo encontro” para começar.</p>}
-                <p>As datas são separadas por ano. Os nomes, textos, equipes e a exclusão de grupos e eventos são compartilhados entre os anos.</p>
+                <p>As datas são separadas por ano. Os textos, objetivos, equipes e a visibilidade dos eventos pertencem ao ano selecionado. Slugs, ordem e exclusão de cadastros são globais.</p>
                 <p>O livro publicado continua em {anoPublicado}. <a href={`/livro/edicao/${ano}/calendario`} target="_blank" rel="noreferrer">Ver calendário de {ano}</a></p>
             </section>
             <p role="status" aria-live="polite">{executandoAcao ? "Concluindo ação..." : ""}</p>
@@ -640,6 +642,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
 
                     {criandoGrupo && (
                         <FormularioGrupo
+                            ano={ano}
                             submitLabel="Salvar grupo"
                             onSubmit={criarGrupo}
                             onCancel={cancelarFormulario}
@@ -648,6 +651,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
 
                     {criandoEvento && (
                         <FormularioEvento
+                            ano={ano}
                             grupos={ordemGrupos}
                             submitLabel="Salvar evento"
                             onSubmit={criarEvento}
@@ -746,7 +750,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                                         <SecondaryButton
                                             color="#8b0000"
                                             onClick={async () => {
-                                                if (!confirm("Excluir grupo?")) return;
+                                                if (!confirm("Excluir este grupo e seus encontros de TODOS os anos? Esta ação é global.")) return;
                                                 await executarAcao("/api/grupos", "DELETE", { grupoId: grupo.id }, () => recarregar());
                                             }}
                                         >
@@ -764,6 +768,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
 
                                         {editandoGrupoId === grupo.id && (
                                             <FormularioGrupo
+                            ano={ano}
                                                 grupo={grupo}
                                                 submitLabel="Salvar alteracoes"
                                                 onSubmit={atualizarGrupo}
@@ -1039,7 +1044,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                                         <SecondaryButton
                                             color="darkred"
                                             onClick={async () => {
-                                                if (!confirm("Excluir evento?")) return;
+                                                if (!confirm("Excluir este evento de TODOS os anos? Esta ação é global.")) return;
                                                 await executarAcao("/api/eventos", "DELETE", { id: evento.id }, () => recarregar());
                                             }}
                                         >
@@ -1052,6 +1057,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                                     <>
                                         {editandoEventoId === evento.id && (
                                             <FormularioEvento
+                            ano={ano}
                                                 evento={evento}
                                                 grupos={ordemGrupos}
                                                 submitLabel="Salvar alteracoes"

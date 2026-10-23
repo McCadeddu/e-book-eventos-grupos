@@ -1,168 +1,18 @@
-﻿// web/pages/api/eventos.ts
-
 import type { NextApiRequest, NextApiResponse } from "next";
 import { requireAdminClient } from "../../lib/adminApi";
 import { salvarBackupAutomatico } from "../../lib/adminBackup";
-import { randomUUID } from "crypto";
+import { salvarCadastroAnualApi } from "../../lib/admin-edicoes";
+import { carregarEdicoesEbook } from "../../lib/ebook-config";
+import { revalidarEdicaoAnual } from "../../lib/revalidacao-anual";
 
-function gerarId() {
-    return randomUUID();
-}
+export const config = { maxDuration: 60 };
 
-function normalizarListaTexto(valor: unknown) {
-    if (Array.isArray(valor)) {
-        return valor
-            .map((item) => String(item).trim())
-            .filter(Boolean);
-    }
-
-    if (typeof valor === "string") {
-        return valor
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean);
-    }
-
-    return [];
-}
-
-function limparUndefined<T extends Record<string, unknown>>(objeto: T) {
-    return Object.fromEntries(
-        Object.entries(objeto).filter(([, valor]) => valor !== undefined)
-    );
-}
-
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const supabase = requireAdminClient(req, res);
-    if (!supabase) {
-        return;
+    if (!supabase) return;
+    if (req.method === "POST" || req.method === "PUT") {
+        return salvarCadastroAnualApi("eventos", req, res, supabase);
     }
-
-
-    /* =====================================================
-       CRIAR EVENTO
-    ===================================================== */
-    if (req.method === "POST") {
-
-        const {
-            tipo,
-            titulo,
-            faixa_etaria,
-            descricao,
-            equipe,
-            grupos_envolvidos,
-            todos_os_grupos,
-            objetivo_ano,
-            convite,
-            visibilidade,
-        } = req.body;
-
-        if (!titulo) {
-            return res.status(400).json({ erro: "Título é obrigatório" });
-        }
-
-        const evento = {
-            id: gerarId(),
-            tipo,
-            titulo: titulo.toUpperCase(),
-            faixa_etaria,
-            descricao,
-            equipe: normalizarListaTexto(equipe),
-            grupos_envolvidos: todos_os_grupos
-                ? []
-                : Array.isArray(grupos_envolvidos)
-                    ? grupos_envolvidos
-                    : grupos_envolvidos
-                        ? [grupos_envolvidos]
-                        : [],
-            todos_os_grupos: !!todos_os_grupos,
-            objetivo_ano,
-            convite,
-            visibilidade: visibilidade || "publico",
-        };
-
-        const { error } = await supabase
-            .from("eventos")
-            .insert(evento);
-
-        if (error) {
-            console.error(error);
-            return res.status(500).json({ erro: error.message });
-        }
-
-        await salvarBackupAutomatico({
-            entidade: "eventos",
-            acao: "criar",
-            referenciaId: evento.id,
-        });
-
-        await revalidar(res);
-
-        return res.status(200).json({ sucesso: true });
-    }
-
-    /* =====================================================
-       EDITAR EVENTO
-    ===================================================== */
-    if (req.method === "PUT") {
-
-        const {
-            id,
-            titulo,
-            grupos_envolvidos,
-            todos_os_grupos,
-            equipe,
-            ...resto
-        } = req.body;
-
-        if (!id) {
-            return res.status(400).json({ erro: "ID ausente" });
-        }
-
-        const dadosAtualizados = limparUndefined({
-            ...resto,
-            titulo: titulo ? titulo.toUpperCase() : undefined,
-            equipe:
-                equipe === undefined
-                    ? undefined
-                    : normalizarListaTexto(equipe),
-            grupos_envolvidos: todos_os_grupos
-                ? []
-                : Array.isArray(grupos_envolvidos)
-                    ? grupos_envolvidos
-                    : grupos_envolvidos
-                        ? [grupos_envolvidos]
-                        : undefined,
-            todos_os_grupos:
-                typeof todos_os_grupos === "boolean"
-                    ? todos_os_grupos
-                    : undefined,
-        });
-
-        const { error } = await supabase
-            .from("eventos")
-            .update(dadosAtualizados)
-            .eq("id", id);
-
-        if (error) {
-            console.error(error);
-            return res.status(500).json({ erro: error.message });
-        }
-
-        await salvarBackupAutomatico({
-            entidade: "eventos",
-            acao: "editar",
-            referenciaId: id,
-        });
-
-        await revalidar(res);
-
-        return res.status(200).json({ sucesso: true });
-    }
-
     /* =====================================================
        EXCLUIR EVENTO
     ===================================================== */
@@ -190,18 +40,11 @@ export default async function handler(
             referenciaId: id,
         });
 
-        await revalidar(res);
+        const colecao = await carregarEdicoesEbook(supabase);
+        for (const edicao of colecao.edicoes) await revalidarEdicaoAnual(res, edicao.ano);
 
         return res.status(200).json({ sucesso: true });
     }
 
     return res.status(405).json({ erro: "Método não permitido" });
-}
-
-/* =====================================================
-   REVALIDAÇÃO
-===================================================== */
-async function revalidar(res: NextApiResponse) {
-    await res.revalidate("/livro");
-    await res.revalidate("/livro/calendario");
 }

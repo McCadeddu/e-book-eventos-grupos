@@ -1,5 +1,9 @@
 # Próxima etapa: segurança do banco e conteúdos anuais
 
+Atualização: as etapas de segurança e separação anual foram concluídas em
+23/10/2026. Este arquivo conserva o diagnóstico histórico; o estado da etapa
+anual está em [CONTEUDOS_ANUAIS_2026-10-23.md](CONTEUDOS_ANUAIS_2026-10-23.md).
+
 ## Estado confirmado em 23/10/2026
 
 As verificações usaram requisições HEAD ou consultas com limite zero: nenhum
