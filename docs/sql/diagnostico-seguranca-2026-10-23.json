@@ -1,0 +1,787 @@
+{
+  "papeis": [
+    {
+      "papel": "anon",
+      "ignora_rls": false,
+      "superusuario": false
+    },
+    {
+      "papel": "authenticated",
+      "ignora_rls": false,
+      "superusuario": false
+    },
+    {
+      "papel": "service_role",
+      "ignora_rls": true,
+      "superusuario": false
+    }
+  ],
+  "colunas": [
+    {
+      "udt_name": "uuid",
+      "data_type": "uuid",
+      "table_name": "admin_backups",
+      "column_name": "id",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "admin_backups",
+      "column_name": "created_at",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "admin_backups",
+      "column_name": "capturado_em",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "admin_backups",
+      "column_name": "versao",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "admin_backups",
+      "column_name": "origem",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "admin_backups",
+      "column_name": "entidade",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "admin_backups",
+      "column_name": "acao",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "admin_backups",
+      "column_name": "referencia_id",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "jsonb",
+      "data_type": "jsonb",
+      "table_name": "admin_backups",
+      "column_name": "resumo",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "jsonb",
+      "data_type": "jsonb",
+      "table_name": "admin_backups",
+      "column_name": "payload",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "ebook_edicoes",
+      "column_name": "ano",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "ebook_edicoes",
+      "column_name": "titulo",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "ebook_edicoes",
+      "column_name": "subtitulo",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "ebook_edicoes",
+      "column_name": "botao_texto",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "jsonb",
+      "data_type": "jsonb",
+      "table_name": "ebook_edicoes",
+      "column_name": "capas",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "ebook_edicoes",
+      "column_name": "logo",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "ebook_estado",
+      "column_name": "id",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "ebook_estado",
+      "column_name": "ano_publicado",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "ebook_estado",
+      "column_name": "ano_em_preparacao",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "encontros",
+      "column_name": "id",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "encontros",
+      "column_name": "grupo_id",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "date",
+      "data_type": "date",
+      "table_name": "encontros",
+      "column_name": "data_inicio",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "date",
+      "data_type": "date",
+      "table_name": "encontros",
+      "column_name": "data_fim",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "encontros",
+      "column_name": "data_legivel",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "encontros",
+      "column_name": "horario",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "encontros",
+      "column_name": "local",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "encontros",
+      "column_name": "titulo",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "encontros",
+      "column_name": "descricao",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "encontros",
+      "column_name": "tipo",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "encontros",
+      "column_name": "visibilidade",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "uuid",
+      "data_type": "uuid",
+      "table_name": "encontros",
+      "column_name": "evento_id",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "encontros",
+      "column_name": "nivel",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "bool",
+      "data_type": "boolean",
+      "table_name": "encontros",
+      "column_name": "mostrar_no_anual",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "uuid",
+      "data_type": "uuid",
+      "table_name": "evento_edicoes",
+      "column_name": "evento_id",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "evento_edicoes",
+      "column_name": "ano",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "evento_edicoes",
+      "column_name": "titulo",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "evento_edicoes",
+      "column_name": "faixa_etaria",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "evento_edicoes",
+      "column_name": "descricao",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "jsonb",
+      "data_type": "jsonb",
+      "table_name": "evento_edicoes",
+      "column_name": "equipe",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "evento_edicoes",
+      "column_name": "objetivo_ano",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "evento_edicoes",
+      "column_name": "convite",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "jsonb",
+      "data_type": "jsonb",
+      "table_name": "evento_edicoes",
+      "column_name": "grupos_envolvidos",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "bool",
+      "data_type": "boolean",
+      "table_name": "evento_edicoes",
+      "column_name": "todos_os_grupos",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "evento_edicoes",
+      "column_name": "visibilidade",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "bool",
+      "data_type": "boolean",
+      "table_name": "evento_edicoes",
+      "column_name": "ativo",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "uuid",
+      "data_type": "uuid",
+      "table_name": "eventos",
+      "column_name": "id",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "eventos",
+      "column_name": "titulo",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "eventos",
+      "column_name": "faixa_etaria",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "eventos",
+      "column_name": "descricao",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "_text",
+      "data_type": "ARRAY",
+      "table_name": "eventos",
+      "column_name": "equipe",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "eventos",
+      "column_name": "objetivo_ano",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "eventos",
+      "column_name": "convite",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "_text",
+      "data_type": "ARRAY",
+      "table_name": "eventos",
+      "column_name": "grupos_envolvidos",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "bool",
+      "data_type": "boolean",
+      "table_name": "eventos",
+      "column_name": "todos_os_grupos",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "eventos",
+      "column_name": "visibilidade",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "timestamp",
+      "data_type": "timestamp without time zone",
+      "table_name": "eventos",
+      "column_name": "created_at",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "int2",
+      "data_type": "smallint",
+      "table_name": "eventos",
+      "column_name": "ordem",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "grupos",
+      "column_name": "id",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "grupos",
+      "column_name": "slug",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "grupos",
+      "column_name": "nome",
+      "is_nullable": "NO"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "grupos",
+      "column_name": "faixa_etaria",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "grupos",
+      "column_name": "descricao",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "grupos",
+      "column_name": "objetivo_ano",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "grupos",
+      "column_name": "convite_final",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "_text",
+      "data_type": "ARRAY",
+      "table_name": "grupos",
+      "column_name": "equipe",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "grupos",
+      "column_name": "categoria",
+      "is_nullable": "YES"
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "grupos",
+      "column_name": "ordem",
+      "is_nullable": "NO"
+    }
+  ],
+  "tabelas": [
+    {
+      "rls": false,
+      "tabela": "admin_backups",
+      "rls_forcada": false
+    },
+    {
+      "rls": true,
+      "tabela": "ebook_edicoes",
+      "rls_forcada": false
+    },
+    {
+      "rls": true,
+      "tabela": "ebook_estado",
+      "rls_forcada": false
+    },
+    {
+      "rls": false,
+      "tabela": "encontros",
+      "rls_forcada": false
+    },
+    {
+      "rls": true,
+      "tabela": "evento_edicoes",
+      "rls_forcada": false
+    },
+    {
+      "rls": false,
+      "tabela": "eventos",
+      "rls_forcada": false
+    },
+    {
+      "rls": false,
+      "tabela": "grupos",
+      "rls_forcada": false
+    }
+  ],
+  "politicas": [],
+  "restricoes": [
+    {
+      "nome": "admin_backups_pkey",
+      "tipo": "p",
+      "tabela": "admin_backups",
+      "definicao": "PRIMARY KEY (id)"
+    },
+    {
+      "nome": "ebook_edicoes_pkey",
+      "tipo": "p",
+      "tabela": "ebook_edicoes",
+      "definicao": "PRIMARY KEY (ano)"
+    },
+    {
+      "nome": "ebook_estado_pkey",
+      "tipo": "p",
+      "tabela": "ebook_estado",
+      "definicao": "PRIMARY KEY (id)"
+    },
+    {
+      "nome": "encontros_evento_id_fkey",
+      "tipo": "f",
+      "tabela": "encontros",
+      "definicao": "FOREIGN KEY (evento_id) REFERENCES eventos(id)"
+    },
+    {
+      "nome": "encontros_grupo_id_fkey",
+      "tipo": "f",
+      "tabela": "encontros",
+      "definicao": "FOREIGN KEY (grupo_id) REFERENCES grupos(id) ON DELETE CASCADE"
+    },
+    {
+      "nome": "encontros_pkey",
+      "tipo": "p",
+      "tabela": "encontros",
+      "definicao": "PRIMARY KEY (id)"
+    },
+    {
+      "nome": "evento_edicoes_evento_id_fkey",
+      "tipo": "f",
+      "tabela": "evento_edicoes",
+      "definicao": "FOREIGN KEY (evento_id) REFERENCES eventos(id) ON DELETE CASCADE"
+    },
+    {
+      "nome": "evento_edicoes_pkey",
+      "tipo": "p",
+      "tabela": "evento_edicoes",
+      "definicao": "PRIMARY KEY (evento_id, ano)"
+    },
+    {
+      "nome": "eventos_pkey",
+      "tipo": "p",
+      "tabela": "eventos",
+      "definicao": "PRIMARY KEY (id)"
+    },
+    {
+      "nome": "grupos_pkey",
+      "tipo": "p",
+      "tabela": "grupos",
+      "definicao": "PRIMARY KEY (id)"
+    },
+    {
+      "nome": "grupos_slug_key",
+      "tipo": "u",
+      "tabela": "grupos",
+      "definicao": "UNIQUE (slug)"
+    }
+  ],
+  "privilegios": [
+    {
+      "papel": "anon",
+      "tabela": "admin_backups",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "authenticated",
+      "tabela": "admin_backups",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "service_role",
+      "tabela": "admin_backups",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "anon",
+      "tabela": "ebook_edicoes",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "authenticated",
+      "tabela": "ebook_edicoes",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "service_role",
+      "tabela": "ebook_edicoes",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "anon",
+      "tabela": "ebook_estado",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "authenticated",
+      "tabela": "ebook_estado",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "service_role",
+      "tabela": "ebook_estado",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "anon",
+      "tabela": "encontros",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "authenticated",
+      "tabela": "encontros",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "service_role",
+      "tabela": "encontros",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "anon",
+      "tabela": "evento_edicoes",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "authenticated",
+      "tabela": "evento_edicoes",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "service_role",
+      "tabela": "evento_edicoes",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "anon",
+      "tabela": "eventos",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "authenticated",
+      "tabela": "eventos",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "service_role",
+      "tabela": "eventos",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "anon",
+      "tabela": "grupos",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "authenticated",
+      "tabela": "grupos",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    },
+    {
+      "papel": "service_role",
+      "tabela": "grupos",
+      "leitura": true,
+      "exclusao": true,
+      "insercao": true,
+      "atualizacao": true,
+      "truncamento": true
+    }
+  ]
+}

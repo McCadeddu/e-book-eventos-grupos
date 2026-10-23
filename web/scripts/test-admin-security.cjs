@@ -522,3 +522,89 @@ test("Vercel PDF bundles a Linux Chromium while local development keeps the inst
     }
     assert.equal(extracted, 1);
 });
+
+
+test("public database audit distinguishes denied or hidden data from exposed data and inconclusive errors", () => {
+    const { avaliarLeituraPublica } = require("./check-database-access.cjs");
+    for (const status of [401, 403]) assert.equal(avaliarLeituraPublica({ status, error: {} }), "bloqueado");
+    assert.equal(avaliarLeituraPublica({ status: 200, count: 0 }), "bloqueado");
+    assert.equal(avaliarLeituraPublica({ status: 200, count: 26 }), "exposto");
+    for (const value of [{ status: 200, count: null }, { status: 404 }, { status: 503 }, { status: 200, count: 0, error: {} }]) {
+        assert.equal(avaliarLeituraPublica(value), "inconclusivo");
+    }
+});
+
+
+function publicReadModule(file, rows, deniedTable) {
+    const queries = [];
+    let fileReads = 0;
+    const client = { from(table) {
+        const filters = [];
+        let single = false;
+        queries.push({ table, filters });
+        const q = {
+            select() { return q; }, order() { return q; },
+            not() { return q; },
+            eq(column, value) { filters.push([column, value]); return q; },
+            maybeSingle() { single = true; return q; },
+            then(resolve, reject) {
+                if (deniedTable === table) return Promise.resolve({ data: null, error: { message: "permission denied" } }).then(resolve, reject);
+                const data = (rows[table] || []).filter(row => filters.every(([column, value]) => row[column] === value));
+                return Promise.resolve({ data: single ? data[0] || null : data, error: null }).then(resolve, reject);
+            },
+        };
+        return q;
+    } };
+    return { module: load(file, {
+        "../supabaseClient": { supabase: client },
+        fs: { default: { readFileSync() { fileReads++; throw Error("Historical files must not be loaded"); } } },
+    }), queries, fileReads: () => fileReads };
+}
+
+test("empty public collections and absent groups do not resurrect historical JSON records", async () => {
+    const groups = publicReadModule("lib/db/grupos.ts", {});
+    assert.equal((await groups.module.getGruposOrdenadosStrict()).length, 0);
+    assert.equal(await groups.module.getGrupoPorSlugStrict("removed"), null);
+    const meetings = publicReadModule("lib/db/encontros.ts", {});
+    assert.equal((await meetings.module.getEncontrosStrict()).length, 0);
+    assert.equal((await meetings.module.getEncontrosPorGrupoStrict("removed")).length, 0);
+    assert.equal((await meetings.module.getEncontrosPorEventoStrict("removed")).length, 0);
+    const events = publicReadModule("lib/db/eventos.ts", {});
+    assert.equal((await events.module.getEventosStrict()).length, 0);
+    assert.equal(groups.fileReads() + meetings.fileReads() + events.fileReads(), 0);
+});
+
+test("public permission errors cannot be replaced with historical content", async () => {
+    const groups = publicReadModule("lib/db/grupos.ts", {}, "grupos");
+    await assert.rejects(groups.module.getGruposOrdenadosStrict(), /Erro ao buscar/);
+    await assert.rejects(groups.module.getGrupoPorSlugStrict("g"), /Erro ao buscar/);
+    const meetings = publicReadModule("lib/db/encontros.ts", {}, "encontros");
+    await assert.rejects(meetings.module.getEncontrosStrict(), /Erro ao buscar/);
+    await assert.rejects(meetings.module.getEncontrosPorGrupoStrict("g"), /Erro ao buscar/);
+    await assert.rejects(meetings.module.getEncontrosPorEventoStrict("e"), /Erro ao buscar/);
+    const events = publicReadModule("lib/db/eventos.ts", {}, "eventos");
+    await assert.rejects(events.module.getEventosStrict(), /Erro ao buscar/);
+    const dates = publicReadModule("lib/db/eventos.ts", { eventos: [{ id: "e" }] }, "encontros");
+    await assert.rejects(dates.module.getEventosStrict(), /Erro ao buscar/);
+    assert.equal(groups.fileReads() + meetings.fileReads() + events.fileReads() + dates.fileReads(), 0);
+});
+
+test("public meeting readers exclude internal meetings even before database RLS is corrected", async () => {
+    const meetings = publicReadModule("lib/db/encontros.ts", { encontros: [
+        { id: "public", grupo_id: "g", evento_id: "e", nivel: "evento", visibilidade: "publico" },
+        { id: "private", grupo_id: "g", evento_id: "e", nivel: "evento", visibilidade: "interno" },
+    ] });
+    for (const result of [await meetings.module.getEncontrosStrict(), await meetings.module.getEncontrosPorGrupoStrict("g"), await meetings.module.getEncontrosPorEventoStrict("e")]) {
+        assert.equal(result.length, 1);
+        assert.equal(result[0].id, "public");
+    }
+});
+
+test("events with no accessible meetings keep their dates empty instead of inheriting old file dates", async () => {
+    const events = publicReadModule("lib/db/eventos.ts", { eventos: [{ id: "e", data_inicio: "2026-01-01" }] });
+    const result = await events.module.getEventosStrict();
+    assert.equal(result.length, 1);
+    assert.equal(result[0].data_inicio, null);
+    assert.equal(result[0].data_fim, null);
+    assert.equal(events.fileReads(), 0);
+});

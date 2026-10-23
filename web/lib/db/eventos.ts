@@ -116,7 +116,8 @@ function normalizarEventoSerializable<T extends Record<string, any>>(evento: T) 
 
 async function enriquecerEventosComDatasDoBanco<T extends { id: string }>(
     eventos: T[],
-    client: SupabaseClient = supabase
+    client: SupabaseClient = supabase,
+    permitirFallback = true
 ) {
     try {
         const { data, error } = await client
@@ -131,7 +132,7 @@ async function enriquecerEventosComDatasDoBanco<T extends { id: string }>(
 
         const encontros = Array.isArray(data) ? data : [];
 
-        if (encontros.length === 0) {
+        if (encontros.length === 0 && permitirFallback) {
             return enriquecerEventosComDatas(eventos);
         }
 
@@ -149,7 +150,8 @@ async function enriquecerEventosComDatasDoBanco<T extends { id: string }>(
                 data_fim: ultimo?.data_fim ?? primeiro?.data_fim ?? null,
             };
         });
-    } catch {
+    } catch (error) {
+        if (!permitirFallback) throw criarErroDeConsulta("Erro ao buscar datas públicas dos eventos", error);
         return enriquecerEventosComDatas(eventos);
     }
 }
@@ -242,33 +244,9 @@ export async function getEventos() {
 }
 
 export async function getEventosStrict() {
-    try {
-        const { data, error } = await supabase
-            .from("eventos")
-            .select("*")
-            .order("ordem", { ascending: true });
-
-        if (error) {
-            throw criarErroDeConsulta("Erro ao buscar eventos públicos", error);
-        }
-
-        const eventos = data || [];
-
-        if (eventos.length === 0) {
-            throw criarErroDeConsulta(
-                "Resposta vazia ao buscar eventos públicos",
-                "nenhum evento retornado"
-            );
-        }
-
-        return (await enriquecerEventosComDatasDoBanco(eventos)).map(
-            normalizarEventoSerializable
-        );
-    } catch (error) {
-        console.warn(
-            "Usando fallback local para eventos públicos:",
-            error instanceof Error ? error.message : error
-        );
-        return lerEventosFallback();
-    }
+    const { data, error } = await supabase.from("eventos").select("*").order("ordem", { ascending: true });
+    if (error) throw criarErroDeConsulta("Erro ao buscar eventos públicos", error);
+    const eventos = data ?? [];
+    if (eventos.length === 0) return [];
+    return (await enriquecerEventosComDatasDoBanco(eventos, supabase, false)).map(normalizarEventoSerializable);
 }

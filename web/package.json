@@ -7,6 +7,7 @@
     "build": "npx next build",
     "start": "next start",
     "lint": "next lint",
+    "audit:database-access": "node scripts/check-database-access.cjs",
     "verify:public-data": "node scripts/verify-public-data.js",
     "build:verified": "npm run verify:public-data && npm run build",
     "publish:content": "npm run build:verified && node scripts/publish.js content",

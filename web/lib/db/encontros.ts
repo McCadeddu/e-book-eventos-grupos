@@ -110,35 +110,12 @@ export async function getEncontros() {
     }
 }
 
-export async function getEncontrosStrict() {
-    try {
-        const { data, error } = await supabase
-            .from("encontros")
-            .select("*")
-            .not("data_inicio", "is", null)
-            .order("data_inicio", { ascending: true });
-
-        if (error) {
-            throw criarErroDeConsulta("Erro ao buscar encontros públicos", error);
-        }
-
-        const encontros = (data || []) as Encontro[];
-
-        if (encontros.length === 0) {
-            throw criarErroDeConsulta(
-                "Resposta vazia ao buscar encontros públicos",
-                "nenhum encontro retornado"
-            );
-        }
-
-        return encontros;
-    } catch (error) {
-        console.warn(
-            "Usando fallback local para encontros públicos:",
-            error instanceof Error ? error.message : error
-        );
-        return lerEncontrosFallback();
-    }
+export async function getEncontrosStrict(): Promise<Encontro[]> {
+    const { data, error } = await supabase.from("encontros").select("*")
+        .eq("visibilidade", "publico").not("data_inicio", "is", null)
+        .order("data_inicio", { ascending: true });
+    if (error) throw criarErroDeConsulta("Erro ao buscar encontros públicos", error);
+    return (data ?? []) as Encontro[];
 }
 
 export async function getEncontrosPorGrupo(
@@ -157,76 +134,17 @@ export async function getEncontrosPorGrupo(
     return data as Encontro[];
 }
 
-export async function getEncontrosPorGrupoStrict(
-    grupoId: string
-): Promise<Encontro[]> {
-    try {
-        const { data, error } = await supabase
-            .from("encontros")
-            .select("*")
-            .eq("grupo_id", grupoId);
-
-        if (error) {
-            throw criarErroDeConsulta(
-                `Erro ao buscar encontros públicos do grupo ${grupoId}`,
-                error
-            );
-        }
-
-        const encontros = (data ?? []) as Encontro[];
-
-        if (encontros.length === 0) {
-            throw criarErroDeConsulta(
-                `Resposta vazia ao buscar encontros públicos do grupo ${grupoId}`,
-                "nenhum encontro retornado"
-            );
-        }
-
-        return encontros;
-    } catch (error) {
-        console.warn(
-            `Usando fallback local para encontros do grupo ${grupoId}:`,
-            error instanceof Error ? error.message : error
-        );
-        return lerEncontrosFallback().filter(
-            (encontro) => encontro.grupo_id === grupoId
-        );
-    }
+export async function getEncontrosPorGrupoStrict(grupoId: string): Promise<Encontro[]> {
+    const { data, error } = await supabase.from("encontros").select("*")
+        .eq("grupo_id", grupoId).eq("visibilidade", "publico");
+    if (error) throw criarErroDeConsulta("Erro ao buscar encontros públicos do grupo", error);
+    return (data ?? []) as Encontro[];
 }
 
-export async function getEncontrosPorEventoStrict(eventoId: string) {
-    try {
-        const { data, error } = await supabase
-            .from("encontros")
-            .select("*")
-            .eq("evento_id", eventoId)
-            .eq("nivel", "evento")
-            .order("data_inicio", { ascending: true });
-
-        if (error) {
-            throw criarErroDeConsulta(
-                `Erro ao buscar encontros públicos do evento ${eventoId}`,
-                error
-            );
-        }
-
-        const encontros = (data || []) as Encontro[];
-
-        if (encontros.length === 0) {
-            throw criarErroDeConsulta(
-                `Resposta vazia ao buscar encontros públicos do evento ${eventoId}`,
-                "nenhum encontro retornado"
-            );
-        }
-
-        return encontros;
-    } catch (error) {
-        console.warn(
-            `Usando fallback local para encontros do evento ${eventoId}:`,
-            error instanceof Error ? error.message : error
-        );
-        return lerEncontrosFallback().filter(
-            (encontro) => encontro.evento_id === eventoId
-        );
-    }
+export async function getEncontrosPorEventoStrict(eventoId: string): Promise<Encontro[]> {
+    const { data, error } = await supabase.from("encontros").select("*")
+        .eq("evento_id", eventoId).eq("nivel", "evento").eq("visibilidade", "publico")
+        .order("data_inicio", { ascending: true });
+    if (error) throw criarErroDeConsulta("Erro ao buscar encontros públicos do evento", error);
+    return (data ?? []) as Encontro[];
 }
