@@ -1,0 +1,58 @@
+[
+  {
+    "tabela": "admin_backups",
+    "rls": true,
+    "leitura_anonima": false,
+    "escrita_anonima": false,
+    "escrita_authenticated": false,
+    "servidor_admin": true
+  },
+  {
+    "tabela": "ebook_edicoes",
+    "rls": true,
+    "leitura_anonima": true,
+    "escrita_anonima": false,
+    "escrita_authenticated": false,
+    "servidor_admin": true
+  },
+  {
+    "tabela": "ebook_estado",
+    "rls": true,
+    "leitura_anonima": true,
+    "escrita_anonima": false,
+    "escrita_authenticated": false,
+    "servidor_admin": true
+  },
+  {
+    "tabela": "encontros",
+    "rls": true,
+    "leitura_anonima": true,
+    "escrita_anonima": false,
+    "escrita_authenticated": false,
+    "servidor_admin": true
+  },
+  {
+    "tabela": "evento_edicoes",
+    "rls": true,
+    "leitura_anonima": false,
+    "escrita_anonima": false,
+    "escrita_authenticated": false,
+    "servidor_admin": true
+  },
+  {
+    "tabela": "eventos",
+    "rls": true,
+    "leitura_anonima": true,
+    "escrita_anonima": false,
+    "escrita_authenticated": false,
+    "servidor_admin": true
+  },
+  {
+    "tabela": "grupos",
+    "rls": true,
+    "leitura_anonima": true,
+    "escrita_anonima": false,
+    "escrita_authenticated": false,
+    "servidor_admin": true
+  }
+]

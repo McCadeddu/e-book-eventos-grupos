@@ -93,3 +93,31 @@ versionada em docs/sql/proteger-tabelas-pastorais.sql e depende da publicação 
 leitores públicos sem fallback. Não foram modificados registros pastorais.
 O comando de auditoria usa somente leitura e não certifica permissões de escrita;
 essas permissões são verificadas pelo diagnóstico do catálogo.
+
+
+## Conclusão da proteção de produção
+
+O commit 44e5d50 foi compilado e publicado pela Vercel antes da aplicação das
+regras restantes. Em seguida, proteger-tabelas-pastorais.sql foi aplicado com
+sucesso no SQL Editor. A contagem final permaneceu: 8 grupos, 10 eventos,
+129 encontros e 26 backups. Nenhum registro foi editado ou excluído.
+
+A verificação do catálogo confirmou RLS ativa nas sete tabelas examinadas,
+ausência de INSERT/UPDATE/DELETE/TRUNCATE para anon e authenticated, e acesso
+administrativo CRUD preservado para service_role. Backups e evento_edicoes
+ficaram sem SELECT público. O resultado está em
+`docs/sql/verificacao-seguranca-2026-10-23.json`, e a consulta reproduzível está em
+`docs/sql/verificar-protecao-pastoral.sql`.
+
+`npm run audit:database-access` passou: backups anônimos 401, encontros internos
+invisíveis (zero linhas), e todas as contagens administrativas preservadas.
+`npm run verify:public-data` confirmou 8 grupos, 10 eventos e 127 encontros
+acessíveis publicamente; os outros 2 encontros permaneceram internos no banco.
+A ausência de escrita pública foi confirmada por privilégios efetivos, sem
+tentar inserir, editar, apagar ou truncar dados reais.
+
+Foram executados 25 testes automatizados e o build de produção passou na Vercel.
+Livro, calendário, capítulo público de grupo e calendário de 2027 responderam
+200. A administração pública continuou redirecionando ao login. O planejamento
+editorial anual permanece a próxima etapa: grupo_edicoes ainda precisa de uma
+migração aditiva, e a edição anual não deve ser ativada retornando à escrita global.
