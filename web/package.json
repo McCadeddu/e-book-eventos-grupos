@@ -7,13 +7,16 @@
     "build": "npx next build",
     "start": "next start",
     "lint": "next lint",
-    "publish:content": "npm run build && git add ../data/encontros.json ../data/grupos.json styles/globals.css && git commit -m \"content: update grupos e eventos\" && git push",
-    "publish:code": "npm run build && git add . && git commit -m \"feat: update codigo\" && git push",
-    "publish": "npm run build && node scripts/publish.js"
+    "verify:public-data": "node scripts/verify-public-data.js",
+    "build:verified": "npm run verify:public-data && npm run build",
+    "publish:content": "npm run build:verified && node scripts/publish.js content",
+    "publish:code": "npm run build:verified && node scripts/publish.js code",
+    "publish": "npm run build:verified && node scripts/publish.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
+    "@sparticuz/chromium": "143.0.4",
     "@supabase/supabase-js": "^2.95.3",
     "html-to-image": "^1.11.13",
     "next": "15.5.10",

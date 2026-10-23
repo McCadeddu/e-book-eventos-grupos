@@ -1,6 +1,7 @@
 ﻿// web/lib/db/grupos.ts
 
 import { supabase } from "../supabaseClient";
+import { getSupabaseAdminClient } from "../supabaseAdmin";
 import { Grupo } from "../types";
 import fs from "fs";
 import path from "path";
@@ -47,8 +48,9 @@ function lerGruposFallback(): Grupo[] {
  * Retorna todos os grupos ordenados pela coluna "ordem"
  */
 export async function getGruposOrdenados(): Promise<Grupo[]> {
+    const admin = getSupabaseAdminClient();
     try {
-        const { data, error } = await supabase
+        const { data, error } = await admin
             .from("grupos")
             .select("*")
             .order("ordem", { ascending: true });
@@ -112,8 +114,9 @@ export async function getGruposOrdenadosStrict(): Promise<Grupo[]> {
 export async function getGrupoPorSlug(
     slug: string
 ): Promise<Grupo | null> {
+    const admin = getSupabaseAdminClient();
     try {
-        const { data, error } = await supabase
+        const { data, error } = await admin
             .from("grupos")
             .select("*")
             .eq("slug", slug)

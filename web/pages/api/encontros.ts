@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { randomUUID } from "crypto";
-import { requireAdmin } from "../../lib/adminAuth";
+import { requireAdminClient } from "../../lib/adminApi";
 import { salvarBackupAutomatico } from "../../lib/adminBackup";
-import { supabase } from "../../lib/supabaseClient";
+import { lerAnoPastoral, dataDoAnoPastoral, erroDatasDoAno } from "../../lib/ano-pastoral";
 
 function gerarIdEncontro() {
     return randomUUID();
@@ -18,8 +18,36 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    if (!requireAdmin(req, res)) {
+    const supabase = requireAdminClient(req, res);
+    if (!supabase) {
         return;
+    }
+
+    const { anoPastoral: anoInformado, ...dadosRecebidos } = req.body || {};
+    const anoPastoral = lerAnoPastoral(anoInformado);
+    if (anoInformado !== undefined && !anoPastoral) {
+        return res.status(400).json({ erro: "Ano pastoral inválido." });
+    }
+
+    if (anoPastoral && ["POST", "PUT", "DELETE"].includes(req.method || "")) {
+        let atual: { data_inicio: string; data_fim?: string | null } | null = null;
+        if (req.method !== "POST") {
+            if (!dadosRecebidos.id) return res.status(400).json({ erro: "ID ausente" });
+            const { data, error } = await supabase.from("encontros")
+                .select("data_inicio, data_fim").eq("id", dadosRecebidos.id).maybeSingle();
+            if (error) return res.status(500).json({ erro: "Não foi possível conferir o ano do encontro." });
+            if (!data) return res.status(404).json({ erro: "Encontro não encontrado." });
+            atual = data;
+            if (!dataDoAnoPastoral(data.data_inicio, anoPastoral)) {
+                return res.status(409).json({ erro: "Este encontro pertence a outro ano. Recarregue a agenda antes de alterar." });
+            }
+        }
+        if (req.method !== "DELETE") {
+            const inicio = req.method === "POST" ? dadosRecebidos.dataInicio : dadosRecebidos.data_inicio ?? atual?.data_inicio;
+            const fim = req.method === "POST" ? dadosRecebidos.dataFim : dadosRecebidos.data_fim === undefined ? atual?.data_fim : dadosRecebidos.data_fim;
+            const erro = erroDatasDoAno(inicio, fim, anoPastoral);
+            if (erro) return res.status(400).json({ erro });
+        }
     }
 
     if (req.method === "POST") {
@@ -36,7 +64,7 @@ export default async function handler(
             evento_id,
             nivel,
             mostrar_no_anual,
-        } = req.body;
+        } = dadosRecebidos;
 
         if (!tipo || !dataInicio) {
             return res.status(400).json({ erro: "Campos obrigatórios ausentes" });
@@ -78,7 +106,7 @@ export default async function handler(
             referenciaId: encontro.id,
         });
 
-        await revalidarBasico(res);
+        await revalidarBasico(res, anoPastoral);
 
         return res.status(200).json({ sucesso: true });
     }
@@ -93,7 +121,7 @@ export default async function handler(
             nivel,
             mostrar_no_anual,
             ...resto
-        } = req.body;
+        } = dadosRecebidos;
 
         if (!id) {
             return res.status(400).json({ erro: "ID ausente" });
@@ -116,14 +144,21 @@ export default async function handler(
                 nivel === "organizacao" ? false : mostrar_no_anual,
         });
 
-        const { error } = await supabase
+        let atualizacao = supabase
             .from("encontros")
-            .update(dadosAtualizados)
+            .update(dadosAtualizados, { count: "exact" })
             .eq("id", id);
+        if (anoPastoral) atualizacao = atualizacao
+            .gte("data_inicio", `${anoPastoral}-01-01`).lt("data_inicio", `${anoPastoral + 1}-01-01`);
+        const { error, count } = await atualizacao;
 
         if (error) {
             console.error(error);
             return res.status(500).json({ erro: error.message });
+        }
+
+        if (anoPastoral && count === 0) {
+            return res.status(409).json({ erro: "O encontro mudou. Recarregue a agenda antes de alterar." });
         }
 
         await salvarBackupAutomatico({
@@ -132,7 +167,7 @@ export default async function handler(
             referenciaId: id,
         });
 
-        await revalidarBasico(res);
+        await revalidarBasico(res, anoPastoral);
 
         if (grupo_id) {
             const { data: grupo } = await supabase
@@ -150,17 +185,24 @@ export default async function handler(
     }
 
     if (req.method === "DELETE") {
-        const { id, grupo_id } = req.body;
+        const { id, grupo_id } = dadosRecebidos;
 
         if (!id) {
             return res.status(400).json({ erro: "ID ausente" });
         }
 
-        const { error } = await supabase.from("encontros").delete().eq("id", id);
+        let exclusao = supabase.from("encontros").delete({ count: "exact" }).eq("id", id);
+        if (anoPastoral) exclusao = exclusao
+            .gte("data_inicio", `${anoPastoral}-01-01`).lt("data_inicio", `${anoPastoral + 1}-01-01`);
+        const { error, count } = await exclusao;
 
         if (error) {
             console.error(error);
             return res.status(500).json({ erro: error.message });
+        }
+
+        if (anoPastoral && count === 0) {
+            return res.status(409).json({ erro: "O encontro mudou. Recarregue a agenda antes de excluir." });
         }
 
         await salvarBackupAutomatico({
@@ -169,7 +211,7 @@ export default async function handler(
             referenciaId: id,
         });
 
-        await revalidarBasico(res);
+        await revalidarBasico(res, anoPastoral);
 
         if (grupo_id) {
             const { data: grupo } = await supabase
@@ -189,7 +231,8 @@ export default async function handler(
     return res.status(405).json({ erro: "Método não permitido" });
 }
 
-async function revalidarBasico(res: NextApiResponse) {
+async function revalidarBasico(res: NextApiResponse, anoPastoral: number | null) {
     await res.revalidate("/livro/calendario");
     await res.revalidate("/livro");
+    if (anoPastoral) await res.revalidate(`/livro/edicao/${anoPastoral}/calendario`);
 }

@@ -1,15 +1,21 @@
+import { salvarCadastro, enviarAcaoAdmin, type SetorCadastro } from "../../lib/admin-cadastros";
+import FormularioGrupo from "../../components/admin/FormularioGrupo";
+import FormularioEvento from "../../components/admin/FormularioEvento";
+import FormularioEncontro from "../../components/admin/FormularioEncontro";
+import { baseButtonStyle } from "../../components/admin/formulario-ui";
+import type { EventoAdmin, ResultadoAcao } from "../../lib/admin-types";
 import type { GetServerSideProps } from "next";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { Grupo } from "../../lib/types";
-import { getGruposOrdenados } from "../../lib/db/grupos";
-import { getEncontros } from "../../lib/db/encontros";
+import { withAdminPage } from "../../lib/adminPage";
+import { carregarAgendaAdministrativa } from "../../lib/admin-ano";
 import { Encontro, ordenarEncontrosPorData } from "../../lib/encontros-utils";
-import { getEventos } from "../../lib/db/eventos";
 import { alertasDoEncontro } from "../../lib/alertas";
 import {
     DndContext,
     closestCenter,
+    type DragEndEvent,
 } from "@dnd-kit/core";
 import {
     SortableContext,
@@ -19,28 +25,14 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-type EventoAdmin = {
-    id: string;
-    titulo: string;
-    faixa_etaria?: string | null;
-    descricao?: string | null;
-    equipe?: string[];
-    grupos_envolvidos?: string[];
-    todos_os_grupos?: boolean;
-    objetivo_ano?: string | null;
-    convite?: string | null;
-    visibilidade?: string;
-};
-
 type Props = {
+    ano: number;
+    anos: number[];
+    anoPublicado: number;
     grupos: Grupo[];
     encontros: Encontro[];
     eventos: EventoAdmin[];
 };
-
-type ResultadoAcao =
-    | { sucesso: true; grupoSlug?: string; eventoId?: string }
-    | { sucesso: false; erro: string };
 
 function labelData(encontro: Encontro): string {
     if (encontro.data_legivel?.trim()) return encontro.data_legivel;
@@ -63,29 +55,6 @@ function seloVisibilidade(visibilidade?: string) {
         label: oculto ? "OCULTO NO E-BOOK" : "PUBLICO NO E-BOOK",
         backgroundColor: oculto ? "#7a2e0b" : "#0b6b45",
     };
-}
-
-function baseInputStyle() {
-    return {
-        width: "100%",
-        padding: "0.65rem 0.8rem",
-        borderRadius: "8px",
-        border: "1px solid #d8d2c8",
-        fontSize: "0.95rem",
-        backgroundColor: "#ffffff",
-    } as const;
-}
-
-function baseButtonStyle(backgroundColor: string, color = "#ffffff") {
-    return {
-        padding: "0.55rem 0.95rem",
-        backgroundColor,
-        color,
-        border: "none",
-        borderRadius: "8px",
-        cursor: "pointer",
-        fontWeight: 600,
-    } as const;
 }
 
 function SecondaryButton({
@@ -170,32 +139,6 @@ function BotaoVisibilidade({
     );
 }
 
-function CardFormulario({
-    title,
-    color,
-    children,
-}: {
-    title: string;
-    color: string;
-    children: React.ReactNode;
-}) {
-    return (
-        <div
-            style={{
-                marginTop: "1rem",
-                padding: "1rem",
-                border: `1px solid ${color}`,
-                borderRadius: "10px",
-                backgroundColor: "#ffffff",
-                boxShadow: "0 3px 10px rgba(0,0,0,0.04)",
-            }}
-        >
-            <h3 style={{ marginTop: 0, color }}>{title}</h3>
-            {children}
-        </div>
-    );
-}
-
 function ItemGrupo({
     grupo,
     modoEdicao,
@@ -272,521 +215,11 @@ function ItemEvento({
     );
 }
 
-function FormularioGrupo({
-    grupo,
-    submitLabel,
-    onSubmit,
-    onCancel,
-}: {
-    grupo?: Grupo;
-    submitLabel: string;
-    onSubmit: (payload: Record<string, unknown>) => Promise<ResultadoAcao>;
-    onCancel: () => void;
-}) {
-    const [status, setStatus] = useState<string | null>(null);
-    const [salvando, setSalvando] = useState(false);
-
-    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        setSalvando(true);
-        setStatus(null);
-
-        const formData = new FormData(event.currentTarget);
-        const resultado = await onSubmit({
-            id: grupo?.id,
-            slug: grupo?.slug,
-            nome: formData.get("nome"),
-            faixa_etaria: formData.get("faixa_etaria"),
-            descricao: formData.get("descricao"),
-            objetivo_ano: formData.get("objetivo_ano"),
-            equipe: formData.get("equipe"),
-            convite_final: formData.get("convite_final"),
-        });
-
-        if (!resultado.sucesso) {
-            setStatus(resultado.erro);
-            setSalvando(false);
-            return;
-        }
-    }
-
-    return (
-        <CardFormulario
-            title={grupo ? `Editar grupo: ${grupo.nome}` : "Novo grupo"}
-            color="#4bbbc8"
-        >
-            <form onSubmit={handleSubmit} style={{ display: "grid", gap: "0.85rem" }}>
-                <input
-                    name="nome"
-                    defaultValue={grupo?.nome || ""}
-                    placeholder="Nome do grupo"
-                    required
-                    style={baseInputStyle()}
-                />
-                <input
-                    name="faixa_etaria"
-                    defaultValue={grupo?.faixa_etaria || ""}
-                    placeholder="Faixa etaria"
-                    style={baseInputStyle()}
-                />
-                <textarea
-                    name="descricao"
-                    defaultValue={grupo?.descricao || ""}
-                    placeholder="Descricao do grupo"
-                    rows={3}
-                    style={baseInputStyle()}
-                />
-                <textarea
-                    name="objetivo_ano"
-                    defaultValue={grupo?.objetivo_ano || ""}
-                    placeholder="Objetivo do ano"
-                    rows={3}
-                    style={baseInputStyle()}
-                />
-                <input
-                    name="equipe"
-                    defaultValue={grupo?.equipe?.join(", ") || ""}
-                    placeholder="Equipe separada por virgula"
-                    style={baseInputStyle()}
-                />
-                <textarea
-                    name="convite_final"
-                    defaultValue={grupo?.convite_final || ""}
-                    placeholder="Convite final"
-                    rows={2}
-                    style={baseInputStyle()}
-                />
-                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-                    <button
-                        type="submit"
-                        disabled={salvando}
-                        style={baseButtonStyle("#4bbbc8")}
-                    >
-                        {salvando ? "Salvando..." : submitLabel}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        style={baseButtonStyle("#ece7dd", "#3e4647")}
-                    >
-                        Cancelar
-                    </button>
-                </div>
-                {status && <p style={{ color: "#8b0000", margin: 0 }}>{status}</p>}
-            </form>
-        </CardFormulario>
-    );
-}
-
-function FormularioEvento({
-    evento,
-    grupos,
-    submitLabel,
-    onSubmit,
-    onCancel,
-}: {
-    evento?: EventoAdmin;
-    grupos: Grupo[];
-    submitLabel: string;
-    onSubmit: (payload: Record<string, unknown>) => Promise<ResultadoAcao>;
-    onCancel: () => void;
-}) {
-    const [status, setStatus] = useState<string | null>(null);
-    const [salvando, setSalvando] = useState(false);
-    const [todos, setTodos] = useState(evento?.todos_os_grupos ?? false);
-
-    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        setSalvando(true);
-        setStatus(null);
-
-        const formData = new FormData(event.currentTarget);
-        const gruposSelecionados = todos ? [] : formData.getAll("grupos_envolvidos");
-
-        const resultado = await onSubmit({
-            id: evento?.id,
-            titulo: formData.get("titulo"),
-            faixa_etaria: formData.get("faixa_etaria"),
-            descricao: formData.get("descricao"),
-            equipe: formData.get("equipe"),
-            objetivo_ano: formData.get("objetivo_ano"),
-            convite: formData.get("convite"),
-            grupos_envolvidos: gruposSelecionados,
-            todos_os_grupos: todos,
-            visibilidade: formData.get("visibilidade"),
-        });
-
-        if (!resultado.sucesso) {
-            setStatus(resultado.erro);
-            setSalvando(false);
-            return;
-        }
-    }
-
-    return (
-        <CardFormulario
-            title={evento ? `Editar evento: ${evento.titulo}` : "Novo evento"}
-            color="#ff6136"
-        >
-            <form onSubmit={handleSubmit} style={{ display: "grid", gap: "0.85rem" }}>
-                <input
-                    name="titulo"
-                    defaultValue={evento?.titulo || ""}
-                    placeholder="Titulo do evento"
-                    required
-                    style={baseInputStyle()}
-                />
-                <input
-                    name="faixa_etaria"
-                    defaultValue={evento?.faixa_etaria || ""}
-                    placeholder="Faixa etaria"
-                    style={baseInputStyle()}
-                />
-                <textarea
-                    name="descricao"
-                    defaultValue={evento?.descricao || ""}
-                    placeholder="Descricao do evento"
-                    rows={3}
-                    style={baseInputStyle()}
-                />
-                <div
-                    style={{
-                        padding: "0.9rem",
-                        borderRadius: "8px",
-                        border: "1px solid #e0ddd7",
-                        backgroundColor: "#faf9f6",
-                    }}
-                >
-                    <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                        <label>
-                            <input
-                                type="radio"
-                                name="modo_grupo"
-                                checked={todos}
-                                onChange={() => setTodos(true)}
-                            />{" "}
-                            Todos os grupos
-                        </label>
-                        <label>
-                            <input
-                                type="radio"
-                                name="modo_grupo"
-                                checked={!todos}
-                                onChange={() => setTodos(false)}
-                            />{" "}
-                            Selecionar grupos
-                        </label>
-                    </div>
-
-                    {!todos && (
-                        <div
-                            style={{
-                                display: "grid",
-                                gap: "0.45rem",
-                                marginTop: "0.8rem",
-                            }}
-                        >
-                            {grupos.map((grupo) => (
-                                <label key={grupo.id}>
-                                    <input
-                                        type="checkbox"
-                                        name="grupos_envolvidos"
-                                        value={grupo.id}
-                                        defaultChecked={evento?.grupos_envolvidos?.includes(
-                                            grupo.id
-                                        )}
-                                    />{" "}
-                                    {grupo.nome}
-                                </label>
-                            ))}
-                        </div>
-                    )}
-                </div>
-                <input
-                    name="equipe"
-                    defaultValue={evento?.equipe?.join(", ") || ""}
-                    placeholder="Equipe separada por virgula"
-                    style={baseInputStyle()}
-                />
-                <textarea
-                    name="objetivo_ano"
-                    defaultValue={evento?.objetivo_ano || ""}
-                    placeholder="Objetivo do ano"
-                    rows={3}
-                    style={baseInputStyle()}
-                />
-                <textarea
-                    name="convite"
-                    defaultValue={evento?.convite || ""}
-                    placeholder="Convite"
-                    rows={2}
-                    style={baseInputStyle()}
-                />
-                <select
-                    name="visibilidade"
-                    defaultValue={evento?.visibilidade || "publico"}
-                    style={baseInputStyle()}
-                >
-                    <option value="publico">Publico no e-book</option>
-                    <option value="interno">Oculto no e-book</option>
-                </select>
-                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-                    <button
-                        type="submit"
-                        disabled={salvando}
-                        style={baseButtonStyle("#ff6136")}
-                    >
-                        {salvando ? "Salvando..." : submitLabel}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        style={baseButtonStyle("#ece7dd", "#3e4647")}
-                    >
-                        Cancelar
-                    </button>
-                </div>
-                {status && <p style={{ color: "#8b0000", margin: 0 }}>{status}</p>}
-            </form>
-        </CardFormulario>
-    );
-}
-
-function FormularioEncontro({
-    encontro,
-    grupo,
-    evento,
-    eventos,
-    submitLabel,
-    onSubmit,
-    onCancel,
-    mostrarVinculoEvento,
-    permitirNivelEvento,
-}: {
-    encontro?: Encontro;
-    grupo?: Grupo;
-    evento?: EventoAdmin;
-    eventos: EventoAdmin[];
-    submitLabel: string;
-    onSubmit: (payload: Record<string, unknown>) => Promise<ResultadoAcao>;
-    onCancel: () => void;
-    mostrarVinculoEvento: boolean;
-    permitirNivelEvento: boolean;
-}) {
-    const [status, setStatus] = useState<string | null>(null);
-    const [salvando, setSalvando] = useState(false);
-    const [eventoId, setEventoId] = useState<string | null>(encontro?.evento_id || evento?.id || null);
-    const [nivel, setNivel] = useState<"evento" | "organizacao">(
-        encontro?.nivel === "organizacao" ? "organizacao" : "evento"
-    );
-
-    async function handleSubmit(eventoForm: React.FormEvent<HTMLFormElement>) {
-        eventoForm.preventDefault();
-        setSalvando(true);
-        setStatus(null);
-
-        const formData = new FormData(eventoForm.currentTarget);
-        const eventoSelecionado =
-            String(formData.get("evento_id") || eventoId || "").trim() || null;
-        const nivelAtual = permitirNivelEvento
-            ? String(formData.get("nivel") || nivel)
-            : encontro?.nivel || "evento";
-
-        const basePayload = {
-            tipo: formData.get("tipo"),
-            titulo: formData.get("titulo"),
-            horario: formData.get("horario"),
-            local: formData.get("local"),
-            visibilidade: formData.get("visibilidade"),
-            nivel: nivelAtual,
-            mostrar_no_anual:
-                permitirNivelEvento && nivelAtual === "evento"
-                    ? formData.get("mostrar_no_anual") === "on"
-                    : encontro?.mostrar_no_anual ?? true,
-        };
-
-        const payload = encontro
-            ? {
-                  ...basePayload,
-                  id: encontro.id,
-                  grupo_id: mostrarVinculoEvento
-                      ? eventoSelecionado
-                          ? null
-                          : grupo?.id || encontro.grupo_id || null
-                      : null,
-                  evento_id: evento?.id || eventoSelecionado,
-                  data_inicio:
-                      String(formData.get("data_inicio") || "").trim() ||
-                      encontro.data_inicio ||
-                      null,
-                  data_fim: String(formData.get("data_fim") || "").trim() || null,
-                  data_legivel: formData.get("data_legivel") || "",
-              }
-            : {
-                  ...basePayload,
-                  grupoId: mostrarVinculoEvento
-                      ? eventoSelecionado
-                          ? null
-                          : grupo?.id || null
-                      : null,
-                  evento_id: evento?.id || eventoSelecionado,
-                  dataInicio: String(formData.get("dataInicio") || "").trim() || null,
-                  dataFim: String(formData.get("dataFim") || "").trim() || null,
-                  dataLegivel: formData.get("dataLegivel") || "",
-              };
-
-        const resultado = await onSubmit(payload);
-
-        if (!resultado.sucesso) {
-            setStatus(resultado.erro);
-            setSalvando(false);
-            return;
-        }
-    }
-
-    return (
-        <CardFormulario
-            title={
-                encontro
-                    ? `Editar encontro${evento ? ` de ${evento.titulo}` : grupo ? ` de ${grupo.nome}` : ""}`
-                    : `Novo encontro${evento ? ` de ${evento.titulo}` : grupo ? ` de ${grupo.nome}` : ""}`
-            }
-            color={evento ? "#ff6136" : "#4bbbc8"}
-        >
-            <form onSubmit={handleSubmit} style={{ display: "grid", gap: "0.85rem" }}>
-                {permitirNivelEvento && (
-                    <>
-                        <select
-                            name="nivel"
-                            value={nivel}
-                            onChange={(e) =>
-                                setNivel(
-                                    e.target.value === "organizacao"
-                                        ? "organizacao"
-                                        : "evento"
-                                )
-                            }
-                            style={baseInputStyle()}
-                        >
-                            <option value="evento">Evento principal</option>
-                            <option value="organizacao">Equipe organizativa</option>
-                        </select>
-
-                        <label style={{ opacity: nivel === "organizacao" ? 0.6 : 1 }}>
-                            <input
-                                type="checkbox"
-                                name="mostrar_no_anual"
-                                defaultChecked={encontro?.mostrar_no_anual ?? true}
-                                disabled={nivel === "organizacao"}
-                            />{" "}
-                            Mostrar no calendario anual
-                        </label>
-                    </>
-                )}
-
-                <select
-                    name="tipo"
-                    defaultValue={encontro?.tipo || (permitirNivelEvento ? "evento" : "encontro_regular")}
-                    style={baseInputStyle()}
-                >
-                    {permitirNivelEvento ? (
-                        <>
-                            <option value="evento">Evento</option>
-                            <option value="preparacao">Preparacao</option>
-                            <option value="avaliacao">Avaliacao</option>
-                        </>
-                    ) : (
-                        <>
-                            <option value="encontro_regular">Encontro regular</option>
-                            <option value="evento_especial">Evento especial</option>
-                        </>
-                    )}
-                </select>
-
-                {mostrarVinculoEvento && (
-                    <select
-                        name="evento_id"
-                        value={eventoId || ""}
-                        onChange={(e) => setEventoId(e.target.value || null)}
-                        style={baseInputStyle()}
-                    >
-                        <option value="">Nenhum evento vinculado</option>
-                        {eventos.map((item) => (
-                            <option key={item.id} value={item.id}>
-                                {item.titulo}
-                            </option>
-                        ))}
-                    </select>
-                )}
-
-                <input
-                    type="date"
-                    name={encontro ? "data_inicio" : "dataInicio"}
-                    defaultValue={encontro?.data_inicio || ""}
-                    required
-                    style={baseInputStyle()}
-                />
-                <input
-                    type="date"
-                    name={encontro ? "data_fim" : "dataFim"}
-                    defaultValue={encontro?.data_fim || ""}
-                    style={baseInputStyle()}
-                />
-                <input
-                    name={encontro ? "data_legivel" : "dataLegivel"}
-                    defaultValue={encontro?.data_legivel || ""}
-                    placeholder="Data legivel opcional"
-                    style={baseInputStyle()}
-                />
-                <input
-                    name="titulo"
-                    defaultValue={encontro?.titulo || ""}
-                    placeholder="Titulo"
-                    style={baseInputStyle()}
-                />
-                <input
-                    name="horario"
-                    defaultValue={encontro?.horario || ""}
-                    placeholder="Horario"
-                    style={baseInputStyle()}
-                />
-                <input
-                    name="local"
-                    defaultValue={encontro?.local || ""}
-                    placeholder="Local"
-                    style={baseInputStyle()}
-                />
-                <select
-                    name="visibilidade"
-                    defaultValue={encontro?.visibilidade || "publico"}
-                    style={baseInputStyle()}
-                >
-                    <option value="publico">Publico no e-book</option>
-                    <option value="interno">Oculto no e-book</option>
-                </select>
-                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-                    <button
-                        type="submit"
-                        disabled={salvando}
-                        style={baseButtonStyle(evento ? "#ff6136" : "#4bbbc8")}
-                    >
-                        {salvando ? "Salvando..." : submitLabel}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        style={baseButtonStyle("#ece7dd", "#3e4647")}
-                    >
-                        Cancelar
-                    </button>
-                </div>
-                {status && <p style={{ color: "#8b0000", margin: 0 }}>{status}</p>}
-            </form>
-        </CardFormulario>
-    );
-}
-
-export default function AdminGeral({ grupos, encontros, eventos }: Props) {
+export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros, eventos }: Props) {
+    const [mudandoAno, setMudandoAno] = useState(false);
+    const [executandoAcao, setExecutandoAcao] = useState(false);
+    const acaoEmCurso = useRef(false);
+    const [erroAcao, setErroAcao] = useState("");
     const [ordemGrupos, setOrdemGrupos] = useState(grupos);
     const [ordemEventos, setOrdemEventos] = useState(eventos);
     const [listaEncontros, setListaEncontros] = useState(encontros);
@@ -803,6 +236,12 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
     const [editandoEncontroId, setEditandoEncontroId] = useState<string | null>(null);
     const router = useRouter();
 
+    useEffect(() => {
+        setOrdemGrupos(grupos);
+        setOrdemEventos(eventos);
+        setListaEncontros(encontros);
+    }, [grupos, eventos, encontros]);
+
     function fecharFormularios() {
         setCriandoGrupo(false);
         setCriandoEvento(false);
@@ -813,8 +252,87 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
         setEditandoEncontroId(null);
     }
 
+    function abrirEdicaoEncontro(encontro: Encontro) {
+        fecharFormularios();
+        setEditandoEncontroId(encontro.id);
+        if (encontro.evento_id) {
+            setEventosAbertos((atuais) => Array.from(new Set([...atuais, encontro.evento_id!])));
+            document.getElementById(`evento-${encontro.evento_id}`)?.scrollIntoView({ behavior: "smooth" });
+        } else {
+            setGruposAbertos((atuais) => Array.from(new Set([...atuais, encontro.grupo_id])));
+        }
+    }
+
+    async function cancelarFormulario() {
+        fecharFormularios();
+        if (router.query.form) await router.replace(`/admin/grupos?ano=${ano}`, undefined, { shallow: true });
+    }
+
+    useEffect(() => {
+        const form = router.query.form;
+        const id = router.query.id;
+        if (typeof form !== "string") return;
+        setCriandoGrupo(false);
+        setCriandoEvento(false);
+        setEditandoGrupoId(null);
+        setEditandoEventoId(null);
+        setNovoEncontroGrupoId(null);
+        setNovoEncontroEventoId(null);
+        setEditandoEncontroId(null);
+        if (form === "grupo-novo") setCriandoGrupo(true);
+        if (form === "evento-novo") setCriandoEvento(true);
+        if (typeof id !== "string") return;
+        if (["grupo-editar", "encontro-grupo-novo"].includes(form) && grupos.some((item) => item.id === id)) {
+            setGruposAbertos((atuais) => Array.from(new Set([...atuais, id])));
+            if (form === "grupo-editar") setEditandoGrupoId(id);
+            else setNovoEncontroGrupoId(id);
+        }
+        if (["evento-editar", "encontro-evento-novo"].includes(form) && eventos.some((item) => item.id === id)) {
+            setEventosAbertos((atuais) => Array.from(new Set([...atuais, id])));
+            if (form === "evento-editar") setEditandoEventoId(id);
+            else setNovoEncontroEventoId(id);
+        }
+        if (form === "encontro-editar") {
+            const encontro = encontros.find((item) => item.id === id);
+            if (!encontro) return;
+            setEditandoEncontroId(id);
+            if (encontro.evento_id) setEventosAbertos((atuais) => Array.from(new Set([...atuais, encontro.evento_id!])));
+            else setGruposAbertos((atuais) => Array.from(new Set([...atuais, encontro.grupo_id])));
+        }
+    }, [router.query.form, router.query.id, grupos, eventos, encontros, ano]);
+
     async function recarregar(ancora?: string) {
-        await router.replace(ancora ? `/admin/grupos${ancora}` : router.asPath);
+        await router.replace(`/admin/grupos?ano=${ano}${ancora || ""}`);
+    }
+
+    async function executarAcao(caminho: string, metodo: "POST" | "PUT" | "DELETE", payload: Record<string, unknown>, aoConcluir?: () => Promise<void> | void) {
+        if (acaoEmCurso.current) return false;
+        acaoEmCurso.current = true;
+        setExecutandoAcao(true);
+        setErroAcao("");
+        try {
+            const resultado = await enviarAcaoAdmin(caminho, metodo, payload);
+            if (!resultado.sucesso) {
+                setErroAcao(resultado.erro);
+                return false;
+            }
+            try {
+                await aoConcluir?.();
+            } catch {
+                setErroAcao("Ação concluída. Recarregue a página para conferir a atualização.");
+            }
+            return true;
+        } finally {
+            acaoEmCurso.current = false;
+            setExecutandoAcao(false);
+        }
+    }
+
+    async function excluirEncontro(encontro: Encontro, ancora: string) {
+        if (!confirm(`Excluir este encontro de ${ano}?`)) return;
+        await executarAcao("/api/encontros", "DELETE", {
+            id: encontro.id, grupo_id: encontro.grupo_id, anoPastoral: ano,
+        }, () => recarregar(ancora));
     }
 
     function alternarGrupo(grupoId: string) {
@@ -892,7 +410,7 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
         return () => window.removeEventListener("hashchange", handleHash);
     }, [grupos, eventos]);
 
-    async function onDragEnd(event: any) {
+    async function onDragEnd(event: DragEndEvent) {
         const { active, over } = event;
         if (!over || active.id === over.id) return;
         const oldIndex = ordemGrupos.findIndex((item) => item.id === active.id);
@@ -900,7 +418,7 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
         setOrdemGrupos(arrayMove(ordemGrupos, oldIndex, newIndex));
     }
 
-    async function onDragEndEventos(event: any) {
+    async function onDragEndEventos(event: DragEndEvent) {
         const { active, over } = event;
         if (!over || active.id === over.id) return;
         const oldIndex = ordemEventos.findIndex((item) => item.id === active.id);
@@ -908,79 +426,24 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
         setOrdemEventos(arrayMove(ordemEventos, oldIndex, newIndex));
     }
 
-    async function salvarOrdem() {
-        await fetch("/api/grupos/ordenar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                ordem: ordemGrupos.map((grupo, index) => ({
-                    id: grupo.id,
-                    ordem: index + 1,
-                })),
-            }),
-        });
-        setModoEdicao(false);
-        recarregar();
-    }
-
-    async function salvarOrdemEventos() {
-        await fetch("/api/eventos/ordenar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                ordem: ordemEventos.map((evento, index) => ({
-                    id: evento.id,
-                    ordem: index + 1,
-                })),
-            }),
-        });
-        setModoEdicaoEventos(false);
-        recarregar();
-    }
-
     async function persistirOrdemGrupos(novaOrdem: Grupo[]) {
-        setOrdemGrupos(novaOrdem);
-
-        const resposta = await fetch("/api/grupos/ordenar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                ordem: novaOrdem.map((grupo, index) => ({
-                    id: grupo.id,
-                    ordem: index + 1,
-                })),
-            }),
-        });
-
-        const resultado = await resposta.json();
-
-        if (!resultado.sucesso) {
-            alert(resultado.erro || "Nao foi possivel atualizar a ordem dos grupos.");
-            setOrdemGrupos(grupos);
-            return;
-        }
+        return executarAcao("/api/grupos/ordenar", "POST", {
+            ordem: novaOrdem.map((grupo, index) => ({ id: grupo.id, ordem: index + 1 })),
+        }, () => { setOrdemGrupos(novaOrdem); });
     }
 
     async function persistirOrdemEventos(novaOrdem: EventoAdmin[]) {
-        setOrdemEventos(novaOrdem);
+        return executarAcao("/api/eventos/ordenar", "POST", {
+            ordem: novaOrdem.map((evento, index) => ({ id: evento.id, ordem: index + 1 })),
+        }, () => { setOrdemEventos(novaOrdem); });
+    }
 
-        const resposta = await fetch("/api/eventos/ordenar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                ordem: novaOrdem.map((evento, index) => ({
-                    id: evento.id,
-                    ordem: index + 1,
-                })),
-            }),
-        });
+    async function salvarOrdem() {
+        if (await persistirOrdemGrupos(ordemGrupos)) setModoEdicao(false);
+    }
 
-        const resultado = await resposta.json();
-
-        if (!resultado.sucesso) {
-            alert(resultado.erro || "Nao foi possivel atualizar a ordem dos eventos.");
-            setOrdemEventos(eventos);
-        }
+    async function salvarOrdemEventos() {
+        if (await persistirOrdemEventos(ordemEventos)) setModoEdicaoEventos(false);
     }
 
     async function moverGrupo(grupoId: string, direcao: -1 | 1) {
@@ -1008,152 +471,73 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
     }
 
     async function alternarVisibilidadeEncontro(encontro: Encontro) {
-        const novaVisibilidade =
-            encontro.visibilidade === "publico" ? "interno" : "publico";
-
-        const resposta = await fetch("/api/encontros", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                id: encontro.id,
-                grupo_id: encontro.grupo_id || null,
-                evento_id: encontro.evento_id || null,
-                visibilidade: novaVisibilidade,
-            }),
+        const novaVisibilidade = encontro.visibilidade === "publico" ? "interno" : "publico";
+        await executarAcao("/api/encontros", "PUT", {
+            id: encontro.id, anoPastoral: ano,
+            grupo_id: encontro.grupo_id || null, evento_id: encontro.evento_id || null,
+            visibilidade: novaVisibilidade,
+        }, () => {
+            setListaEncontros((atuais) => atuais.map((item) =>
+                item.id === encontro.id ? { ...item, visibilidade: novaVisibilidade } : item));
         });
-
-        const resultado = await resposta.json();
-        if (!resultado.sucesso) {
-            alert(resultado.erro || "Nao foi possivel atualizar a visibilidade do encontro.");
-            return;
-        }
-
-        setListaEncontros((atuais) =>
-            atuais.map((item) =>
-                item.id === encontro.id
-                    ? { ...item, visibilidade: novaVisibilidade }
-                    : item
-            )
-        );
     }
 
     async function alternarVisibilidadeEvento(evento: EventoAdmin) {
-        const novaVisibilidade =
-            evento.visibilidade === "publico" ? "interno" : "publico";
-
-        const resposta = await fetch("/api/eventos", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: evento.id, visibilidade: novaVisibilidade }),
+        const novaVisibilidade = evento.visibilidade === "publico" ? "interno" : "publico";
+        await executarAcao("/api/eventos", "PUT", { id: evento.id, visibilidade: novaVisibilidade }, () => {
+            setOrdemEventos((atuais) => atuais.map((item) =>
+                item.id === evento.id ? { ...item, visibilidade: novaVisibilidade } : item));
         });
-
-        const resultado = await resposta.json();
-        if (!resultado.sucesso) {
-            alert(resultado.erro || "Nao foi possivel atualizar a visibilidade do evento.");
-            return;
-        }
-
-        setOrdemEventos((atuais) =>
-            atuais.map((item) =>
-                item.id === evento.id
-                    ? { ...item, visibilidade: novaVisibilidade }
-                    : item
-            )
-        );
     }
 
-    async function criarGrupo(payload: Record<string, unknown>): Promise<ResultadoAcao> {
-        const resposta = await fetch("/api/grupos", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
-        const resultado = await resposta.json();
-        if (!resultado.sucesso) {
-            return { sucesso: false, erro: resultado.erro || "Nao foi possivel criar o grupo." };
+    async function salvarSetor(setor: SetorCadastro, metodo: "POST" | "PUT", payload: Record<string, unknown>): Promise<ResultadoAcao> {
+        const resultado = await salvarCadastro(setor, metodo, payload);
+        if (!resultado.sucesso) return resultado;
+        const slug = resultado.grupoSlug || (typeof payload.slug === "string" ? payload.slug : undefined);
+        const eventoId = resultado.eventoId || (typeof payload.id === "string" ? payload.id : undefined);
+        const ancora = setor === "grupos" && slug ? `#grupo-${slug}` : setor === "eventos" && eventoId ? `#evento-${eventoId}` : undefined;
+        try {
+            await recarregar(ancora);
+            fecharFormularios();
+        } catch {
+            return { sucesso: false, erro: "Cadastro salvo. Recarregue a página para conferir a atualização." };
         }
-        fecharFormularios();
-        await recarregar(resultado.grupo?.slug ? `#grupo-${resultado.grupo.slug}` : undefined);
-        return { sucesso: true, grupoSlug: resultado.grupo?.slug };
+        return resultado;
     }
 
-    async function atualizarGrupo(payload: Record<string, unknown>): Promise<ResultadoAcao> {
-        const resposta = await fetch("/api/grupos", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
-        const resultado = await resposta.json();
-        if (!resultado.sucesso) {
-            return { sucesso: false, erro: resultado.erro || "Nao foi possivel atualizar o grupo." };
-        }
-        fecharFormularios();
-        await recarregar(typeof payload.slug === "string" ? `#grupo-${payload.slug}` : undefined);
-        return { sucesso: true };
-    }
-
-    async function criarEvento(payload: Record<string, unknown>): Promise<ResultadoAcao> {
-        const resposta = await fetch("/api/eventos", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
-        const resultado = await resposta.json();
-        if (!resultado.sucesso) {
-            return { sucesso: false, erro: resultado.erro || "Nao foi possivel criar o evento." };
-        }
-        fecharFormularios();
-        await recarregar();
-        return { sucesso: true };
-    }
-
-    async function atualizarEvento(payload: Record<string, unknown>): Promise<ResultadoAcao> {
-        const resposta = await fetch("/api/eventos", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
-        const resultado = await resposta.json();
-        if (!resultado.sucesso) {
-            return { sucesso: false, erro: resultado.erro || "Nao foi possivel atualizar o evento." };
-        }
-        fecharFormularios();
-        await recarregar(typeof payload.id === "string" ? `#evento-${payload.id}` : undefined);
-        return { sucesso: true };
-    }
-
-    async function criarEncontro(payload: Record<string, unknown>): Promise<ResultadoAcao> {
-        const resposta = await fetch("/api/encontros", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
-        const resultado = await resposta.json();
-        if (!resultado.sucesso) {
-            return { sucesso: false, erro: resultado.erro || "Nao foi possivel criar o encontro." };
-        }
-        fecharFormularios();
-        await recarregar();
-        return { sucesso: true };
-    }
-
-    async function atualizarEncontro(payload: Record<string, unknown>): Promise<ResultadoAcao> {
-        const resposta = await fetch("/api/encontros", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
-        const resultado = await resposta.json();
-        if (!resultado.sucesso) {
-            return { sucesso: false, erro: resultado.erro || "Nao foi possivel atualizar o encontro." };
-        }
-        fecharFormularios();
-        await recarregar();
-        return { sucesso: true };
-    }
+    const criarGrupo = (payload: Record<string, unknown>) => salvarSetor("grupos", "POST", payload);
+    const atualizarGrupo = (payload: Record<string, unknown>) => salvarSetor("grupos", "PUT", payload);
+    const criarEvento = (payload: Record<string, unknown>) => salvarSetor("eventos", "POST", payload);
+    const atualizarEvento = (payload: Record<string, unknown>) => salvarSetor("eventos", "PUT", payload);
+    const criarEncontro = (payload: Record<string, unknown>) => salvarSetor("encontros", "POST", payload);
+    const atualizarEncontro = (payload: Record<string, unknown>) => salvarSetor("encontros", "PUT", payload);
 
     return (
         <main style={{ padding: "2.5rem", maxWidth: "1200px", margin: "0 auto" }}>
+            <section style={{ marginBottom: "1.5rem", padding: "1.25rem", background: "#edf7f8", borderRadius: "12px" }}>
+                <h1 style={{ marginTop: 0 }}>Agenda pastoral {ano}</h1>
+                <label htmlFor="ano-pastoral">Ano de trabalho </label>
+                <select id="ano-pastoral" value={ano} disabled={mudandoAno || executandoAcao}
+                    onChange={async (event) => {
+                        const proximoAno = event.target.value;
+                        fecharFormularios();
+                        setMudandoAno(true);
+                        try {
+                            await router.push(`/admin/grupos?ano=${proximoAno}`);
+                        } finally {
+                            setMudandoAno(false);
+                        }
+                    }}>
+                    {anos.map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+                <p role="status">{mudandoAno ? "Carregando agenda..." : `${listaEncontros.length} encontro(s) em ${ano}.`}</p>
+                {encontros.length === 0 && <p>Agenda sem datas em {ano}. Abra um grupo, evento ou retiro e use “Novo encontro” para começar.</p>}
+                <p>As datas são separadas por ano. Os nomes, textos, equipes e a exclusão de grupos e eventos são compartilhados entre os anos.</p>
+                <p>O livro publicado continua em {anoPublicado}. <a href={`/livro/edicao/${ano}/calendario`} target="_blank" rel="noreferrer">Ver calendário de {ano}</a></p>
+            </section>
+            <p role="status" aria-live="polite">{executandoAcao ? "Concluindo ação..." : ""}</p>
+            {erroAcao && <p role="alert" style={{ color: "#8b0000" }}>{erroAcao}</p>}
+            <fieldset disabled={mudandoAno || executandoAcao} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
             <div style={{ display: "flex", gap: "2rem" }}>
                 <aside style={{ width: "220px", position: "sticky", top: "2rem" }}>
                     <h3>Grupos</h3>
@@ -1258,7 +642,7 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                         <FormularioGrupo
                             submitLabel="Salvar grupo"
                             onSubmit={criarGrupo}
-                            onCancel={fecharFormularios}
+                            onCancel={cancelarFormulario}
                         />
                     )}
 
@@ -1267,7 +651,7 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                             grupos={ordemGrupos}
                             submitLabel="Salvar evento"
                             onSubmit={criarEvento}
-                            onCancel={fecharFormularios}
+                            onCancel={cancelarFormulario}
                         />
                     )}
 
@@ -1363,14 +747,7 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                                             color="#8b0000"
                                             onClick={async () => {
                                                 if (!confirm("Excluir grupo?")) return;
-                                                await fetch("/api/grupos", {
-                                                    method: "DELETE",
-                                                    headers: {
-                                                        "Content-Type": "application/json",
-                                                    },
-                                                    body: JSON.stringify({ grupoId: grupo.id }),
-                                                });
-                                                recarregar();
+                                                await executarAcao("/api/grupos", "DELETE", { grupoId: grupo.id }, () => recarregar());
                                             }}
                                         >
                                             🗑 Excluir grupo
@@ -1390,7 +767,7 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                                                 grupo={grupo}
                                                 submitLabel="Salvar alteracoes"
                                                 onSubmit={atualizarGrupo}
-                                                onCancel={fecharFormularios}
+                                                onCancel={cancelarFormulario}
                                             />
                                         )}
 
@@ -1405,7 +782,7 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                                                     encontro.visibilidade
                                                 );
                                                 const alertas = alertasDoEncontro(encontro);
-                                                const editando = editandoEncontroId === encontro.id;
+                                                const editando = editandoEncontroId === encontro.id && !encontro.evento_id;
 
                                                 return (
                                                     <li
@@ -1474,13 +851,13 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                                                             }}
                                                         >
                                                             <SecondaryButton
-                                                                onClick={() => {
-                                                                    fecharFormularios();
-                                                                    setEditandoEncontroId(encontro.id);
-                                                                }}
+                                                                onClick={() => abrirEdicaoEncontro(encontro)}
                                                             >
                                                                 ✏️ Editar
                                                             </SecondaryButton>
+                                                            <a href={`/admin/preview/encontro/${encontro.id}`} style={{ color: "#0b5c6b" }}>
+                                                                Prévia / PDF / Cartaz
+                                                            </a>
                                                             <BotaoVisibilidade
                                                                 publico={
                                                                     encontro.visibilidade ===
@@ -1494,33 +871,7 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                                                             />
                                                             <SecondaryButton
                                                                 color="darkred"
-                                                                onClick={async () => {
-                                                                    if (
-                                                                        !confirm(
-                                                                            "Excluir encontro?"
-                                                                        )
-                                                                    )
-                                                                        return;
-                                                                    await fetch("/api/encontros", {
-                                                                        method: "DELETE",
-                                                                        headers: {
-                                                                            "Content-Type":
-                                                                                "application/json",
-                                                                        },
-                                                                        body: JSON.stringify({
-                                                                            id: encontro.id,
-                                                                            grupo_id:
-                                                                                encontro.grupo_id ||
-                                                                                grupo.id,
-                                                                            evento_id:
-                                                                                encontro.evento_id ||
-                                                                                null,
-                                                                        }),
-                                                                    });
-                                                                    recarregar(
-                                                                        `#grupo-${grupo.slug}`
-                                                                    );
-                                                                }}
+                                                                onClick={() => excluirEncontro(encontro, `#grupo-${grupo.slug}`)}
                                                             >
                                                                 🗑 Excluir
                                                             </SecondaryButton>
@@ -1528,12 +879,13 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
 
                                                         {editando && (
                                                             <FormularioEncontro
+                                                                ano={ano}
                                                                 encontro={encontro}
                                                                 grupo={grupo}
                                                                 eventos={ordemEventos}
                                                                 submitLabel="Salvar encontro"
                                                                 onSubmit={atualizarEncontro}
-                                                                onCancel={fecharFormularios}
+                                                                onCancel={cancelarFormulario}
                                                                 mostrarVinculoEvento
                                                                 permitirNivelEvento={false}
                                                             />
@@ -1545,11 +897,12 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
 
                                         {novoEncontroGrupoId === grupo.id ? (
                                             <FormularioEncontro
+                                                ano={ano}
                                                 grupo={grupo}
                                                 eventos={ordemEventos}
                                                 submitLabel="Criar encontro"
                                                 onSubmit={criarEncontro}
-                                                onCancel={fecharFormularios}
+                                                onCancel={cancelarFormulario}
                                                 mostrarVinculoEvento
                                                 permitirNivelEvento={false}
                                             />
@@ -1571,7 +924,7 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                         );
                     })}
 
-                    <h2 style={{ marginTop: "3rem", color: "#ff6136" }}>Eventos</h2>
+                    <h2 id="eventos" style={{ marginTop: "3rem", color: "#ff6136" }}>Eventos</h2>
 
                     {ordemEventos.map((evento) => {
                         const encontrosEvento = encontrosDoEvento(evento.id);
@@ -1687,14 +1040,7 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                                             color="darkred"
                                             onClick={async () => {
                                                 if (!confirm("Excluir evento?")) return;
-                                                await fetch("/api/eventos", {
-                                                    method: "DELETE",
-                                                    headers: {
-                                                        "Content-Type": "application/json",
-                                                    },
-                                                    body: JSON.stringify({ id: evento.id }),
-                                                });
-                                                recarregar();
+                                                await executarAcao("/api/eventos", "DELETE", { id: evento.id }, () => recarregar());
                                             }}
                                         >
                                             🗑 Excluir evento
@@ -1710,7 +1056,7 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                                                 grupos={ordemGrupos}
                                                 submitLabel="Salvar alteracoes"
                                                 onSubmit={atualizarEvento}
-                                                onCancel={fecharFormularios}
+                                                onCancel={cancelarFormulario}
                                             />
                                         )}
 
@@ -1802,15 +1148,13 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                                                             }}
                                                         >
                                                             <SecondaryButton
-                                                                onClick={() => {
-                                                                    fecharFormularios();
-                                                                    setEditandoEncontroId(
-                                                                        encontro.id
-                                                                    );
-                                                                }}
+                                                                onClick={() => abrirEdicaoEncontro(encontro)}
                                                             >
                                                                 ✏️ Editar
                                                             </SecondaryButton>
+                                                            <a href={`/admin/preview/encontro/${encontro.id}`} style={{ color: "#0b5c6b" }}>
+                                                                Prévia / PDF / Cartaz
+                                                            </a>
                                                             <BotaoVisibilidade
                                                                 publico={
                                                                     encontro.visibilidade ===
@@ -1824,28 +1168,7 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                                                             />
                                                             <SecondaryButton
                                                                 color="darkred"
-                                                                onClick={async () => {
-                                                                    if (
-                                                                        !confirm(
-                                                                            "Excluir encontro?"
-                                                                        )
-                                                                    )
-                                                                        return;
-                                                                    await fetch("/api/encontros", {
-                                                                        method: "DELETE",
-                                                                        headers: {
-                                                                            "Content-Type":
-                                                                                "application/json",
-                                                                        },
-                                                                        body: JSON.stringify({
-                                                                            id: encontro.id,
-                                                                            evento_id: evento.id,
-                                                                        }),
-                                                                    });
-                                                                    recarregar(
-                                                                        `#evento-${evento.id}`
-                                                                    );
-                                                                }}
+                                                                onClick={() => excluirEncontro(encontro, `#evento-${evento.id}`)}
                                                             >
                                                                 🗑 Excluir
                                                             </SecondaryButton>
@@ -1853,12 +1176,13 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
 
                                                         {editando && (
                                                             <FormularioEncontro
+                                                                ano={ano}
                                                                 encontro={encontro}
                                                                 evento={evento}
                                                                 eventos={ordemEventos}
                                                                 submitLabel="Salvar encontro"
                                                                 onSubmit={atualizarEncontro}
-                                                                onCancel={fecharFormularios}
+                                                                onCancel={cancelarFormulario}
                                                                 mostrarVinculoEvento={false}
                                                                 permitirNivelEvento
                                                             />
@@ -1870,11 +1194,12 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
 
                                         {novoEncontroEventoId === evento.id ? (
                                             <FormularioEncontro
+                                                ano={ano}
                                                 evento={evento}
                                                 eventos={ordemEventos}
                                                 submitLabel="Criar encontro"
                                                 onSubmit={criarEncontro}
-                                                onCancel={fecharFormularios}
+                                                onCancel={cancelarFormulario}
                                                 mostrarVinculoEvento={false}
                                                 permitirNivelEvento
                                             />
@@ -1897,16 +1222,13 @@ export default function AdminGeral({ grupos, encontros, eventos }: Props) {
                     })}
                 </div>
             </div>
+            </fieldset>
         </main>
     );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
-    const grupos = await getGruposOrdenados();
-    const encontros = await getEncontros();
-    const eventos = await getEventos();
-
-    return {
-        props: { grupos, encontros, eventos },
-    };
-};
+export const getServerSideProps: GetServerSideProps = withAdminPage(async (context) => {
+    const dados = await carregarAgendaAdministrativa(context.query.ano);
+    if (!dados) return { notFound: true };
+    return { props: dados };
+});

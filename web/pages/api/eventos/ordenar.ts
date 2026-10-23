@@ -1,14 +1,14 @@
 ﻿// web/pages/api/eventos/ordenar.ts
 
 import type { NextApiRequest, NextApiResponse } from "next";
-import { requireAdmin } from "../../../lib/adminAuth";
-import { supabase } from "../../../lib/supabaseClient";
+import { requireAdminClient } from "../../../lib/adminApi";
 
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    if (!requireAdmin(req, res)) {
+    const supabase = requireAdminClient(req, res);
+    if (!supabase) {
         return;
     }
 

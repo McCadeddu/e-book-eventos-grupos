@@ -26,3 +26,11 @@ em uma Agenda Anual partilhável, permitindo:
 Sistema em uso, com dados reais e histórico.
 Projeto vivo, pensado para atualização contínua ao longo do ano
 e reutilização anual (2026, 2027, ...).
+
+## Publicação segura
+- O e-book público depende do Supabase para grupos, encontros e eventos.
+- Antes de publicar, rode `npm run verify:public-data` para confirmar que o conteúdo público não está vazio.
+- Para validar e gerar build com segurança, use `npm run build:verified`.
+- Para publicar mudanças gerais do aplicativo, use `npm run publish`.
+- Para publicar somente ajustes visuais do e-book público, use `npm run publish:content`.
+- Se a verificação falhar, não publique: primeiro confirme as variáveis do Supabase e os dados nas tabelas `grupos`, `encontros` e `eventos`.

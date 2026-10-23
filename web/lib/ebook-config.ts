@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { supabase } from "./supabaseClient";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type EbookConfig = {
     ano: number;
@@ -85,12 +86,12 @@ function carregarEdicoesDeArquivo(): EbookCollectionResolved {
     };
 }
 
-export async function carregarEdicoesEbook(): Promise<EbookCollectionResolved> {
+export async function carregarEdicoesEbook(client: SupabaseClient = supabase): Promise<EbookCollectionResolved> {
     try {
         const [{ data: edicoes, error: erroEdicoes }, { data: estado, error: erroEstado }] =
             await Promise.all([
-                supabase.from("ebook_edicoes").select("*").order("ano", { ascending: true }),
-                supabase.from("ebook_estado").select("*").eq("id", "principal").maybeSingle(),
+                client.from("ebook_edicoes").select("*").order("ano", { ascending: true }),
+                client.from("ebook_estado").select("*").eq("id", "principal").maybeSingle(),
             ]);
 
         if (erroEdicoes || erroEstado) {

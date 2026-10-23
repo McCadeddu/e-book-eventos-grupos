@@ -12,7 +12,7 @@ export function getSupabaseAdminClient() {
 
     if (!url || !serviceRoleKey) {
         throw new Error(
-            "Configure NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY para habilitar uploads administrativos."
+            "Configure NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY para habilitar o acesso administrativo ao banco."
         );
     }
 

@@ -1,5 +1,6 @@
 ﻿// web/lib/db/encontros.ts
 import { supabase } from "../supabaseClient";
+import { getSupabaseAdminClient } from "../supabaseAdmin";
 import { Encontro } from "../types";
 import fs from "fs";
 import path from "path";
@@ -78,8 +79,9 @@ function lerEncontrosFallback(): Encontro[] {
 }
 
 export async function getEncontros() {
+    const admin = getSupabaseAdminClient();
     try {
-        const { data, error } = await supabase
+        const { data, error } = await admin
             .from("encontros")
             .select("*")
             .not("data_inicio", "is", null)
@@ -142,7 +144,7 @@ export async function getEncontrosStrict() {
 export async function getEncontrosPorGrupo(
     grupoId: string
 ): Promise<Encontro[]> {
-    const { data, error } = await supabase
+    const { data, error } = await getSupabaseAdminClient()
         .from("encontros")
         .select("*")
         .eq("grupo_id", grupoId);

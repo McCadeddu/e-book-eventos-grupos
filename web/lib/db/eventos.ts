@@ -3,6 +3,8 @@
 import fs from "fs";
 import path from "path";
 import { supabase } from "../supabaseClient";
+import { getSupabaseAdminClient } from "../supabaseAdmin";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { Grupo } from "../types";
 
 const IDS_EVENTOS_FALLBACK = new Set([
@@ -113,10 +115,11 @@ function normalizarEventoSerializable<T extends Record<string, any>>(evento: T) 
 }
 
 async function enriquecerEventosComDatasDoBanco<T extends { id: string }>(
-    eventos: T[]
+    eventos: T[],
+    client: SupabaseClient = supabase
 ) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await client
             .from("encontros")
             .select("evento_id, data_inicio, data_fim")
             .not("data_inicio", "is", null)
@@ -206,8 +209,9 @@ function lerEventosFallback() {
 }
 
 export async function getEventos() {
+    const admin = getSupabaseAdminClient();
     try {
-        const { data, error } = await supabase
+        const { data, error } = await admin
             .from("eventos")
             .select("*")
             .order("ordem", { ascending: true });
@@ -225,7 +229,7 @@ export async function getEventos() {
             );
         }
 
-        return (await enriquecerEventosComDatasDoBanco(eventos)).map(
+        return (await enriquecerEventosComDatasDoBanco(eventos, admin)).map(
             normalizarEventoSerializable
         );
     } catch (error) {

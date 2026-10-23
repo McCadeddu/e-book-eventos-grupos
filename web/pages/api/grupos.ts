@@ -1,9 +1,8 @@
 ﻿// web/pages/api/grupos.ts
 
 import type { NextApiRequest, NextApiResponse } from "next";
-import { requireAdmin } from "../../lib/adminAuth";
+import { requireAdminClient } from "../../lib/adminApi";
 import { salvarBackupAutomatico } from "../../lib/adminBackup";
-import { supabase } from "../../lib/supabaseClient";
 import { randomUUID } from "crypto";
 
 function gerarSlug(nome: string) {
@@ -37,7 +36,8 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    if (!requireAdmin(req, res)) {
+    const supabase = requireAdminClient(req, res);
+    if (!supabase) {
         return;
     }
 

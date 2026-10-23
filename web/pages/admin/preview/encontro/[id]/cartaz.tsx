@@ -1,51 +1,34 @@
 // web/pages/admin/preview/encontro/[id].tsx
 
-import { GetServerSideProps } from "next";
 import Link from "next/link";
-import fs from "fs";
-import path from "path";
 import { toPng } from "html-to-image";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { withAdminPage } from "../../../../../lib/adminPage";
+import { carregarDivulgacaoEncontro, type DadosDivulgacao } from "../../../../../lib/admin-divulgacao";
 
 
-type Encontro = {
-  id: string;
-  grupo_id: string;
-  tipo?: "encontro_regular" | "evento_especial";
-  data_inicio?: string;
-  data_fim?: string | null;
-  data_legivel?: string;
-  titulo?: string;
-  horario?: string;
-  local?: string;
-};
-
-type Grupo = {
-  id: string;
-  nome: string;
-};
-
-type Props = {
-  encontro: Encontro;
-  grupo: Grupo;
-};
-
-export default function CartazEncontro({ encontro, grupo }: Props) {
-  const isEventoEspecial = encontro.tipo === "evento_especial";
+export default function CartazEncontro({ encontro, grupo }: DadosDivulgacao) {
+  const isEventoEspecial = Boolean(encontro.evento_id) || encontro.tipo === "evento_especial";
   const cartazRef = useRef<HTMLDivElement>(null);
+  const [gerando, setGerando] = useState(false);
+  const [erro, setErro] = useState("");
 
     async function gerarImagem() {
         if (!cartazRef.current) return;
 
-        const dataUrl = await toPng(cartazRef.current, {
-            cacheBust: true,
-            pixelRatio: 2, // qualidade alta
-        });
-
-        const link = document.createElement("a");
-        link.download = `cartaz-${encontro.id}.png`;
-        link.href = dataUrl;
-        link.click();
+        setGerando(true);
+        setErro("");
+        try {
+            const dataUrl = await toPng(cartazRef.current, { cacheBust: true, pixelRatio: 2 });
+            const link = document.createElement("a");
+            link.download = `cartaz-${encontro.id}.png`;
+            link.href = dataUrl;
+            link.click();
+        } catch {
+            setErro("Não foi possível gerar o cartaz. Tente novamente.");
+        } finally {
+            setGerando(false);
+        }
     }
 
   return (
@@ -55,6 +38,8 @@ export default function CartazEncontro({ encontro, grupo }: Props) {
         background: "#fdfcf8",
         display: "flex",
         justifyContent: "center",
+        flexWrap: "wrap",
+        gap: "1rem",
         alignItems: "center",
         padding: "2rem",
       }}
@@ -128,6 +113,8 @@ export default function CartazEncontro({ encontro, grupo }: Props) {
 
           {/* BOTÃO GERAR IMAGEM */}
             <button
+                type="button"
+                disabled={gerando}
                 onClick={gerarImagem}
                 style={{
                     marginTop: "1.5rem",
@@ -140,9 +127,10 @@ export default function CartazEncontro({ encontro, grupo }: Props) {
                     cursor: "pointer",
                 }}
             >
-                📥 Baixar imagem (PNG)
+                {gerando ? "Gerando imagem..." : "📥 Baixar imagem (PNG)"}
             </button>
 
+      {erro && <p role="alert">{erro}</p>}
       {/* AÇÕES */}
       <div style={{ marginLeft: "2rem" }}>
         <p>
@@ -162,35 +150,10 @@ export default function CartazEncontro({ encontro, grupo }: Props) {
   );
 }
 
-/**
- * 🔹 Dados do encontro + grupo
- */
-export const getServerSideProps: GetServerSideProps = async (
-  context
-) => {
-  const { id } = context.params as { id: string };
-
-  const encontros = JSON.parse(
-    fs.readFileSync(
-      path.join(process.cwd(), "..", "data", "encontros.json"),
-      "utf-8"
-    )
-  ).encontros;
-
-  const grupos = JSON.parse(
-    fs.readFileSync(
-      path.join(process.cwd(), "..", "data", "grupos.json"),
-      "utf-8"
-    )
-  ).grupos;
-
-  const encontro = encontros.find((e: any) => e.id === id);
-  if (!encontro) return { notFound: true };
-
-  const grupo = grupos.find((g: any) => g.id === encontro.grupo_id);
-  if (!grupo) return { notFound: true };
-
-  return {
-    props: { encontro, grupo },
-  };
-};
+export const getServerSideProps = withAdminPage(async (context) => {
+    const id = context.params?.id;
+    if (typeof id !== "string") return { notFound: true };
+    const dados = await carregarDivulgacaoEncontro(id);
+    if (!dados) return { notFound: true };
+    return { props: dados };
+});

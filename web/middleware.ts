@@ -37,9 +37,9 @@ async function isValidAdminCookie(cookieValue: string | undefined) {
     return false;
   }
 
-  const [payload, signature] = cookieValue.split(".");
+  const [payload, signature, extra] = cookieValue.split(".");
 
-  if (!payload || !signature) {
+  if (!payload || !signature || extra !== undefined) {
     return false;
   }
 
@@ -51,7 +51,7 @@ async function isValidAdminCookie(cookieValue: string | undefined) {
 
   try {
     const decoded = JSON.parse(fromBase64Url(payload)) as { exp?: number };
-    return !!decoded.exp && decoded.exp > Date.now();
+    return typeof decoded.exp === "number" && Number.isFinite(decoded.exp) && decoded.exp > Date.now();
   } catch {
     return false;
   }
@@ -60,7 +60,10 @@ async function isValidAdminCookie(cookieValue: string | undefined) {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/admin")) {
+  if (
+    pathname === "/admin" || pathname.startsWith("/admin/") ||
+    pathname === "/grupos" || pathname.startsWith("/grupos/")
+  ) {
     const auth = request.cookies.get(ADMIN_AUTH_COOKIE)?.value;
 
     if (pathname === "/admin/login") {
@@ -70,9 +73,15 @@ export async function middleware(request: NextRequest) {
     if (!(await isValidAdminCookie(auth))) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";
-      return NextResponse.redirect(url);
+      const response = NextResponse.redirect(url);
+      response.headers.set("Cache-Control", "private, no-store, max-age=0");
+      return response;
     }
   }
 
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: ["/admin/:path*", "/grupos/:path*"],
+};

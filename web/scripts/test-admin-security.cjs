@@ -1,0 +1,524 @@
+// Uses the existing TypeScript dependency; no server or database is contacted.
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const vm = require("node:vm");
+const { createRequire } = require("node:module");
+const { createHmac, webcrypto } = require("node:crypto");
+const ts = require("typescript");
+
+const root = path.resolve(__dirname, "..");
+const secret = "security-test-secret-only";
+process.env.ADMIN_SESSION_SECRET = secret;
+
+function load(relativePath, mocks = {}, globals = {}) {
+    const filename = path.join(root, relativePath);
+    const localRequire = createRequire(filename);
+    const module = { exports: {} };
+    const source = ts.transpileModule(fs.readFileSync(filename, "utf8"), {
+        compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2017 },
+    }).outputText;
+    vm.runInNewContext(source, {
+        module, exports: module.exports, process, Buffer, console, TextEncoder,
+        crypto: webcrypto, atob, btoa, URLSearchParams,
+        require(id) {
+            if (id in mocks) return mocks[id];
+            if (id.startsWith("@/")) {
+                const file = [id.slice(2) + ".ts", id.slice(2) + ".tsx"].find((name) => fs.existsSync(path.join(root, name)));
+                return load(file, mocks);
+            }
+            if (id.startsWith(".")) {
+                const candidate = [".ts", ".tsx"].map((ext) => path.resolve(path.dirname(filename), id) + ext).find(fs.existsSync);
+                if (candidate) return load(path.relative(root, candidate), mocks);
+            }
+            return localRequire(id);
+        },
+        ...globals,
+    }, { filename });
+    return module.exports;
+}
+
+const auth = load("lib/adminAuth.ts");
+const { withAdminPage } = load("lib/adminPage.ts");
+function context(cookie) {
+    const headers = new Map();
+    return {
+        req: { headers: { cookie } },
+        res: { setHeader: (name, value) => headers.set(name, value) },
+        params: { slug: "grupo", id: "encontro" },
+        query: {}, resolvedUrl: "/grupos/grupo", headers,
+    };
+}
+function signedToken(exp) {
+    const payload = Buffer.from(JSON.stringify({ exp })).toString("base64url");
+    return payload + "." + createHmac("sha256", secret).update(payload).digest("base64url");
+}
+
+test("accepts signed sessions and rejects invalid, expired and malformed sessions", () => {
+    const valid = auth.createAdminSession("admin@example.org", secret);
+    assert.equal(auth.verifyAdminSessionToken(valid, secret), true);
+    for (const token of ["", valid + ".extra", valid + "x", signedToken(Date.now() - 1), signedToken(String(Date.now() + 10000))]) {
+        assert.equal(auth.verifyAdminSessionToken(token, secret), false);
+    }
+    assert.equal(auth.isAdminAuthenticated({ headers: { cookie: "adminAuth=%ZZ" } }), false);
+    assert.equal(auth.verifyAdminSessionToken(valid, ""), false);
+});
+
+test("private props are never loaded without authentication and cannot be cached", async () => {
+    let calls = 0;
+    const page = withAdminPage(async () => { calls++; return { props: { private: true } }; });
+    for (const cookie of [undefined, "adminAuth=%ZZ", "adminAuth=forged", "adminAuth=" + signedToken(Date.now() - 1)]) {
+        const ctx = context(cookie);
+        const result = await page(ctx);
+        assert.equal(result.redirect.destination, "/admin/login");
+        assert.equal(ctx.headers.get("Cache-Control"), "private, no-store, max-age=0");
+    }
+    assert.equal(calls, 0);
+    const ctx = context("adminAuth=" + auth.createAdminSession("admin@example.org", secret));
+    assert.equal((await page(ctx)).props.private, true);
+    assert.equal(calls, 1);
+    assert.match(ctx.headers.get("Cache-Control"), /no-store/);
+});
+
+test("group and event administration reject unauthenticated data requests before database access", async () => {
+    function forbiddenRead() { throw new Error("Private data read before authentication"); }
+    const db = { getGrupoPorSlug: forbiddenRead, getGruposOrdenados: forbiddenRead, getEncontrosPorGrupo: forbiddenRead, getEventos: forbiddenRead };
+    const mocks = {};
+    for (const prefix of ["../../", "../../../", "../../../../", "../../../../../"]) {
+        for (const name of ["grupos", "encontros", "eventos"]) mocks[prefix + "lib/db/" + name] = db;
+        mocks[prefix + "lib/supabaseClient"] = { supabase: { from: forbiddenRead } };
+        mocks[prefix + "lib/supabaseAdmin"] = { getSupabaseAdminClient: forbiddenRead };
+        mocks[prefix + "lib/admin-redirecionamentos"] = { redirecionarCadastro: forbiddenRead };
+    }
+    mocks["@/lib/supabaseAdmin"] = { getSupabaseAdminClient: forbiddenRead };
+    mocks["../../lib/admin-ano"] = { carregarAgendaAdministrativa: forbiddenRead };
+    for (const file of ["pages/grupos/[slug].tsx", "pages/grupos/novo.tsx", "pages/grupos/[slug]/editar.tsx", "pages/grupos/[slug]/novo-encontro.tsx", "pages/grupos/[slug]/editar-encontro/[id].tsx", "pages/admin/grupos.tsx", "pages/admin/eventos/index.tsx", "pages/admin/eventos/novo.tsx", "pages/admin/eventos/editar/[id].tsx", "pages/admin/eventos/[id]/novo-encontro.tsx", "pages/admin/eventos/[id]/editar-encontro/[encontroId].tsx"]) {
+        const page = load(file, mocks);
+        assert.equal(page.getStaticProps, undefined, file);
+        assert.equal(page.getStaticPaths, undefined, file);
+        assert.equal((await page.getServerSideProps(context())).redirect.destination, "/admin/login", file);
+    }
+});
+
+function apiResponse() {
+    return {
+        code: 200, body: null, headers: {}, revalidations: [],
+        setHeader(name, value) { this.headers[name] = value; },
+        status(code) { this.code = code; return this; },
+        json(body) { this.body = body; return this; },
+        async revalidate(route) { this.revalidations.push(route); },
+    };
+}
+
+test("API guard authenticates before creating a privileged client and reports missing configuration", () => {
+    let calls = 0;
+    const { requireAdminClient } = load("lib/adminApi.ts", {
+        "./supabaseAdmin": { getSupabaseAdminClient() { calls++; throw new Error("configuration unavailable"); } },
+    });
+    const anonymous = apiResponse();
+    assert.equal(requireAdminClient({ headers: {} }, anonymous), null);
+    assert.equal(anonymous.code, 401);
+    assert.equal(calls, 0);
+    const authenticated = apiResponse();
+    const cookie = "adminAuth=" + auth.createAdminSession("admin@example.org", secret);
+    assert.equal(requireAdminClient({ headers: { cookie } }, authenticated), null);
+    assert.equal(authenticated.code, 503);
+    assert.equal(calls, 1);
+    assert.match(authenticated.headers["Cache-Control"], /no-store/);
+});
+
+function fakeClient(label, calls, data) {
+    return {
+        from(table) {
+            const call = { client: label, table, mutations: [] };
+            calls.push(call);
+            let single = false;
+            const bounds = [];
+            const query = {
+                select() { return query; }, eq() { return query; }, not() { return query; },
+                order() { return query; }, limit() { return query; },
+                gte(column, value) { bounds.push((row) => row[column] >= value); return query; },
+                lt(column, value) { bounds.push((row) => row[column] < value); return query; },
+                single() { single = true; return query; }, maybeSingle() { single = true; return query; },
+                insert(value) { call.mutations.push(["insert", value]); return query; },
+                update(value) { call.mutations.push(["update", value]); return query; },
+                upsert(value) { call.mutations.push(["upsert", value]); return query; },
+                delete() { call.mutations.push(["delete"]); return query; },
+                then(resolve, reject) {
+                    const rows = (data[table] || []).filter((row) => bounds.every((check) => check(row)));
+                    return Promise.resolve({ data: single ? rows[0] || null : rows, error: null }).then(resolve, reject);
+                },
+            };
+            return query;
+        },
+    };
+}
+
+test("administrative repositories use the server client while public repositories keep the public client", async () => {
+    const calls = [];
+    const data = {
+        grupos: [{ id: "g", slug: "grupo", equipe: [] }],
+        eventos: [{ id: "e", equipe: [] }],
+        encontros: [{ id: "m", grupo_id: "g", evento_id: "e", data_inicio: "2026-01-01", nivel: "evento" }],
+    };
+    const admin = fakeClient("admin", calls, data);
+    const publicClient = fakeClient("public", calls, data);
+    const mocks = {
+        "../supabaseAdmin": { getSupabaseAdminClient: () => admin },
+        "../supabaseClient": { supabase: publicClient },
+    };
+    const grupos = load("lib/db/grupos.ts", mocks);
+    const encontros = load("lib/db/encontros.ts", mocks);
+    const eventos = load("lib/db/eventos.ts", mocks);
+    await grupos.getGruposOrdenados();
+    await grupos.getGrupoPorSlug("grupo");
+    await encontros.getEncontros();
+    await encontros.getEncontrosPorGrupo("g");
+    await eventos.getEventos();
+    assert.equal(calls.length, 6);
+    assert.ok(calls.every((call) => call.client === "admin"));
+    calls.length = 0;
+    await grupos.getGruposOrdenadosStrict();
+    await grupos.getGrupoPorSlugStrict("grupo");
+    await encontros.getEncontrosStrict();
+    await encontros.getEncontrosPorGrupoStrict("g");
+    await encontros.getEncontrosPorEventoStrict("e");
+    await eventos.getEventosStrict();
+    assert.equal(calls.length, 7);
+    assert.ok(calls.every((call) => call.client === "public"));
+});
+
+test("pastoral years validate real dates and allow intervals crossing the end of the year", () => {
+    const years = load("lib/ano-pastoral.ts");
+    for (const value of [null, [], ["2027"], "2027x", 2027.5, 2019]) assert.equal(years.lerAnoPastoral(value), null);
+    assert.equal(years.lerAnoPastoral("2027"), 2027);
+    assert.equal(years.dataDoAnoPastoral("2027-02-29", 2027), false);
+    assert.equal(years.dataDoAnoPastoral("2028-02-29", 2028), true);
+    assert.equal(years.dataDoAnoPastoral("2026-12-31", 2027), false);
+    assert.equal(years.erroDatasDoAno("2027-12-31", "2028-01-02", 2027), null);
+    assert.ok(years.erroDatasDoAno("2027-03-02", "2027-03-01", 2027));
+});
+
+test("2027 starts empty without importing 2026 dates and keeps the existing groups and events", async () => {
+    const calls = [];
+    const data = { encontros: [{ id: "old", data_inicio: "2026-07-01" }] };
+    const client = fakeClient("admin", calls, data);
+    const { carregarAgendaAdministrativa } = load("lib/admin-ano.ts", {
+        "./supabaseAdmin": { getSupabaseAdminClient: () => client },
+        "./ebook-config": { carregarEdicoesEbook: async () => ({ anoPublicado: 2026, anoEmPreparacao: 2027, edicoes: [{ ano: 2026 }, { ano: 2027 }] }) },
+        "./db/grupos": { getGruposOrdenados: async () => [{ id: "g" }] },
+        "./db/eventos": { getEventos: async () => [{ id: "retreat" }] },
+    });
+    const empty = await carregarAgendaAdministrativa(undefined);
+    assert.equal(empty.ano, 2027);
+    assert.equal(empty.anoPublicado, 2026);
+    assert.equal(empty.encontros.length, 0);
+    assert.equal(empty.grupos.length, 1);
+    assert.equal(empty.eventos.length, 1);
+    assert.equal((await carregarAgendaAdministrativa("2026")).encontros[0].id, "old");
+    data.encontros.push({ id: "new", data_inicio: "2027-08-01" });
+    assert.equal((await carregarAgendaAdministrativa("2027")).encontros[0].id, "new");
+    assert.equal((await carregarAgendaAdministrativa("2027")).encontros.length, 1);
+    assert.equal(await carregarAgendaAdministrativa("2030"), null);
+    assert.equal(await carregarAgendaAdministrativa(["2026", "2027"]), null);
+    assert.ok(calls.every((call) => call.mutations.length === 0));
+});
+
+test("the 2027 editor cannot change or delete 2026 meetings and never stores year metadata as a column", async () => {
+    for (const scenario of [
+        { method: "POST", body: { grupoId: "g", tipo: "encontro_regular", dataInicio: "2026-05-01" }, status: 400 },
+        { method: "POST", body: { grupoId: "g", tipo: "encontro_regular", dataInicio: "2027-02-29" }, status: 400 },
+        { method: "POST", body: { grupoId: "g", tipo: "encontro_regular", dataInicio: "2027-05-01" }, status: 200 },
+        { method: "PUT", body: { id: "old", grupo_id: "g", data_inicio: "2027-05-01" }, status: 409, date: "2026-05-01" },
+        { method: "DELETE", body: { id: "old" }, status: 409, date: "2026-05-01" },
+        { method: "PUT", body: { id: "new", grupo_id: "g", data_inicio: "2027-05-02" }, status: 200, date: "2027-05-01" },
+        { method: "DELETE", body: { id: "new" }, status: 200, date: "2027-05-01" },
+    ]) {
+        const calls = [];
+        const client = fakeClient("admin", calls, { encontros: scenario.date ? [{ data_inicio: scenario.date }] : [] });
+        const handler = load("pages/api/encontros.ts", {
+            "./supabaseAdmin": { getSupabaseAdminClient: () => client },
+            "../../lib/adminBackup": { salvarBackupAutomatico: async () => ({ sucesso: true }) },
+        }).default;
+        const response = apiResponse();
+        await handler({ method: scenario.method, headers: { cookie: "adminAuth=" + auth.createAdminSession("admin@example.org", secret) }, body: { ...scenario.body, anoPastoral: 2027 } }, response);
+        assert.equal(response.code, scenario.status, JSON.stringify(scenario));
+        const mutations = calls.flatMap((call) => call.mutations);
+        assert.equal(mutations.length > 0, scenario.status === 200);
+        if (scenario.status === 200) assert.ok(response.revalidations.includes("/livro/edicao/2027/calendario"));
+        for (const [, record] of mutations) if (record) assert.equal(Object.hasOwn(record, "anoPastoral"), false);
+    }
+});
+
+test("all seven write APIs reject visitors and route authenticated changes through the server client", async () => {
+    for (const scenario of [
+        { file: "grupos.ts", method: "POST", body: { nome: "Teste isolado" } },
+        { file: "eventos.ts", method: "POST", body: { titulo: "Teste isolado" } },
+        { file: "encontros.ts", method: "POST", body: { tipo: "encontro_regular", dataInicio: "2026-01-01", grupoId: "g" } },
+        { file: "grupos/ordenar.ts", method: "POST", body: { ordem: [{ id: "g", ordem: 1 }] } },
+        { file: "grupos/mover.ts", method: "POST", body: { grupoId: "g", direcao: "baixo" }, data: { grupos: [{ id: "g", ordem: 1 }, { id: "h", ordem: 2 }] } },
+        { file: "eventos/ordenar.ts", method: "POST", body: { ordem: [{ id: "e", ordem: 1 }] } },
+        { file: "ebook-edicoes.ts", method: "PUT", body: { ano: 2026, titulo: "Teste", capas: ["/capa.png"] } },
+    ]) {
+        const calls = [];
+        let factories = 0;
+        const client = fakeClient("admin", calls, scenario.data || {});
+        const mocks = { "./supabaseAdmin": { getSupabaseAdminClient() { factories++; return client; } } };
+        for (const prefix of ["../../", "../../../"]) {
+            mocks[prefix + "lib/adminBackup"] = { salvarBackupAutomatico: async () => ({ sucesso: true }) };
+            mocks[prefix + "lib/ebook-config"] = { carregarEdicoesEbook: async () => ({ edicoes: [] }) };
+            mocks[prefix + "lib/supabaseClient"] = { supabase: { from() { throw new Error("Public client used for a write"); } } };
+        }
+        const handler = load("pages/api/" + scenario.file, mocks).default;
+        const denied = apiResponse();
+        await handler({ headers: {}, method: scenario.method, body: scenario.body }, denied);
+        assert.equal(denied.code, 401, scenario.file);
+        assert.equal(factories, 0, scenario.file);
+        const accepted = apiResponse();
+        await handler({ headers: { cookie: "adminAuth=" + auth.createAdminSession("admin@example.org", secret) }, method: scenario.method, body: scenario.body }, accepted);
+        assert.equal(accepted.code, 200, scenario.file);
+        assert.equal(accepted.body.sucesso, true, scenario.file);
+        assert.equal(factories, 1, scenario.file);
+        assert.ok(calls.some((call) => call.mutations.length > 0), scenario.file);
+    }
+});
+
+test("middleware protects group routes and preserves public book and login access", async () => {
+    const { middleware } = load("middleware.ts");
+    function request(route, token) {
+        return {
+            nextUrl: { pathname: route, clone: () => new URL("https://example.org" + route) },
+            cookies: { get: () => token ? { value: token } : undefined },
+        };
+    }
+    for (const route of ["/grupos/novo", "/grupos/grupo", "/grupos/grupo/editar", "/grupos/grupo/novo-encontro", "/grupos/grupo/editar-encontro/id", "/admin/grupos"]) {
+        const response = await middleware(request(route));
+        assert.equal(response.status, 307, route);
+        assert.equal(new URL(response.headers.get("location")).pathname, "/admin/login");
+    }
+    for (const route of ["/livro", "/livro/grupo", "/livro/calendario", "/admin/login", "/"]) {
+        assert.equal((await middleware(request(route))).status, 200, route);
+    }
+    const token = auth.createAdminSession("admin@example.org", secret);
+    assert.equal((await middleware(request("/grupos/grupo", token))).status, 200);
+    assert.equal((await middleware(request("/grupos/grupo", token + ".extra"))).status, 307);
+});
+
+test("legacy routes converge on one annual editor and preserve the meeting's actual year", async () => {
+    for (const scenario of [
+        { type: "grupo-novo", form: "grupo-novo", year: "2027" },
+        { type: "evento-novo", form: "evento-novo", year: "2027" },
+        { type: "grupo", params: { slug: "grupo" }, anchor: "#grupo-grupo", year: "2027" },
+        { type: "grupo-editar", params: { slug: "grupo" }, form: "grupo-editar", year: "2027" },
+        { type: "encontro-grupo-novo", params: { slug: "grupo" }, form: "encontro-grupo-novo", year: "2027" },
+        { type: "eventos", anchor: "#eventos", year: "2027" },
+        { type: "evento-editar", params: { id: "e" }, form: "evento-editar", year: "2027" },
+        { type: "encontro-evento-novo", params: { id: "e" }, form: "encontro-evento-novo", year: "2027" },
+        { type: "encontro-editar-grupo", params: { id: "m", slug: "grupo" }, form: "encontro-editar", year: "2026" },
+        { type: "encontro-editar-evento", params: { id: "e", encontroId: "m" }, form: "encontro-editar", year: "2026" },
+        { type: "grupo-novo", query: { ano: "2026" }, form: "grupo-novo", year: "2026" },
+        { type: "encontro-editar-grupo", params: { id: "m" }, query: { ano: "2027" }, notFound: true },
+        { type: "encontro-editar-evento", params: { id: "other", encontroId: "m" }, notFound: true },
+        { type: "grupo-novo", query: { ano: ["2026", "2027"] }, notFound: true },
+    ]) {
+        const calls = [];
+        const client = fakeClient("admin", calls, {
+            grupos: [{ id: "g", slug: "grupo" }], eventos: [{ id: "e" }],
+            encontros: [{ id: "m", evento_id: "e", data_inicio: "2026-05-01" }],
+        });
+        const { redirecionarCadastro } = load("lib/admin-redirecionamentos.ts", {
+            "./supabaseAdmin": { getSupabaseAdminClient: () => client },
+            "./ebook-config": { carregarEdicoesEbook: async () => ({ anoEmPreparacao: 2027, edicoes: [{ ano: 2026 }, { ano: 2027 }] }) },
+        });
+        const result = await redirecionarCadastro({ query: scenario.query || {}, params: scenario.params || {} }, scenario.type);
+        if (scenario.notFound) assert.equal(result.notFound, true, scenario.type);
+        else {
+            const url = new URL(result.redirect.destination, "https://example.org");
+            assert.equal(url.pathname, "/admin/grupos");
+            assert.equal(url.searchParams.get("ano"), scenario.year, scenario.type);
+            assert.equal(url.searchParams.get("form"), scenario.form || null, scenario.type);
+            if (scenario.anchor) assert.equal(url.hash, scenario.anchor);
+            assert.equal(result.redirect.permanent, false);
+        }
+        assert.ok(calls.every((call) => call.mutations.length === 0));
+    }
+});
+
+test("each sector has one form implementation with the fields needed for both creation and editing", () => {
+    const React = require("react");
+    const { renderToStaticMarkup } = require("react-dom/server");
+    const common = { submitLabel: "Salvar", onSubmit: async () => ({ sucesso: true }), onCancel() {} };
+    const group = load("components/admin/FormularioGrupo.tsx").default;
+    const event = load("components/admin/FormularioEvento.tsx").default;
+    const meeting = load("components/admin/FormularioEncontro.tsx").default;
+    const groupHtml = renderToStaticMarkup(React.createElement(group, common));
+    for (const field of ["nome", "faixa_etaria", "descricao", "objetivo_ano", "equipe", "convite_final"]) assert.ok(groupHtml.includes(`name="${field}"`));
+    const eventHtml = renderToStaticMarkup(React.createElement(event, { ...common, grupos: [{ id: "g", nome: "Grupo" }] }));
+    for (const field of ["titulo", "equipe", "grupos_envolvidos", "visibilidade", "objetivo_ano", "convite"]) assert.ok(eventHtml.includes(`name="${field}"`));
+    const meetingHtml = renderToStaticMarkup(React.createElement(meeting, { ...common, ano: 2027, evento: { id: "e", titulo: "Retiro" }, eventos: [], permitirNivelEvento: true, mostrarVinculoEvento: false }));
+    for (const field of ["nivel", "mostrar_no_anual", "dataInicio", "dataFim", "tipo", "horario", "local", "visibilidade"]) assert.ok(meetingHtml.includes(`name="${field}"`));
+    assert.ok(meetingHtml.includes('min="2027-01-01"'));
+    assert.ok(meetingHtml.includes('max="2027-12-31"'));
+    const legacyHtml = renderToStaticMarkup(React.createElement(meeting, { ...common, ano: 2026, evento: { id: "e" }, eventos: [], permitirNivelEvento: true, mostrarVinculoEvento: false, encontro: { id: "m", tipo: "pre-evento", nivel: "organizacao" } }));
+    assert.match(legacyHtml, /value="pre-evento" selected=""/);
+    assert.match(legacyHtml, /value="organizacao" selected=""/);
+    for (const html of [groupHtml, eventHtml, meetingHtml, legacyHtml]) assert.equal((html.match(/<form /g) || []).length, 1);
+});
+
+test("shared submission handles success, server errors and lost connections without losing the year", async () => {
+    const calls = [];
+    const payload = { anoPastoral: 2027, grupoId: "g", dataInicio: "2027-05-01" };
+    const { salvarCadastro } = load("lib/admin-cadastros.ts", {}, {
+        fetch: async (url, options) => { calls.push({ url, options }); return { ok: true, json: async () => ({ sucesso: true, grupo: { slug: "grupo" } }) }; },
+    });
+    const result = await salvarCadastro("encontros", "POST", payload);
+    assert.equal(result.sucesso, true);
+    assert.equal(calls[0].url, "/api/encontros");
+    assert.equal(JSON.parse(calls[0].options.body).anoPastoral, 2027);
+    for (const response of [
+        async () => ({ ok: false, json: async () => ({ erro: "Sessão inválida" }) }),
+        async () => { throw new Error("Offline"); },
+        async () => ({ ok: true, json: async () => { throw new Error("Invalid JSON"); } }),
+    ]) {
+        const failed = load("lib/admin-cadastros.ts", {}, { fetch: response });
+        assert.equal((await failed.salvarCadastro("grupos", "PUT", {})).sucesso, false);
+    }
+});
+
+
+test("disclosure uses current group or event ownership and preserves the meeting year without writes", async () => {
+    for (const event of [false, true]) {
+        const calls = [];
+        const client = fakeClient("admin", calls, {
+            encontros: [{ id: "m", grupo_id: event ? null : "g", evento_id: event ? "e" : null, data_inicio: "2026-03-08" }],
+            grupos: [{ id: "g", slug: "grupo", nome: "Grupo" }],
+            eventos: [{ id: "e", titulo: "Retiro" }],
+        });
+        const { carregarDivulgacaoEncontro } = load("lib/admin-divulgacao.ts", {
+            "./supabaseAdmin": { getSupabaseAdminClient: () => client },
+        });
+        const data = await carregarDivulgacaoEncontro("m");
+        assert.equal(data.grupo.nome, event ? "Retiro" : "Grupo");
+        assert.equal(data.voltarHref, `/admin/grupos?ano=2026#${event ? "evento-e" : "grupo-grupo"}`);
+        assert.deepEqual(calls.map(x => x.table), ["encontros", event ? "eventos" : "grupos"]);
+        assert.ok(calls.every(x => x.mutations.length === 0));
+    }
+    const { carregarDivulgacaoEncontro } = load("lib/admin-divulgacao.ts", {
+        "./supabaseAdmin": { getSupabaseAdminClient: () => fakeClient("admin", [], {}) },
+    });
+    assert.equal(await carregarDivulgacaoEncontro("missing"), null);
+});
+
+test("preview and poster authenticate before reading meeting data", async () => {
+    for (const file of ["pages/admin/preview/encontro/[id].tsx", "pages/admin/preview/encontro/[id]/cartaz.tsx"]) {
+        let calls = 0;
+        const mocks = {};
+        for (const prefix of ["../../../../", "../../../../../"]) {
+            mocks[prefix + "lib/admin-divulgacao"] = { carregarDivulgacaoEncontro: async () => { calls++; return null; } };
+        }
+        const page = load(file, mocks);
+        assert.equal((await page.getServerSideProps(context())).redirect.destination, "/admin/login");
+        assert.equal(calls, 0);
+        const ctx = context("adminAuth=" + auth.createAdminSession("admin@example.org", secret));
+        assert.equal((await page.getServerSideProps(ctx)).notFound, true);
+        assert.equal(calls, 1);
+    }
+});
+
+test("print card escapes stored text and excludes administrative actions from the PDF", () => {
+    const React = require("react");
+    const { renderToStaticMarkup } = require("react-dom/server");
+    const Card = load("components/admin/CartaoEncontro.tsx").default;
+    const html = renderToStaticMarkup(React.createElement(Card, {
+        encontro: { id: "m", evento_id: "e", titulo: '<script>alert("x")</script>', data_inicio: "2027-03-07" },
+        grupo: { nome: "Retiro & comunidade" }, voltarHref: "/admin/grupos?ano=2027", acoes: false,
+    }));
+    assert.ok(html.includes("Retiro &amp; comunidade"));
+    assert.ok(html.includes("&lt;script&gt;"));
+    assert.ok(!html.includes("<script>"));
+    assert.ok(!html.includes("/api/pdf/"));
+    assert.ok(!html.includes("/admin/"));
+});
+
+test("PDF authenticates and validates input before reading data or launching Chromium", async () => {
+    let reads = 0, launches = 0;
+    const handler = load("pages/api/pdf/encontro.ts", {
+        "../../../lib/admin-divulgacao": { carregarDivulgacaoEncontro: async () => { reads++; return null; } },
+        puppeteer: { default: { launch: async () => { launches++; throw Error("unexpected browser"); } } },
+    }).default;
+    const headers = { cookie: "adminAuth=" + auth.createAdminSession("admin@example.org", secret) };
+    for (const [req, code] of [
+        [{ headers: {}, method: "GET", query: { id: "m" } }, 401],
+        [{ headers, method: "POST", query: { id: "m" } }, 405],
+        [{ headers, method: "GET", query: { id: "../../evil" } }, 400],
+        [{ headers, method: "GET", query: { id: ["m", "n"] } }, 400],
+    ]) {
+        const res = apiResponse();
+        await handler(req, res);
+        assert.equal(res.code, code);
+        assert.match(res.headers["Cache-Control"], /no-store/);
+    }
+    assert.equal(reads, 0);
+    const missing = apiResponse();
+    await handler({ headers, method: "GET", query: { id: "missing" } }, missing);
+    assert.equal(missing.code, 404);
+    assert.equal(launches, 0);
+});
+
+test("PDF returns actual bytes, disables scripts and closes the browser on success or failure", async () => {
+    const headers = { cookie: "adminAuth=" + auth.createAdminSession("admin@example.org", secret) };
+    for (const fail of [false, true]) {
+        let closed = 0, scripts = null, html = "";
+        const handler = load("pages/api/pdf/encontro.ts", {
+            "../../../lib/admin-divulgacao": { carregarDivulgacaoEncontro: async () => ({
+                encontro: { id: "m", titulo: "Encontro", data_inicio: "2027-03-07" }, grupo: { nome: "Grupo" }, voltarHref: "/admin/grupos?ano=2027",
+            }) },
+            puppeteer: { default: { launch: async () => ({
+                newPage: async () => ({
+                    setJavaScriptEnabled: async value => { scripts = value; },
+                    setContent: async value => { html = value; },
+                    pdf: async () => { if (fail) throw Error("printing failed"); return Buffer.from("%PDF-test"); },
+                }),
+                close: async () => { closed++; },
+            }) } },
+        }).default;
+        const res = apiResponse();
+        res.send = function(body) { this.body = body; return this; };
+        await handler({ headers, method: "GET", query: { id: "m" } }, res);
+        assert.equal(closed, 1);
+        assert.equal(scripts, false);
+        assert.ok(!html.includes("/admin/preview"));
+        assert.equal(res.code, fail ? 500 : 200);
+        if (!fail) { assert.equal(res.headers["Content-Type"], "application/pdf"); assert.equal(res.body.toString(), "%PDF-test"); }
+    }
+});
+
+test("ordering and deletion never report failed HTTP or malformed responses as success", async () => {
+    for (const response of [
+        { ok: false, json: async () => ({ sucesso: true }) },
+        { ok: true, json: async () => null },
+        { ok: true, json: async () => ({ erro: "blocked" }) },
+    ]) {
+        const { enviarAcaoAdmin } = load("lib/admin-cadastros.ts", {}, { fetch: async () => response });
+        for (const [route, method] of [["/api/grupos", "DELETE"], ["/api/eventos/ordenar", "POST"], ["/api/encontros", "PUT"]]) {
+            assert.equal((await enviarAcaoAdmin(route, method, { id: "m" })).sucesso, false);
+        }
+    }
+});
+
+
+test("Vercel PDF bundles a Linux Chromium while local development keeps the installed browser", async () => {
+    let extracted = 0;
+    const chromium = { args: ["--serverless"], executablePath: async () => { extracted++; return "/tmp/chromium"; } };
+    for (const [platform, vercel, expected] of [["win32", "1", false], ["linux", undefined, false], ["linux", "1", true]]) {
+        const helper = load("lib/pdf-browser.ts", { "@sparticuz/chromium": { default: chromium } }, {
+            process: { platform, env: { VERCEL: vercel } },
+        });
+        const options = await helper.opcoesNavegadorPdf();
+        assert.equal(options.timeout, 20000);
+        assert.equal(Boolean(options.executablePath), expected);
+        if (expected) { assert.equal(options.headless, "shell"); assert.equal(options.executablePath, "/tmp/chromium"); }
+    }
+    assert.equal(extracted, 1);
+});

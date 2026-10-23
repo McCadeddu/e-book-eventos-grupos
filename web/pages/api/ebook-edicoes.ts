@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { requireAdmin } from "../../lib/adminAuth";
+import { requireAdminClient } from "../../lib/adminApi";
 import { carregarEdicoesEbook, EbookConfig } from "../../lib/ebook-config";
-import { supabase } from "../../lib/supabaseClient";
 
 function respostaInfraPendente(res: NextApiResponse, detalhe?: string) {
     return res.status(503).json({
@@ -28,12 +27,13 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    if (!requireAdmin(req, res)) {
+    const supabase = requireAdminClient(req, res);
+    if (!supabase) {
         return;
     }
 
     if (req.method === "GET") {
-        const colecao = await carregarEdicoesEbook();
+        const colecao = await carregarEdicoesEbook(supabase);
         return res.status(200).json(colecao);
     }
 
@@ -45,7 +45,7 @@ export default async function handler(
             return res.status(400).json({ erro: "Ano invalido." });
         }
 
-        const colecao = await carregarEdicoesEbook();
+        const colecao = await carregarEdicoesEbook(supabase);
         const existente = colecao.edicoes.find((edicao) => edicao.ano === ano);
         if (existente) {
             return res.status(409).json({ erro: "Esse ano ja esta cadastrado." });
@@ -154,7 +154,7 @@ export default async function handler(
             return res.status(400).json({ erro: "Ano em preparacao invalido." });
         }
 
-        const colecao = await carregarEdicoesEbook();
+        const colecao = await carregarEdicoesEbook(supabase);
         const payload = {
             id: "principal",
             ano_publicado: anoPublicado ?? colecao.anoPublicado,

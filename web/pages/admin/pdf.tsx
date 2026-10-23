@@ -1,5 +1,6 @@
 // web/pages/admin/pdf.tsx
 
+import Link from "next/link";
 import { useRouter } from "next/router";
 
 export default function PdfAdmin() {
@@ -22,20 +23,17 @@ export default function PdfAdmin() {
         </button>
       </p>
 
-      <h1>🖨 Geração de PDFs</h1>
+      <h1>🖨 PDFs dos encontros</h1>
 
       <p>
-        Esta área permitirá gerar:
+        Para gerar o PDF de um encontro, abra o grupo, evento ou retiro na agenda
+        do ano desejado e selecione “Prévia / PDF / Cartaz”. Na prévia, use “Gerar PDF”.
       </p>
-
-      <ul>
-        <li>📄 Agenda anual (PDF)</li>
-        <li>📄 Capítulos por grupo</li>
-        <li>📄 Panfletos de encontros</li>
-      </ul>
-
+      <p>
+        <Link href="/admin/grupos">Abrir agenda pastoral</Link>
+      </p>
       <p style={{ marginTop: "1.5rem", opacity: 0.7 }}>
-        ⏳ Em desenvolvimento.
+        A exportação do livro completo e dos capítulos por grupo ainda está em desenvolvimento.
       </p>
     </main>
   );

@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import type { IncomingMessage } from "http";
 import { createHmac, timingSafeEqual } from "crypto";
 
 export const ADMIN_AUTH_COOKIE = "adminAuth";
@@ -22,7 +23,7 @@ function sign(payload: string, secret: string) {
     return createHmac("sha256", secret).update(payload).digest("base64url");
 }
 
-function parseCookies(req: NextApiRequest) {
+function parseCookies(req: Pick<IncomingMessage, "headers">) {
     const header = req.headers.cookie;
 
     if (!header) {
@@ -36,7 +37,11 @@ function parseCookies(req: NextApiRequest) {
             return acc;
         }
 
-        acc[rawName] = decodeURIComponent(rest.join("="));
+        try {
+            acc[rawName] = decodeURIComponent(rest.join("="));
+        } catch {
+            // A malformed cookie must not interrupt authentication checks.
+        }
         return acc;
     }, {});
 }
@@ -66,9 +71,9 @@ export function verifyAdminSessionToken(token: string, secret: string) {
         return false;
     }
 
-    const [payload, signature] = token.split(".");
+    const [payload, signature, extra] = token.split(".");
 
-    if (!payload || !signature) {
+    if (!payload || !signature || extra !== undefined) {
         return false;
     }
 
@@ -85,13 +90,13 @@ export function verifyAdminSessionToken(token: string, secret: string) {
 
     try {
         const decoded = JSON.parse(fromBase64Url(payload)) as { exp?: number };
-        return !!decoded.exp && decoded.exp > Date.now();
+        return typeof decoded.exp === "number" && Number.isFinite(decoded.exp) && decoded.exp > Date.now();
     } catch {
         return false;
     }
 }
 
-export function isAdminAuthenticated(req: NextApiRequest) {
+export function isAdminAuthenticated(req: Pick<IncomingMessage, "headers">) {
     const { sessionSecret } = getAdminConfig();
     const cookies = parseCookies(req);
     const token = cookies[ADMIN_AUTH_COOKIE];

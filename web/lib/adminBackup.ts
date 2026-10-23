@@ -1,5 +1,4 @@
 import { randomUUID } from "crypto";
-import { supabase } from "./supabaseClient";
 import { getSupabaseAdminClient } from "./supabaseAdmin";
 
 type EntidadeBackup = "grupos" | "eventos" | "encontros";
@@ -35,11 +34,7 @@ async function carregarSnapshotAtual() {
 }
 
 function getBackupClient() {
-    try {
-        return getSupabaseAdminClient();
-    } catch {
-        return supabase;
-    }
+    return getSupabaseAdminClient();
 }
 
 async function aplicarRetencaoDeBackups() {
@@ -98,10 +93,12 @@ export async function salvarBackupAutomatico(metadata: BackupMetadata) {
         }
 
         await aplicarRetencaoDeBackups();
+        return { sucesso: true as const };
     } catch (error) {
         console.warn(
             "Nao foi possivel salvar o backup automatico:",
             error instanceof Error ? error.message : error
         );
+        return { sucesso: false as const, erro: "Backup nao concluido. Verifique a configuracao administrativa e a tabela admin_backups." };
     }
 }
