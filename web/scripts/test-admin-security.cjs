@@ -42,6 +42,68 @@ function load(relativePath, mocks = {}, globals = {}) {
 }
 
 const auth = load("lib/adminAuth.ts");
+
+function loginHarness(fetch, replace = async () => true) {
+    const state = [], timers = new Map(), navigations = [];
+    let cursor = 0;
+    const Login = load("pages/admin/login.tsx", {
+        react: { useState(initial) {
+            const index = cursor++;
+            state[index] = initial;
+            return [initial, (value) => { state[index] = value; }];
+        } },
+        "next/router": { useRouter: () => ({ replace }) },
+    }, {
+        fetch, AbortController,
+        setTimeout(callback, delay) { const id = timers.size + 1; timers.set(id, { callback, delay }); return id; },
+        clearTimeout(id) { timers.delete(id); },
+        window: { location: { assign: (url) => navigations.push(url) } },
+    }).default;
+    const page = Login();
+    const form = page.props.children.find((child) => child?.type === "form");
+    return { state, timers, navigations, submit: () => form.props.onSubmit({ preventDefault() {} }) };
+}
+
+test("login releases a stalled request after 15 seconds and allows another attempt", async () => {
+    const h = loginHarness((_, { signal }) => new Promise((resolve, reject) => {
+        signal.addEventListener("abort", () => reject(Error("aborted")));
+    }));
+    const request = h.submit();
+    assert.equal(h.state[3], "autenticando");
+    const timer = [...h.timers.values()][0];
+    assert.equal(timer.delay, 15000);
+    timer.callback();
+    await request;
+    assert.equal(h.state[3], "ocioso");
+    assert.match(h.state[2], /conexão demorou/);
+    assert.equal(h.timers.size, 0);
+});
+
+test("login stays busy until navigation completes and falls back if navigation fails", async () => {
+    let rejectNavigation;
+    let notifyNavigation;
+    const navigationStarted = new Promise((resolve) => { notifyNavigation = resolve; });
+    const h = loginHarness(async () => ({ ok: true, json: async () => ({ sucesso: true }) }),
+        () => new Promise((resolve, reject) => { rejectNavigation = reject; notifyNavigation(); }));
+    const request = h.submit();
+    await navigationStarted;
+    assert.equal(h.state[3], "abrindo");
+    assert.equal(h.timers.size, 0);
+    rejectNavigation(Error("chunk unavailable"));
+    await request;
+    assert.deepEqual(h.navigations, ["/admin"]);
+    assert.equal(h.state[2], null);
+});
+
+test("invalid credentials unlock the login form without navigating", async () => {
+    const h = loginHarness(async () => ({ ok: false, json: async () => ({ sucesso: false, erro: "E-mail ou senha inválidos." }) }));
+    await h.submit();
+    assert.equal(h.state[3], "ocioso");
+    assert.equal(h.state[2], "E-mail ou senha inválidos.");
+    assert.equal(h.navigations.length, 0);
+    assert.equal(h.timers.size, 0);
+});
+
 const { withAdminPage } = load("lib/adminPage.ts");
 function context(cookie) {
     const headers = new Map();
