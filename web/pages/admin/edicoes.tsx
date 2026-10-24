@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
 type EbookConfig = {
@@ -47,7 +47,7 @@ export default function AdminEdicoes() {
   const [formularios, setFormularios] = useState<Record<number, FormEdicao>>({});
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
 
-  async function carregar() {
+  const carregar = useCallback(async () => {
     setErro(null);
     const resposta = await fetch("/api/ebook-edicoes");
     const dados = await resposta.json();
@@ -58,8 +58,8 @@ export default function AdminEdicoes() {
     }
 
     setEstado(dados);
-    if (!anoBase && dados.edicoes?.length) {
-      setAnoBase(String(dados.edicoes[dados.edicoes.length - 1].ano));
+    if (dados.edicoes?.length) {
+      setAnoBase((atual) => atual || String(dados.edicoes[dados.edicoes.length - 1].ano));
     }
 
     setFormularios(
@@ -70,11 +70,11 @@ export default function AdminEdicoes() {
         ])
       )
     );
-  }
+  }, []);
 
   useEffect(() => {
     carregar();
-  }, []);
+  }, [carregar]);
 
   function atualizarFormulario(ano: number, campo: keyof FormEdicao, valor: string) {
     setFormularios((atual) => ({

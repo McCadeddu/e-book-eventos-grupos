@@ -1,3 +1,4 @@
+import type { Evento } from "../../lib/eventos-types";
 import { carregarCapituloLivroPorAno } from "../../lib/livro-ano";
 // web/pages/livro/[slug].tsx
 
@@ -24,7 +25,7 @@ type Props = {
     grupo: Grupo;
     grupos: Grupo[];
     encontros: Encontro[];
-    eventosDoGrupo: any[];
+    eventosDoGrupo: Evento[];
 };
 
 
@@ -294,7 +295,7 @@ export default function CapituloLivro({
                   borderLeft: "1px solid #ffd7c8",
               }}
           >
-              {eventosDoGrupo.map((evento: any) => (
+              {eventosDoGrupo.map((evento) => (
                   <Link
                       key={evento.id}
                       href={`/livro/evento/${evento.id}`}

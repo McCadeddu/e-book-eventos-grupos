@@ -1,3 +1,4 @@
+import type { Evento } from "../../../../../lib/eventos-types";
 import Link from "next/link";
 import { GetStaticPaths, GetStaticProps } from "next";
 
@@ -10,7 +11,7 @@ import { Grupo } from "../../../../../lib/types";
 
 type Props = {
     ano: number;
-    evento: any;
+    evento: Evento;
     grupos: Grupo[];
     encontros: Encontro[];
 };
@@ -80,7 +81,7 @@ export default function PaginaEventoEdicao({ ano, evento, grupos, encontros }: P
                         </p>
                     )}
 
-                    {!evento.todos_os_grupos && evento.grupos_envolvidos?.length > 0 && (
+                    {!evento.todos_os_grupos && (evento.grupos_envolvidos?.length ?? 0) > 0 && (
                         <div style={{ marginTop: "1rem" }}>
                             <h3 style={{ color: "#ff6136", marginBottom: "0.5rem" }}>
                                 São envolvidos os membros de:
@@ -88,7 +89,7 @@ export default function PaginaEventoEdicao({ ano, evento, grupos, encontros }: P
 
                             <ul style={{ paddingLeft: "1rem" }}>
                                 {grupos
-                                    .filter((g) => evento.grupos_envolvidos.includes(g.id))
+                                    .filter((g) => evento.grupos_envolvidos?.includes(g.id))
                                     .map((g) => (
                                         <li key={g.id}>{g.nome}</li>
                                     ))}
@@ -102,7 +103,7 @@ export default function PaginaEventoEdicao({ ano, evento, grupos, encontros }: P
                         <h2 style={{ color: "#ff6136" }}>Agenda do Evento</h2>
 
                         <ul style={{ marginTop: "1rem" }}>
-                            {encontros.map((encontro: any) => (
+                            {encontros.map((encontro) => (
                                 <li key={encontro.id} style={{ marginBottom: "1rem" }}>
                                     <strong>
                                         {encontro.data_legivel ||

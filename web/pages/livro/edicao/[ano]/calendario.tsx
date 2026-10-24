@@ -1,3 +1,4 @@
+import type { Evento } from "../../../../lib/eventos-types";
 import Link from "next/link";
 import { GetStaticPaths, GetStaticProps } from "next";
 
@@ -14,7 +15,7 @@ type Props = {
     ano: number;
     grupos: Grupo[];
     encontros: Encontro[];
-    eventos: any[];
+    eventos: Evento[];
 };
 
 type LinhaAgrupada = {
@@ -227,7 +228,7 @@ export default function CalendarioEdicao({ ano, grupos, encontros, eventos }: Pr
                     borderLeft: "1px solid #ffd7c8",
                 }}
             >
-                {(eventos ?? []).map((evento: any) => (
+                {(eventos ?? []).map((evento) => (
                     <Link
                         key={evento.id}
                         href={`/livro/edicao/${ano}/evento/${evento.id}`}

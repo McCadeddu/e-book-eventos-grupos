@@ -1,3 +1,4 @@
+import type { Evento } from "../../../../../lib/eventos-types";
 import Link from "next/link";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { useRouter } from "next/router";
@@ -15,7 +16,7 @@ type Props = {
     grupo: Grupo;
     grupos: Grupo[];
     encontros: Encontro[];
-    eventosDoGrupo: any[];
+    eventosDoGrupo: Evento[];
 };
 
 export default function CapituloEdicaoLivro({
@@ -156,7 +157,7 @@ export default function CapituloEdicaoLivro({
                     {encontrosOrdenados.length === 0 && <p>Nenhum encontro cadastrado.</p>}
 
                     <ul>
-                        {encontrosOrdenados.map((encontro: any) => {
+                        {encontrosOrdenados.map((encontro) => {
                             const ehEvento = !!encontro.evento_id;
                             const ehOrganizacao = encontro.nivel === "organizacao";
 
@@ -245,7 +246,7 @@ export default function CapituloEdicaoLivro({
                     borderLeft: "1px solid #ffd7c8",
                 }}
             >
-                {eventosDoGrupo.map((evento: any) => (
+                {eventosDoGrupo.map((evento) => (
                     <Link
                         key={evento.id}
                         href={`/livro/edicao/${ano}/evento/${evento.id}`}

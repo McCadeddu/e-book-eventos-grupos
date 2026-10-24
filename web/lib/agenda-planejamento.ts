@@ -19,7 +19,7 @@ function normalizar(texto: string) {
     return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
-function minutosDoHorario(horario?: string) {
+function minutosDoHorario(horario?: string | null) {
     const partes = horario?.match(/^\s*(\d{1,2})\s*(?:h|:)\s*(\d{1,2})?/i);
     if (!partes) return 1440;
     const horas = Number(partes[1]), minutos = Number(partes[2] || 0);
@@ -35,9 +35,9 @@ export function montarAgendaPlanejamento(ano: number, encontros: Encontro[], gru
     const unicos = new Map(encontros.filter(e => dataDoAnoPastoral(e.data_inicio, ano)).map(e => [e.id, e]));
     return [...unicos.values()].map(encontro => {
         const evento = encontro.evento_id ? todosEventos.get(encontro.evento_id) : undefined;
-        const grupo = !encontro.evento_id ? todosGrupos.get(encontro.grupo_id) : undefined;
+        const grupo = !encontro.evento_id && encontro.grupo_id ? todosGrupos.get(encontro.grupo_id) : undefined;
         const existe = Boolean(evento || grupo);
-        const ativo = encontro.evento_id ? eventosAtivos.has(encontro.evento_id) : gruposAtivos.has(encontro.grupo_id);
+        const ativo = encontro.evento_id ? eventosAtivos.has(encontro.evento_id) : !!encontro.grupo_id && gruposAtivos.has(encontro.grupo_id);
         const publico = ativo && encontro.visibilidade === "publico" && (!encontro.evento_id || evento?.visibilidade === "publico");
         const noAnual = publico && nivelPermitidoNoAnual(encontro);
         const responsavel = evento?.titulo || grupo?.nome || "Vínculo não encontrado";

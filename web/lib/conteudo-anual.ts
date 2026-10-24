@@ -46,7 +46,7 @@ export function filtrarConteudoPublico(ano: number, conteudo: Awaited<ReturnType
     const gruposIds = new Set(conteudo.grupos.map((g) => g.id));
     const encontros = conteudo.encontros.filter((e) =>
         e.visibilidade === "publico" && pertenceAoAno(e.data_inicio, ano) &&
-        (e.evento_id ? eventosIds.has(e.evento_id) : gruposIds.has(e.grupo_id))
+        (e.evento_id ? eventosIds.has(e.evento_id) : !!e.grupo_id && gruposIds.has(e.grupo_id))
     ).map(e => selecionar(e, ["id", "grupo_id", "evento_id", "data_inicio", "data_fim", "data_legivel", "horario", "titulo", "descricao", "local", "tipo", "visibilidade", "nivel", "mostrar_no_anual"]));
     return { grupos, eventos, encontros };
 }

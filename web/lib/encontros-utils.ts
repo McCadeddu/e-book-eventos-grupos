@@ -1,26 +1,11 @@
 ﻿// web/lib/encontros-utils.ts
 
-export type Encontro = {
-  id: string;
-  grupo_id: string;
-  data_inicio: string;
-  data_fim?: string | null;
-  data_legivel?: string;
-  horario?: string;
-  titulo?: string;
-  descricao?: string;
-  local?: string;
-  tipo: "encontro_regular" | "evento_especial";
-    visibilidade: "interno" | "publico";
-    evento_id?: string | null;
-  nivel?: "evento" | "organizacao";
-  mostrar_no_anual?: boolean;
+import type { Encontro } from "./types";
+export type { Encontro } from "./types";
 
-};
-
-export function ordenarEncontrosPorData(
-  encontros: Encontro[]
-): Encontro[] {
+export function ordenarEncontrosPorData<T extends Encontro>(
+  encontros: T[]
+): T[] {
   return encontros
     .filter((e) => typeof e.data_inicio === "string" && e.data_inicio !== "")
     .slice()

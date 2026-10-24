@@ -259,7 +259,8 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
         if (encontro.evento_id) {
             setEventosAbertos((atuais) => Array.from(new Set([...atuais, encontro.evento_id!])));
         } else {
-            setGruposAbertos((atuais) => Array.from(new Set([...atuais, encontro.grupo_id])));
+            const grupoId = encontro.grupo_id;
+            if (grupoId) setGruposAbertos((atuais) => Array.from(new Set([...atuais, grupoId])));
         }
     }
 
@@ -315,7 +316,10 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
             if (!encontro) return;
             setEditandoEncontroId(id);
             if (encontro.evento_id) setEventosAbertos((atuais) => Array.from(new Set([...atuais, encontro.evento_id!])));
-            else setGruposAbertos((atuais) => Array.from(new Set([...atuais, encontro.grupo_id])));
+            else {
+                const grupoId = encontro.grupo_id;
+                if (grupoId) setGruposAbertos((atuais) => Array.from(new Set([...atuais, grupoId])));
+            }
         }
     }, [router.query.form, router.query.id, grupos, eventos, encontros, ano]);
 

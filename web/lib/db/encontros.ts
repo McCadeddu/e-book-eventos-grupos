@@ -71,7 +71,7 @@ function lerEncontrosFallback(): Encontro[] {
 
             return {
                 ...encontro,
-                grupo_id: null as any,
+                grupo_id: null,
                 evento_id: eventoEspecialId,
                 nivel: "evento",
             };

@@ -13,7 +13,7 @@
 
 export type Encontro = {
     id: string;
-    grupo_id: string;
+    grupo_id: string | null;
     data_inicio: string;
     data_fim?: string | null;
     data_legivel?: string | null;

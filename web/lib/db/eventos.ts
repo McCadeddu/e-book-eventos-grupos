@@ -5,7 +5,10 @@ import path from "path";
 import { supabase } from "../supabaseClient";
 import { getSupabaseAdminClient } from "../supabaseAdmin";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { Grupo } from "../types";
+import type { Grupo, Encontro } from "../types";
+import type { Evento } from "../eventos-types";
+
+type EventoArquivo = Evento & { responsaveis?: string[]; observacoes?: string };
 
 const IDS_EVENTOS_FALLBACK = new Set([
     "afetividade-jovens",
@@ -39,7 +42,7 @@ function lerGruposFallback(): Grupo[] {
     return (dados.grupos ?? []) as Grupo[];
 }
 
-function lerEventosJsonFallback() {
+function lerEventosJsonFallback(): EventoArquivo[] {
     const caminho = path.join(process.cwd(), "..", "data", "eventos-2026.json");
 
     if (!fs.existsSync(caminho)) {
@@ -52,7 +55,7 @@ function lerEventosJsonFallback() {
     return Array.isArray(dados.eventos) ? dados.eventos : [];
 }
 
-function lerEncontrosFallback() {
+function lerEncontrosFallback(): Encontro[] {
     const caminho = path.join(
         process.cwd(),
         "..",
@@ -72,7 +75,7 @@ function lerEncontrosFallback() {
 
 function enriquecerEventosComDatas<T extends { id: string }>(eventos: T[]) {
     const encontros = lerEncontrosFallback().filter(
-        (encontro: any) =>
+        (encontro) =>
             typeof encontro.data_inicio === "string" &&
             encontro.data_inicio.trim() !== ""
     );
@@ -80,11 +83,11 @@ function enriquecerEventosComDatas<T extends { id: string }>(eventos: T[]) {
     return eventos.map((evento) => {
         const encontrosDoEvento = encontros
             .filter(
-                (encontro: any) =>
+                (encontro) =>
                     encontro.evento_id === evento.id ||
                     encontro.grupo_id === evento.id
             )
-            .sort((a: any, b: any) => a.data_inicio.localeCompare(b.data_inicio));
+            .sort((a, b) => a.data_inicio.localeCompare(b.data_inicio));
 
         const primeiro = encontrosDoEvento[0];
         const ultimo = encontrosDoEvento[encontrosDoEvento.length - 1];
@@ -97,7 +100,7 @@ function enriquecerEventosComDatas<T extends { id: string }>(eventos: T[]) {
     });
 }
 
-function normalizarEventoSerializable<T extends Record<string, any>>(evento: T) {
+function normalizarEventoSerializable<T extends Evento>(evento: T) {
     return {
         ...evento,
         faixa_etaria: evento.faixa_etaria ?? null,
@@ -130,7 +133,7 @@ async function enriquecerEventosComDatasDoBanco<T extends { id: string }>(
             throw error;
         }
 
-        const encontros = Array.isArray(data) ? data : [];
+        const encontros = (Array.isArray(data) ? data : []) as Pick<Encontro, "evento_id" | "data_inicio" | "data_fim">[];
 
         if (encontros.length === 0 && permitirFallback) {
             return enriquecerEventosComDatas(eventos);
@@ -138,7 +141,7 @@ async function enriquecerEventosComDatasDoBanco<T extends { id: string }>(
 
         return eventos.map((evento) => {
             const encontrosDoEvento = encontros.filter(
-                (encontro: any) => encontro.evento_id === evento.id
+                (encontro) => encontro.evento_id === evento.id
             );
 
             const primeiro = encontrosDoEvento[0];
@@ -177,8 +180,8 @@ function lerEventosFallback() {
         }));
 
     const eventosDoArquivo = lerEventosJsonFallback()
-        .filter((evento: any) => evento.visibilidade === "publico")
-        .map((evento: any, index: number) => ({
+        .filter((evento) => evento.visibilidade === "publico")
+        .map((evento, index) => ({
             id: evento.id,
             slug: evento.slug ?? evento.id,
             titulo: evento.titulo,
@@ -197,7 +200,7 @@ function lerEventosFallback() {
             data_fim: null,
         }));
 
-    const mapa = new Map<string, any>();
+    const mapa = new Map<string, Evento>();
 
     [...eventosDeGrupos, ...eventosDoArquivo].forEach((evento) => {
         if (!mapa.has(evento.id)) {
@@ -222,7 +225,7 @@ export async function getEventos() {
             throw criarErroDeConsulta("Erro ao buscar eventos", error);
         }
 
-        const eventos = data || [];
+        const eventos = (data ?? []) as Evento[];
 
         if (eventos.length === 0) {
             throw criarErroDeConsulta(
@@ -246,7 +249,7 @@ export async function getEventos() {
 export async function getEventosStrict() {
     const { data, error } = await supabase.from("eventos").select("*").order("ordem", { ascending: true });
     if (error) throw criarErroDeConsulta("Erro ao buscar eventos públicos", error);
-    const eventos = data ?? [];
+    const eventos = (data ?? []) as Evento[];
     if (eventos.length === 0) return [];
     return (await enriquecerEventosComDatasDoBanco(eventos, supabase, false)).map(normalizarEventoSerializable);
 }
