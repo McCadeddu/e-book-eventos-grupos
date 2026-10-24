@@ -2,6 +2,7 @@ import { salvarCadastro, enviarAcaoAdmin, type SetorCadastro } from "../../lib/a
 import FormularioGrupo from "../../components/admin/FormularioGrupo";
 import FormularioEvento from "../../components/admin/FormularioEvento";
 import FormularioEncontro from "../../components/admin/FormularioEncontro";
+import CadastrosInativos from "../../components/admin/CadastrosInativos";
 import { baseButtonStyle } from "../../components/admin/formulario-ui";
 import type { EventoAdmin, ResultadoAcao } from "../../lib/admin-types";
 import type { GetServerSideProps } from "next";
@@ -32,6 +33,8 @@ type Props = {
     grupos: Grupo[];
     encontros: Encontro[];
     eventos: EventoAdmin[];
+    gruposInativos: Grupo[];
+    eventosInativos: EventoAdmin[];
 };
 
 function labelData(encontro: Encontro): string {
@@ -215,7 +218,7 @@ function ItemEvento({
     );
 }
 
-export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros, eventos }: Props) {
+export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros, eventos, gruposInativos = [], eventosInativos = [] }: Props) {
     const [mudandoAno, setMudandoAno] = useState(false);
     const [executandoAcao, setExecutandoAcao] = useState(false);
     const acaoEmCurso = useRef(false);
@@ -327,6 +330,14 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
             acaoEmCurso.current = false;
             setExecutandoAcao(false);
         }
+    }
+
+    async function alterarAtivacao(setor: "grupos" | "eventos", id: string, ativo: boolean) {
+        if (!ativo && !confirm(`Desativar este cadastro somente em ${ano}? Seus conteúdos e encontros serão preservados. As outras edições não serão alteradas.`)) return;
+        await executarAcao(`/api/${setor}`, "PUT", { id, anoPastoral: ano, ativo }, async () => {
+            fecharFormularios();
+            await recarregar();
+        });
     }
 
     async function excluirEncontro(encontro: Encontro, ancora: string) {
@@ -534,12 +545,14 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                 </select>
                 <p role="status">{mudandoAno ? "Carregando agenda..." : `${listaEncontros.length} encontro(s) em ${ano}.`}</p>
                 {encontros.length === 0 && <p>Agenda sem datas em {ano}. Abra um grupo, evento ou retiro e use “Novo encontro” para começar.</p>}
-                <p>As datas são separadas por ano. Os textos, objetivos, equipes e a visibilidade dos eventos pertencem ao ano selecionado. Slugs, ordem e exclusão de cadastros são globais.</p>
+                <p>As datas são separadas por ano. Os textos, objetivos, equipes, a visibilidade dos eventos e a ativação dos cadastros pertencem ao ano selecionado. Use “Desativar em {ano}” para retirar um cadastro desta edição preservando seus encontros. Slugs, ordem e exclusão de cadastros são globais.</p>
                 <p>O livro publicado continua em {anoPublicado}. <a href={`/livro/edicao/${ano}/calendario`} target="_blank" rel="noreferrer">Ver calendário de {ano}</a></p>
             </section>
             <p role="status" aria-live="polite">{executandoAcao ? "Concluindo ação..." : ""}</p>
             {erroAcao && <p role="alert" style={{ color: "#8b0000" }}>{erroAcao}</p>}
             <fieldset disabled={mudandoAno || executandoAcao} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
+            <CadastrosInativos ano={ano} grupos={gruposInativos} eventos={eventosInativos}
+                onAtivar={(setor, id) => alterarAtivacao(setor, id, true)} />
             <div style={{ display: "flex", gap: "2rem" }}>
                 <aside style={{ width: "220px", position: "sticky", top: "2rem" }}>
                     <h3>Grupos</h3>
@@ -754,7 +767,10 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                                                 await executarAcao("/api/grupos", "DELETE", { grupoId: grupo.id }, () => recarregar());
                                             }}
                                         >
-                                            🗑 Excluir grupo
+                                            🗑 Excluir de todos os anos
+                                        </SecondaryButton>
+                                        <SecondaryButton onClick={() => alterarAtivacao("grupos", grupo.id, false)}>
+                                            Desativar em {ano}
                                         </SecondaryButton>
                                     </div>
                                 </div>
@@ -1048,7 +1064,10 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                                                 await executarAcao("/api/eventos", "DELETE", { id: evento.id }, () => recarregar());
                                             }}
                                         >
-                                            🗑 Excluir evento
+                                            🗑 Excluir de todos os anos
+                                        </SecondaryButton>
+                                        <SecondaryButton onClick={() => alterarAtivacao("eventos", evento.id, false)}>
+                                            Desativar em {ano}
                                         </SecondaryButton>
                                     </div>
                                 </div>

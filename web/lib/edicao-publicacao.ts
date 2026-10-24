@@ -34,7 +34,8 @@ function valorOuOriginal<T>(overrideValue: T | null | undefined, originalValue: 
 
 export function aplicarGrupoEdicao(
     grupos: Grupo[],
-    overrides: GrupoEdicao[]
+    overrides: GrupoEdicao[],
+    incluirInativos = false
 ) {
     const overridesMap = new Map(overrides.map((item) => [item.grupo_id, item]));
 
@@ -42,7 +43,7 @@ export function aplicarGrupoEdicao(
         .map((grupo) => {
             const override = overridesMap.get(grupo.id);
 
-            if (override?.ativo === false) {
+            if (override?.ativo === false && !incluirInativos) {
                 return null;
             }
 
@@ -70,7 +71,8 @@ export function aplicarGrupoEdicao(
 
 export function aplicarEventoEdicao(
     eventos: Evento[],
-    overrides: EventoEdicao[]
+    overrides: EventoEdicao[],
+    incluirInativos = false
 ) {
     const overridesMap = new Map(overrides.map((item) => [item.evento_id, item]));
 
@@ -78,7 +80,7 @@ export function aplicarEventoEdicao(
         .map((evento) => {
             const override = overridesMap.get(evento.id);
 
-            if (override?.ativo === false) {
+            if (override?.ativo === false && !incluirInativos) {
                 return null;
             }
 

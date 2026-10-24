@@ -754,3 +754,67 @@ test("version 3 backups retain annual editorial content as well as base records"
     assert.equal(record.versao,3); assert.equal(record.payload.grupo_edicoes[0].objetivo_ano,"Annual");
     assert.equal(record.payload.ebook_edicoes[0].ano,2027);
 });
+
+test("annual deactivation hides chapters and meetings, preserves inactive content and can be reversed without changing another year", async () => {
+    const rows = {
+        grupos: [{ id: "g", slug: "grupo", nome: "Base" }],
+        eventos: [{ id: "e", titulo: "Base", visibilidade: "publico" }],
+        grupo_edicoes: [{ grupo_id: "g", ano: 2027, nome: "Nome 2027", ativo: true }],
+        evento_edicoes: [{ evento_id: "e", ano: 2027, titulo: "Evento 2027", ativo: true }],
+        encontros: [
+            { id: "m", grupo_id: "g", data_inicio: "2027-03-01", visibilidade: "publico" },
+            { id: "v", evento_id: "e", data_inicio: "2027-04-01", visibilidade: "publico" },
+        ],
+    };
+    const helper = load("lib/conteudo-anual.ts", {
+        "./supabaseAdmin": { getSupabaseAdminClient: () => annualClient(rows) },
+        "./ebook-config": { pertenceAoAno: (date, year) => date?.startsWith(year + "-") },
+    });
+    const before = JSON.stringify(await helper.carregarConteudoAnual(2026));
+    const dates = JSON.stringify(rows.encontros);
+    let backups = 0, revalidations = 0;
+    const api = load("lib/admin-edicoes.ts", {
+        "./adminBackup": { salvarBackupAutomatico: async () => { backups++; return { sucesso: true }; } },
+        "./revalidacao-anual": { revalidarEdicaoAnual: async (_, year) => { assert.equal(year, 2027); revalidations++; return true; } },
+    });
+    const client = { from() { throw Error("Global mutation attempted"); }, async rpc(name, args) {
+        assert.equal(name, "pascom_salvar_cadastro_anual"); assert.equal(args.p_ano, 2027);
+        assert.equal(args.p_criar, false); assert.deepEqual(Object.keys(args.p_dados).sort(), ["ativo", "id"]);
+        const group = args.p_setor === "grupos";
+        const table = group ? rows.grupo_edicoes : rows.evento_edicoes;
+        table.find(r => r[group ? "grupo_id" : "evento_id"] === args.p_dados.id).ativo = args.p_dados.ativo;
+        return { data: { sucesso: true }, error: null };
+    } };
+    for (const ativo of [false, true]) {
+        for (const setor of ["grupos", "eventos"]) {
+            const res = apiResponse();
+            await api.salvarCadastroAnualApi(setor, { method: "PUT", body: { id: setor === "grupos" ? "g" : "e", anoPastoral: 2027, ativo } }, res, client);
+            assert.equal(res.code, 200);
+        }
+        const admin = await helper.carregarConteudoAnual(2027);
+        assert.equal(admin.grupos.length, ativo ? 1 : 0); assert.equal(admin.eventos.length, ativo ? 1 : 0);
+        assert.equal(admin.gruposInativos.length, ativo ? 0 : 1);
+        assert.equal(admin.eventosInativos.length, ativo ? 0 : 1);
+        if (!ativo) { assert.equal(admin.gruposInativos[0].nome, "Nome 2027"); assert.equal(admin.eventosInativos[0].titulo, "Evento 2027"); }
+        assert.equal(admin.encontros.length, 2);
+        const publico = helper.filtrarConteudoPublico(2027, admin);
+        assert.equal(publico.encontros.length, ativo ? 2 : 0);
+        assert.equal(Object.hasOwn(publico, "gruposInativos"), false);
+        assert.equal(Object.hasOwn(publico, "eventosInativos"), false);
+        assert.equal(JSON.stringify(await helper.carregarConteudoAnual(2026)), before);
+        assert.equal(JSON.stringify(rows.encontros), dates);
+    }
+    assert.equal(backups, 4); assert.equal(revalidations, 4);
+});
+
+test("inactive registry uses annual names and accessible reactivation actions for both sectors", () => {
+    const React = require("react");
+    const { renderToStaticMarkup } = require("react-dom/server");
+    const component = load("components/admin/CadastrosInativos.tsx").default;
+    const html = renderToStaticMarkup(React.createElement(component, { ano: 2027,
+        grupos: [{ id: "g", nome: "Grupo anual" }], eventos: [{ id: "e", titulo: "Retiro anual" }], onAtivar: async () => {} }));
+    assert.ok(html.includes("Cadastros inativos em 2027 (2)"));
+    assert.ok(html.includes('aria-label="Reativar Grupo anual em 2027"'));
+    assert.ok(html.includes('aria-label="Reativar Retiro anual em 2027"'));
+    assert.equal((html.match(/<button/g) || []).length, 2);
+});

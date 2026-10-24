@@ -18,9 +18,18 @@ export async function carregarConteudoAnual(ano: number) {
     if (resultados.some((r) => r.error)) {
         throw new Error("Não foi possível carregar a edição anual. Confira a infraestrutura do ano selecionado.");
     }
+    const grupos = (resultados[0].data ?? []) as Grupo[];
+    const eventos = (resultados[1].data ?? []) as Evento[];
+    const gruposEdicao = (resultados[2].data ?? []) as GrupoEdicao[];
+    const eventosEdicao = (resultados[3].data ?? []) as EventoEdicao[];
+    const gruposInativosIds = new Set(gruposEdicao.filter(e => e.ativo === false).map(e => e.grupo_id));
+    const eventosInativosIds = new Set(eventosEdicao.filter(e => e.ativo === false).map(e => e.evento_id));
     return {
-        grupos: aplicarGrupoEdicao((resultados[0].data ?? []) as Grupo[], (resultados[2].data ?? []) as GrupoEdicao[]),
-        eventos: aplicarEventoEdicao((resultados[1].data ?? []) as Evento[], (resultados[3].data ?? []) as EventoEdicao[]),
+        grupos: aplicarGrupoEdicao(grupos, gruposEdicao),
+        eventos: aplicarEventoEdicao(eventos, eventosEdicao),
+        // Keep inactive editorial content available only to the authenticated editor.
+        gruposInativos: aplicarGrupoEdicao(grupos.filter(g => gruposInativosIds.has(g.id)), gruposEdicao, true),
+        eventosInativos: aplicarEventoEdicao(eventos.filter(e => eventosInativosIds.has(e.id)), eventosEdicao, true),
         encontros: (resultados[4].data ?? []) as Encontro[],
     };
 }

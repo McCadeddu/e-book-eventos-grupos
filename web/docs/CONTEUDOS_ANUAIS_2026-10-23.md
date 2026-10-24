@@ -8,6 +8,9 @@ objetivo, equipe, convite e participação/visibilidade dos eventos são gravado
 na edição selecionada. Limpar um campo conserva o valor vazio nessa edição.
 As datas continuam exclusivamente nos encontros, filtrados pelo ano de início.
 
+Atualização em 24/10: os controles de desativação e reativação por ano estão
+descritos em [ATIVACAO_ANUAL_2026-10-24.md](ATIVACAO_ANUAL_2026-10-24.md).
+
 Identidade, slug e ordem continuam globais. Excluir um grupo ou evento continua
 sendo uma operação global, explicitamente indicada na confirmação. A desativação
 anual é suportada nos dados, mas ainda não possui um controle próprio na interface.
