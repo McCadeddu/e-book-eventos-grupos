@@ -24,6 +24,8 @@ function load(relativePath, mocks = {}, globals = {}) {
         crypto: webcrypto, atob, btoa, URLSearchParams,
         require(id) {
             if (id in mocks) return mocks[id];
+            // Next.js compiles CSS Modules; data-only tests need only opaque class names.
+            if (id.endsWith(".module.css")) return { default: new Proxy({}, { get: (_, name) => String(name) }) };
             if (id.startsWith("@/")) {
                 const file = [id.slice(2) + ".ts", id.slice(2) + ".tsx"].find((name) => fs.existsSync(path.join(root, name)));
                 return load(file, mocks);

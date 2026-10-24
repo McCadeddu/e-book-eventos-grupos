@@ -26,6 +26,7 @@ import {
     arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import styles from "../../styles/admin-agenda.module.css";
 
 type Props = {
     ano: number;
@@ -73,14 +74,10 @@ function SecondaryButton({
     return (
         <button
             type="button"
+            className={styles.acaoSecundaria}
             onClick={onClick}
             style={{
-                background: "none",
-                border: "none",
-                padding: 0,
                 color,
-                cursor: "pointer",
-                fontSize: "0.95rem",
             }}
         >
             {children}
@@ -264,6 +261,17 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
         } else {
             setGruposAbertos((atuais) => Array.from(new Set([...atuais, encontro.grupo_id])));
         }
+    }
+
+    function navegarParaCadastro(destino: string) {
+        const grupo = ordemGrupos.find(item => `grupo-${item.slug}` === destino);
+        const evento = ordemEventos.find(item => `evento-${item.id}` === destino);
+        if (!grupo && !evento) return;
+        if (grupo) setGruposAbertos(atuais => atuais.includes(grupo.id) ? atuais : [...atuais, grupo.id]);
+        if (evento) setEventosAbertos(atuais => atuais.includes(evento.id) ? atuais : [...atuais, evento.id]);
+        const secao = document.getElementById(destino);
+        secao?.scrollIntoView({ behavior: "smooth", block: "start" });
+        secao?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
     }
 
     useEffect(() => {
@@ -533,7 +541,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
     const atualizarEncontro = (payload: Record<string, unknown>) => salvarSetor("encontros", "PUT", payload);
 
     return (
-        <main style={{ padding: "2.5rem", maxWidth: "1200px", margin: "0 auto" }}>
+        <main className={styles.main}>
             <section style={{ marginBottom: "1.5rem", padding: "1.25rem", background: "#edf7f8", borderRadius: "12px" }}>
                 <h1 style={{ marginTop: 0 }}>Agenda pastoral {ano}</h1>
                 <label htmlFor="ano-pastoral">Ano de trabalho </label>
@@ -562,8 +570,20 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                 gruposInativos={gruposInativos} eventosInativos={eventosInativos} onEditar={abrirEdicaoEncontro} />
             <CadastrosInativos ano={ano} grupos={gruposInativos} eventos={eventosInativos}
                 onAtivar={(setor, id) => alterarAtivacao(setor, id, true)} />
-            <div style={{ display: "flex", gap: "2rem" }}>
-                <aside style={{ width: "220px", position: "sticky", top: "2rem" }}>
+            <nav className={styles.navMobile} aria-label="Navegação da agenda no celular">
+                <label htmlFor="agenda-ir-para">Ir direto para um grupo ou evento</label>
+                <select id="agenda-ir-para" value="" onChange={event => navegarParaCadastro(event.target.value)}>
+                    <option value="">Escolha o cadastro</option>
+                    <optgroup label="Grupos">
+                        {ordemGrupos.map(grupo => <option key={grupo.id} value={`grupo-${grupo.slug}`}>{grupo.nome}</option>)}
+                    </optgroup>
+                    <optgroup label="Eventos e retiros">
+                        {ordemEventos.map(evento => <option key={evento.id} value={`evento-${evento.id}`}>{evento.titulo}</option>)}
+                    </optgroup>
+                </select>
+            </nav>
+            <div className={styles.layout}>
+                <aside className={styles.sidebar}>
                     <h3>Grupos</h3>
                     <div style={{ marginBottom: "1rem" }}>
                         {!modoEdicao ? (
@@ -630,7 +650,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                     )}
                 </aside>
 
-                <div style={{ flex: 1 }}>
+                <div className={styles.conteudo}>
                     <div
                         style={{
                             marginBottom: "1.5rem",
@@ -697,16 +717,10 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                                     boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
                                 }}
                             >
-                                <div
-                                    style={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        gap: "1rem",
-                                        alignItems: "center",
-                                    }}
-                                >
+                                <div className={styles.cabecalhoCartao}>
                                     <button
                                         type="button"
+                                        className={styles.tituloCartao}
                                         onClick={() => alternarGrupo(grupo.id)}
                                         style={{
                                             background: "transparent",
@@ -714,7 +728,6 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                                             padding: 0,
                                             textAlign: "left",
                                             cursor: "pointer",
-                                            flex: 1,
                                         }}
                                     >
                                         <h2
@@ -738,14 +751,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                                         </div>
                                     </button>
 
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "1rem",
-                                            flexWrap: "wrap",
-                                        }}
-                                    >
+                                    <div className={styles.acoesCartao}>
                                         <SecondaryButton
                                             onClick={() => moverGrupo(grupo.id, -1)}
                                         >
@@ -871,15 +877,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                                                             </ul>
                                                         )}
 
-                                                        <div
-                                                            style={{
-                                                                marginTop: "0.6rem",
-                                                                display: "flex",
-                                                                gap: "1rem",
-                                                                alignItems: "center",
-                                                                flexWrap: "wrap",
-                                                            }}
-                                                        >
+                                                        <div className={styles.acoesEncontro}>
                                                             <SecondaryButton
                                                                 onClick={() => abrirEdicaoEncontro(encontro)}
                                                             >
@@ -973,16 +971,10 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                                     boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
                                 }}
                             >
-                                <div
-                                    style={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        gap: "1rem",
-                                        alignItems: "center",
-                                    }}
-                                >
+                                <div className={styles.cabecalhoCartao}>
                                     <button
                                         type="button"
+                                        className={styles.tituloCartao}
                                         onClick={() => alternarEvento(evento.id)}
                                         style={{
                                             background: "transparent",
@@ -990,7 +982,6 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                                             padding: 0,
                                             textAlign: "left",
                                             cursor: "pointer",
-                                            flex: 1,
                                         }}
                                     >
                                         <h2
@@ -1031,14 +1022,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                                         </div>
                                     </button>
 
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            gap: "1rem",
-                                            alignItems: "center",
-                                            flexWrap: "wrap",
-                                        }}
-                                    >
+                                    <div className={styles.acoesCartao}>
                                         <BotaoVisibilidade
                                             publico={evento.visibilidade === "publico"}
                                             onClick={() => alternarVisibilidadeEvento(evento)}
@@ -1172,15 +1156,7 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
                                                             </div>
                                                         )}
 
-                                                        <div
-                                                            style={{
-                                                                marginTop: "0.6rem",
-                                                                display: "flex",
-                                                                gap: "1rem",
-                                                                alignItems: "center",
-                                                                flexWrap: "wrap",
-                                                            }}
-                                                        >
+                                                        <div className={styles.acoesEncontro}>
                                                             <SecondaryButton
                                                                 onClick={() => abrirEdicaoEncontro(encontro)}
                                                             >
