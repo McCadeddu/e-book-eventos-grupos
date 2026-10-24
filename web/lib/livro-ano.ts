@@ -1,11 +1,12 @@
 import { carregarConteudoPublicoAnual } from "./conteudo-anual";
 import { carregarEbookPorAno } from "./ebook-config";
+import { nivelPermitidoNoAnual } from "./calendario-regras";
 
 export async function carregarCalendarioLivroPorAno(ano: number) {
     const ebook = await carregarEbookPorAno(ano);
     if (!ebook) return null;
     const conteudo = await carregarConteudoPublicoAnual(ano);
-    const encontros = conteudo.encontros.filter(e => !e.evento_id || (e.nivel === "evento" && e.mostrar_no_anual === true));
+    const encontros = conteudo.encontros.filter(nivelPermitidoNoAnual);
     const eventos = conteudo.eventos.filter(e => encontros.some(m => m.evento_id === e.id));
     return { ano, ebook, grupos: conteudo.grupos, encontros, eventos };
 }

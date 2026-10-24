@@ -3,6 +3,7 @@ import FormularioGrupo from "../../components/admin/FormularioGrupo";
 import FormularioEvento from "../../components/admin/FormularioEvento";
 import FormularioEncontro from "../../components/admin/FormularioEncontro";
 import CadastrosInativos from "../../components/admin/CadastrosInativos";
+import AgendaPlanejamento from "../../components/admin/AgendaPlanejamento";
 import { baseButtonStyle } from "../../components/admin/formulario-ui";
 import type { EventoAdmin, ResultadoAcao } from "../../lib/admin-types";
 import type { GetServerSideProps } from "next";
@@ -260,11 +261,17 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
         setEditandoEncontroId(encontro.id);
         if (encontro.evento_id) {
             setEventosAbertos((atuais) => Array.from(new Set([...atuais, encontro.evento_id!])));
-            document.getElementById(`evento-${encontro.evento_id}`)?.scrollIntoView({ behavior: "smooth" });
         } else {
             setGruposAbertos((atuais) => Array.from(new Set([...atuais, encontro.grupo_id])));
         }
     }
+
+    useEffect(() => {
+        if (!editandoEncontroId) return;
+        const formulario = document.querySelector<HTMLFormElement>('form[data-setor="encontro"]');
+        formulario?.scrollIntoView({ behavior: "smooth", block: "start" });
+        formulario?.querySelector<HTMLElement>('input, select, textarea')?.focus({ preventScroll: true });
+    }, [editandoEncontroId]);
 
     async function cancelarFormulario() {
         fecharFormularios();
@@ -551,6 +558,8 @@ export default function AdminGeral({ ano, anos, anoPublicado, grupos, encontros,
             <p role="status" aria-live="polite">{executandoAcao ? "Concluindo ação..." : ""}</p>
             {erroAcao && <p role="alert" style={{ color: "#8b0000" }}>{erroAcao}</p>}
             <fieldset disabled={mudandoAno || executandoAcao} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
+            <AgendaPlanejamento key={ano} ano={ano} encontros={listaEncontros} grupos={ordemGrupos} eventos={ordemEventos}
+                gruposInativos={gruposInativos} eventosInativos={eventosInativos} onEditar={abrirEdicaoEncontro} />
             <CadastrosInativos ano={ano} grupos={gruposInativos} eventos={eventosInativos}
                 onAtivar={(setor, id) => alterarAtivacao(setor, id, true)} />
             <div style={{ display: "flex", gap: "2rem" }}>

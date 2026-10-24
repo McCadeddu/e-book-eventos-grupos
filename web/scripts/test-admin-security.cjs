@@ -883,3 +883,60 @@ test("organization meetings cannot enter the annual calendar through a partial u
         assert.deepEqual(years, [2027]); assert.equal(res.revalidations.length, 0);
     }
 });
+
+test("planning overview isolates the year, sorts unique meetings and respects inactive and internal owners", () => {
+    const { montarAgendaPlanejamento } = load("lib/agenda-planejamento.ts");
+    const shared = { id: "shared", evento_id: "e", data_inicio: "2027-04-01", nivel: "evento", mostrar_no_anual: true, visibilidade: "publico" };
+    const meetings = [shared, shared,
+        { id: "group", grupo_id: "g", data_inicio: "2027-03-02", visibilidade: "publico" },
+        { id: "org", evento_id: "e", data_inicio: "2027-04-02", nivel: "organizacao", mostrar_no_anual: true, visibilidade: "publico" },
+        { id: "internal", evento_id: "hidden", data_inicio: "2027-03-03", nivel: "evento", mostrar_no_anual: true, visibilidade: "publico" },
+        { id: "inactive", grupo_id: "off", data_inicio: "2027-03-04", visibilidade: "publico" },
+        { id: "private", grupo_id: "g", data_inicio: "2027-03-05", visibilidade: "interno" },
+        { id: "orphan", grupo_id: "missing", data_inicio: "2027-03-06", visibilidade: "publico" },
+        { id: "old", grupo_id: "g", data_inicio: "2026-03-01", visibilidade: "publico" },
+        { id: "invalid", grupo_id: "g", data_inicio: "2027-02-29", visibilidade: "publico" },
+    ];
+    const snapshot = JSON.stringify(meetings);
+    const items = montarAgendaPlanejamento(2027, meetings, [{ id: "g", nome: "Grupo" }],
+        [{ id: "e", titulo: "Retiro", visibilidade: "publico", todos_os_grupos: true }, { id: "hidden", titulo: "Interno", visibilidade: "interno" }],
+        [{ id: "off", nome: "Nome da edição inativa" }], []);
+    assert.equal(items.length, 7); assert.equal(items[0].encontro.id, "group");
+    assert.equal(items.filter(i => i.noAnual).length, 2);
+    assert.equal(items.find(i => i.encontro.id === "org").situacao, "Somente nos capítulos");
+    assert.equal(items.find(i => i.encontro.id === "internal").situacao, "Evento interno");
+    assert.equal(items.find(i => i.encontro.id === "private").situacao, "Encontro interno");
+    const inactive = items.find(i => i.encontro.id === "inactive");
+    assert.equal(inactive.responsavel, "Nome da edição inativa"); assert.equal(inactive.podeEditar, false);
+    assert.equal(items.find(i => i.encontro.id === "orphan").podeEditar, false);
+    assert.equal(JSON.stringify(meetings), snapshot);
+});
+
+test("planning filters combine accent-insensitive terms, starting month and actual annual visibility without mutating the source", () => {
+    const { montarAgendaPlanejamento, filtrarAgendaPlanejamento } = load("lib/agenda-planejamento.ts");
+    const items = montarAgendaPlanejamento(2027, [
+        { id: "a", grupo_id: "g", data_inicio: "2027-03-10", titulo: "Celebração", local: "Betânia", visibilidade: "publico" },
+        { id: "b", grupo_id: "g", data_inicio: "2027-04-10", titulo: "Reunião", local: "Betânia", visibilidade: "interno" },
+        { id: "c", grupo_id: "g", data_inicio: "2027-12-31", data_fim: "2028-01-02", titulo: "Virada", visibilidade: "publico" },
+    ], [{ id: "g", nome: "GimVi Jovens" }], [], [], []);
+    assert.equal(filtrarAgendaPlanejamento(items, "  celebracao  betania ", "03", "anual")[0].encontro.id, "a");
+    assert.equal(filtrarAgendaPlanejamento(items, "JOVENS", "04", "fora")[0].encontro.id, "b");
+    assert.equal(filtrarAgendaPlanejamento(items, "", "12", "")[0].encontro.id, "c");
+    assert.equal(filtrarAgendaPlanejamento(items, "inexistente", "", "").length, 0);
+    assert.equal(filtrarAgendaPlanejamento(items, "", "", "").length, 3);
+    assert.equal(items.length, 3);
+});
+
+test("planning overview renders accessible filters, one edit action per record and an honest empty year", () => {
+    const React = require("react"), { renderToStaticMarkup } = require("react-dom/server");
+    const Component = load("components/admin/AgendaPlanejamento.tsx").default;
+    const common = { ano: 2027, grupos: [{ id: "g", nome: "Grupo anual" }], eventos: [], gruposInativos: [], eventosInativos: [], onEditar() {} };
+    const html = renderToStaticMarkup(React.createElement(Component, { ...common, encontros: [
+        { id: "a", grupo_id: "g", data_inicio: "2027-03-10", titulo: "Título <seguro>", visibilidade: "publico" },
+    ] }));
+    for (const id of ["agenda-busca", "agenda-mes", "agenda-situacao"]) assert.ok(html.includes(`for="${id}"`));
+    assert.ok(html.includes("Limpar filtros")); assert.ok(html.includes("Editar encontro"));
+    assert.ok(html.includes("Título &lt;seguro&gt;")); assert.ok(!html.includes("<seguro>"));
+    const empty = renderToStaticMarkup(React.createElement(Component, { ...common, encontros: [] }));
+    assert.ok(empty.includes("Nenhum encontro cadastrado em 2027")); assert.ok(!empty.includes("Editar encontro"));
+});
