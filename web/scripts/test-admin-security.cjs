@@ -940,3 +940,12 @@ test("planning overview renders accessible filters, one edit action per record a
     const empty = renderToStaticMarkup(React.createElement(Component, { ...common, encontros: [] }));
     assert.ok(empty.includes("Nenhum encontro cadastrado em 2027")); assert.ok(!empty.includes("Editar encontro"));
 });
+
+test("planning orders the same day by actual starting time and keeps free-form times after timed meetings", () => {
+    const { montarAgendaPlanejamento } = load("lib/agenda-planejamento.ts");
+    const meetings = ["14h00 - 18h00", "9h30", "Após a missa", "9:00", "08h59", "25h00"].map((horario, i) => ({
+        id: String(i), grupo_id: "g", data_inicio: "2027-03-01", horario, visibilidade: "publico",
+    }));
+    const items = montarAgendaPlanejamento(2027, meetings, [{ id: "g", nome: "Grupo" }], [], [], []);
+    assert.deepEqual(Array.from(items, i => i.encontro.horario), ["08h59", "9:00", "9h30", "14h00 - 18h00", "Após a missa", "25h00"]);
+});

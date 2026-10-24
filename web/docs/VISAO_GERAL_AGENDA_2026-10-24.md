@@ -1,7 +1,7 @@
 # Visão geral administrativa dos encontros
 
 No painel anual, a seção expansível “Visão geral dos encontros de ANO” reúne
-os encontros em ordem de data, uma vez por ID, incluindo encontros compartilhados.
+os encontros em ordem de data e horário inicial, uma vez por ID, incluindo encontros compartilhados.
 Não acrescenta formulários, consultas ao banco ou rotas de escrita.
 
 É possível combinar busca (nome do responsável, título, local e horário), mês
@@ -21,7 +21,11 @@ sem recarregar a página ou perder os filtros. A lista não oferece ações de
 exclusão ou troca de visibilidade. Quando o ano está vazio, informa isso sem
 substituir os registros por datas de outra edição.
 
-Validação: 40 testes automatizados, TypeScript, lint e build de 68 páginas.
+Horários como 9h00 e 14:30 são ordenados pelo horário real, sem comparar apenas
+o texto. Horários livres, como “Após a missa”, ficam depois dos horários definidos
+na mesma data, preservando o conteúdo cadastrado.
+
+Validação: 41 testes automatizados, TypeScript, lint e build de 68 páginas.
 Testes incluem deduplicação, ordenação, filtros combinados, acentos, ano correto,
 campos escapados e diferenciação de responsáveis internos/inativos.
 Na interface local, 2026 mostrou 129 encontros; o filtro anual mostrou 120,

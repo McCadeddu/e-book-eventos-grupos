@@ -17,6 +17,13 @@ function normalizar(texto: string) {
     return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
+function minutosDoHorario(horario?: string) {
+    const partes = horario?.match(/^\s*(\d{1,2})\s*(?:h|:)\s*(\d{1,2})?/i);
+    if (!partes) return 1440;
+    const horas = Number(partes[1]), minutos = Number(partes[2] || 0);
+    return horas < 24 && minutos < 60 ? horas * 60 + minutos : 1440;
+}
+
 /** One row per meeting, including internal records and inactive owners, for authenticated use. */
 export function montarAgendaPlanejamento(ano: number, encontros: Encontro[], grupos: Grupo[], eventos: EventoAdmin[], gruposInativos: Grupo[], eventosInativos: EventoAdmin[]): ItemPlanejamento[] {
     const gruposAtivos = new Map(grupos.map(g => [g.id, g]));
@@ -39,7 +46,7 @@ export function montarAgendaPlanejamento(ano: number, encontros: Encontro[], gru
         return { encontro, responsavel, situacao, noAnual, podeEditar: ativo,
             busca: normalizar([responsavel, encontro.titulo, encontro.local, encontro.horario].filter(Boolean).join(" ")) };
     }).sort((a,b) => a.encontro.data_inicio.localeCompare(b.encontro.data_inicio)
-        || (a.encontro.horario || "").localeCompare(b.encontro.horario || "")
+        || minutosDoHorario(a.encontro.horario) - minutosDoHorario(b.encontro.horario)
         || a.encontro.id.localeCompare(b.encontro.id));
 }
 
