@@ -1,0 +1,46 @@
+.painel h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.atalhos {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.atalhos li + li {
+  margin-top: 0.5rem;
+}
+
+.atalhos a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #dce5e7;
+  border-radius: 8px;
+  background: #f5f8f9;
+  color: #274d58;
+  text-decoration: none;
+  line-height: 1.4;
+}
+
+.atalhos a:hover {
+  background: #e9f3f4;
+  border-color: #548287;
+}
+
+.atalhos a:focus-visible {
+  outline: 3px solid #0b5c6b;
+  outline-offset: 3px;
+}
+
+.sair {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 44px;
+}

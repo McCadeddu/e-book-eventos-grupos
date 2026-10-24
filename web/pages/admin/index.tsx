@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
+import IconeTrabalho from "../../components/admin/IconeTrabalho";
+import styles from "../../styles/admin-painel.module.css";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -11,8 +13,9 @@ export default function AdminDashboard() {
 
   return (
     <main
+      className={styles.painel}
       style={{
-        padding: "3rem",
+        padding: "clamp(1rem, 4vw, 3rem)",
         maxWidth: "900px",
         margin: "0 auto",
         background: "#f5f7f9",
@@ -31,6 +34,7 @@ export default function AdminDashboard() {
       <div style={{ marginBottom: "1.5rem" }}>
         <button
           type="button"
+          className={styles.sair}
           onClick={sair}
           style={{
             background: "transparent",
@@ -40,7 +44,7 @@ export default function AdminDashboard() {
             cursor: "pointer",
           }}
         >
-          Sair da area administrativa
+          <IconeTrabalho nome="sair" /> Sair da area administrativa
         </button>
       </div>
 
@@ -53,14 +57,14 @@ export default function AdminDashboard() {
           boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
         }}
       >
-        <h2 style={{ color: "#4bbbc8" }}>Producao pastoral</h2>
+        <h2 style={{ color: "#4bbbc8" }}><IconeTrabalho nome="producao" /> Producao pastoral</h2>
 
-        <ul>
+        <ul className={styles.atalhos}>
           <li>
-            <Link href="/admin/grupos">Gerir grupos e encontros</Link>
+            <Link href="/admin/grupos"><IconeTrabalho nome="grupos" /> Gerir grupos e encontros</Link>
           </li>
           <li>
-            <Link href="/admin/edicoes">Gerir edicoes do e-book</Link>
+            <Link href="/admin/edicoes"><IconeTrabalho nome="edicoes" /> Gerir edicoes do e-book</Link>
           </li>
         </ul>
       </section>
@@ -68,7 +72,7 @@ export default function AdminDashboard() {
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
           gap: "1.5rem",
           marginBottom: "2rem",
         }}
@@ -81,21 +85,23 @@ export default function AdminDashboard() {
             boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
           }}
         >
-          <h2 style={{ color: "#ff6136", marginTop: 0 }}>Publicacao atual</h2>
+          <h2 style={{ color: "#ff6136", marginTop: 0 }}><IconeTrabalho nome="livro" /> Publicacao atual</h2>
 
           <p style={{ color: "#3e4647", fontSize: "0.95rem" }}>
             Esta e a versao oficial em circulacao. E o conteudo certo para
             Instagram, WhatsApp e divulgacao publica.
           </p>
 
-          <ul>
+          <ul className={styles.atalhos}>
             <li>
               <Link href="/livro" target="_blank">
+                <IconeTrabalho nome="livro" />
                 Abrir e-book publicado
               </Link>
             </li>
             <li>
               <Link href="/admin/edicoes">
+                <IconeTrabalho nome="ano" />
                 Trocar o ano publicado
               </Link>
             </li>
@@ -110,31 +116,35 @@ export default function AdminDashboard() {
             boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
           }}
         >
-          <h2 style={{ color: "#548287", marginTop: 0 }}>Nova publicacao</h2>
+          <h2 style={{ color: "#548287", marginTop: 0 }}><IconeTrabalho nome="ano" /> Nova publicacao</h2>
 
           <p style={{ color: "#3e4647", fontSize: "0.95rem" }}>
             Aqui a equipe prepara o proximo ano com nova capa, novo icone e
             novos compromissos, sem mexer no link publico atual.
           </p>
 
-          <ul>
+          <ul className={styles.atalhos}>
             <li>
               <Link href="/admin/edicoes">
+                <IconeTrabalho nome="ano" />
                 Criar ou escolher o novo ano
               </Link>
             </li>
             <li>
               <Link href="/admin/preview">
+                <IconeTrabalho nome="previa" />
                 Ver rascunho em preparacao
               </Link>
             </li>
             <li>
               <Link href="/admin/grupos">
+                <IconeTrabalho nome="grupos" />
                 Trabalhar grupos, encontros e eventos
               </Link>
             </li>
             <li>
               <Link href="/admin/pdf">
+                <IconeTrabalho nome="pdf" />
                 Gerar PDFs
               </Link>
             </li>
@@ -150,7 +160,7 @@ export default function AdminDashboard() {
           boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
         }}
       >
-        <h2 style={{ color: "#548287" }}>Revisao e controle</h2>
+        <h2 style={{ color: "#548287" }}><IconeTrabalho nome="revisao" /> Revisao e controle</h2>
 
         <p style={{ fontSize: "0.95rem", color: "#3e4647" }}>
           Nesta fase, verifique se:
