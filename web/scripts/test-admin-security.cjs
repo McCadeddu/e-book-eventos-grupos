@@ -240,7 +240,7 @@ test("the 2027 editor cannot change or delete 2026 meetings and never stores yea
         { method: "DELETE", body: { id: "new" }, status: 200, date: "2027-05-01" },
     ]) {
         const calls = [];
-        const client = fakeClient("admin", calls, { encontros: scenario.date ? [{ data_inicio: scenario.date }] : [] });
+        const client = fakeClient("admin", calls, { ebook_edicoes: [{ ano: 2027 }], encontros: scenario.date ? [{ data_inicio: scenario.date }] : [] });
         const handler = load("pages/api/encontros.ts", {
             "./supabaseAdmin": { getSupabaseAdminClient: () => client },
             "../../lib/adminBackup": { salvarBackupAutomatico: async () => ({ sucesso: true }) },
@@ -260,7 +260,7 @@ test("all seven write APIs reject visitors and route authenticated changes throu
     for (const scenario of [
         { file: "grupos.ts", method: "POST", body: { nome: "Teste isolado", anoPastoral: 2027 } },
         { file: "eventos.ts", method: "POST", body: { titulo: "Teste isolado", anoPastoral: 2027 } },
-        { file: "encontros.ts", method: "POST", body: { tipo: "encontro_regular", dataInicio: "2026-01-01", grupoId: "g" } },
+        { file: "encontros.ts", method: "POST", body: { anoPastoral: 2026, tipo: "encontro_regular", dataInicio: "2026-01-01", grupoId: "g" }, data: { ebook_edicoes: [{ ano: 2026 }] } },
         { file: "grupos/ordenar.ts", method: "POST", body: { ordem: [{ id: "g", ordem: 1 }] } },
         { file: "grupos/mover.ts", method: "POST", body: { grupoId: "g", direcao: "baixo" }, data: { grupos: [{ id: "g", ordem: 1 }, { id: "h", ordem: 2 }] } },
         { file: "eventos/ordenar.ts", method: "POST", body: { ordem: [{ id: "e", ordem: 1 }] } },
@@ -817,4 +817,69 @@ test("inactive registry uses annual names and accessible reactivation actions fo
     assert.ok(html.includes('aria-label="Reativar Grupo anual em 2027"'));
     assert.ok(html.includes('aria-label="Reativar Retiro anual em 2027"'));
     assert.equal((html.match(/<button/g) || []).length, 2);
+});
+
+test("meeting APIs reject missing years, unknown columns and malformed flags before database access", async () => {
+    const cookie = "adminAuth=" + auth.createAdminSession("admin@example.org", secret);
+    for (const method of ["POST", "PUT", "DELETE"]) {
+        for (const body of [null, [], { id: "m" }, { id: "m", anoPastoral: [2027] },
+            { id: "m", anoPastoral: 2027, created_at: "2027-01-01" }]) {
+            const calls = [];
+            const handler = load("pages/api/encontros.ts", {
+                "./supabaseAdmin": { getSupabaseAdminClient: () => fakeClient("admin", calls, {}) },
+                "../../lib/adminBackup": {}, "../../lib/revalidacao-anual": {},
+            }).default;
+            const res = apiResponse();
+            await handler({ method, headers: { cookie }, body }, res);
+            assert.equal(res.code, 400); assert.equal(calls.length, 0);
+        }
+    }
+    const { validarPedidoEncontro } = load("lib/validacao-encontros.ts");
+    for (const extra of [{ mostrar_no_anual: "false" }, { nivel: "outro" }, { visibilidade: null }, { grupo_id: ["g"] }, { local: {} }]) {
+        assert.ok(validarPedidoEncontro("PUT", { id: "m", anoPastoral: 2027, ...extra }).erro);
+    }
+    const legacy = validarPedidoEncontro("PUT", { id: "m", anoPastoral: 2027, tipo: "tipo_historico", descricao: "", mostrar_no_anual: false });
+    assert.equal(legacy.dados.tipo, "tipo_historico"); assert.equal(legacy.dados.descricao, "");
+    assert.equal(legacy.dados.mostrar_no_anual, false);
+    assert.equal(Object.hasOwn(legacy.dados, "anoPastoral"), false);
+});
+
+test("meetings require a configured edition and fail closed when it cannot be read", async () => {
+    const cookie = "adminAuth=" + auth.createAdminSession("admin@example.org", secret);
+    for (const denied of [false, true]) {
+        const handler = load("pages/api/encontros.ts", {
+            "../../lib/adminBackup": {}, "../../lib/revalidacao-anual": {},
+            "./supabaseAdmin": { getSupabaseAdminClient: () => ({ from(table) {
+                assert.equal(table, "ebook_edicoes");
+                const q = { select() { return q; }, eq(_, year) { assert.equal(year, 2027); return q; },
+                    async maybeSingle() { return { data: null, error: denied ? { code: "42501" } : null }; } };
+                return q;
+            } }) },
+        }).default;
+        const res = apiResponse();
+        await handler({ method: "POST", headers: { cookie }, body: { anoPastoral: 2027, grupoId: "g", tipo: "encontro_regular", dataInicio: "2027-03-01" } }, res);
+        assert.equal(res.code, denied ? 503 : 400);
+    }
+});
+
+test("organization meetings cannot enter the annual calendar through a partial update and saved changes report cache or backup failures", async () => {
+    const cookie = "adminAuth=" + auth.createAdminSession("admin@example.org", secret);
+    for (const backupOk of [false, true]) {
+        const calls = [], years = [];
+        const handler = load("pages/api/encontros.ts", {
+            "./supabaseAdmin": { getSupabaseAdminClient: () => fakeClient("admin", calls, {
+                ebook_edicoes: [{ ano: 2027 }], encontros: [{ data_inicio: "2027-03-01", nivel: "organizacao" }],
+            }) },
+            "../../lib/adminBackup": { salvarBackupAutomatico: async () => ({ sucesso: backupOk }) },
+            "../../lib/revalidacao-anual": { revalidarEdicaoAnual: async (_, ano) => { years.push(ano); return false; } },
+        }).default;
+        const res = apiResponse();
+        await handler({ method: "PUT", headers: { cookie }, body: { id: "m", anoPastoral: 2027, grupo_id: null, evento_id: "e", mostrar_no_anual: true, titulo: "Organização" } }, res);
+        assert.equal(res.code, 200); assert.equal(res.body.sucesso, true);
+        assert.match(res.body.aviso, /salva/); assert.match(res.body.aviso, /páginas/);
+        assert.equal(res.body.aviso.includes("backup"), !backupOk);
+        const write = calls.find(c => c.mutations.some(m => m[0] === "update")).mutations[0][1];
+        assert.equal(write.mostrar_no_anual, false);
+        assert.deepEqual(years, [2027]); assert.equal(res.revalidations.length, 0);
+    }
 });
