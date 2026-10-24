@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { DadosDivulgacao } from "../../lib/admin-divulgacao";
+import { pendenciasDoEncontro } from "../../lib/alertas";
+import AvisosEncontro from "./AvisosEncontro";
 
 export default function CartaoEncontro({ encontro, grupo, voltarHref, acoes = true }: DadosDivulgacao & { acoes?: boolean }) {
   
@@ -31,6 +33,7 @@ export default function CartaoEncontro({ encontro, grupo, voltarHref, acoes = tr
         }}
       >
         {acoes && <>
+        <AvisosEncontro avisos={pendenciasDoEncontro(encontro)} />
         {/* VOLTAR */}
         <p style={{ marginBottom: "1rem" }}>
           <Link href={voltarHref}>← Voltar</Link>

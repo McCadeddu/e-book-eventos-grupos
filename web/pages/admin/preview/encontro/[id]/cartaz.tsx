@@ -5,6 +5,8 @@ import { toPng } from "html-to-image";
 import { useRef, useState } from "react";
 import { withAdminPage } from "../../../../../lib/adminPage";
 import { carregarDivulgacaoEncontro, type DadosDivulgacao } from "../../../../../lib/admin-divulgacao";
+import { pendenciasDoEncontro } from "../../../../../lib/alertas";
+import AvisosEncontro from "../../../../../components/admin/AvisosEncontro";
 
 
 export default function CartazEncontro({ encontro, grupo }: DadosDivulgacao) {
@@ -12,6 +14,7 @@ export default function CartazEncontro({ encontro, grupo }: DadosDivulgacao) {
   const cartazRef = useRef<HTMLDivElement>(null);
   const [gerando, setGerando] = useState(false);
   const [erro, setErro] = useState("");
+  const avisos = pendenciasDoEncontro(encontro);
 
     async function gerarImagem() {
         if (!cartazRef.current) return;
@@ -45,8 +48,12 @@ export default function CartazEncontro({ encontro, grupo }: DadosDivulgacao) {
       }}
     >
 
+      {avisos.length > 0 && <div style={{ flexBasis: "100%" }}>
+        <div style={{ maxWidth: "600px", margin: "0 auto" }}><AvisosEncontro avisos={avisos} /></div>
+      </div>}
       {/* CARTAZ */}
       <div
+        data-cartaz-exportavel="true"
         ref={cartazRef}
         style={{
           width: "500px",

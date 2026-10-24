@@ -449,6 +449,8 @@ test("print card escapes stored text and excludes administrative actions from th
     assert.ok(!html.includes("<script>"));
     assert.ok(!html.includes("/api/pdf/"));
     assert.ok(!html.includes("/admin/"));
+    assert.ok(!html.includes("Informações a conferir"));
+    assert.ok(!html.includes("Local ausente"));
 });
 
 test("PDF authenticates and validates input before reading data or launching Chromium", async () => {
@@ -934,7 +936,7 @@ test("planning overview renders accessible filters, one edit action per record a
     const html = renderToStaticMarkup(React.createElement(Component, { ...common, encontros: [
         { id: "a", grupo_id: "g", data_inicio: "2027-03-10", titulo: "Título <seguro>", visibilidade: "publico" },
     ] }));
-    for (const id of ["agenda-busca", "agenda-mes", "agenda-situacao"]) assert.ok(html.includes(`for="${id}"`));
+    for (const id of ["agenda-busca", "agenda-mes", "agenda-situacao", "agenda-revisao"]) assert.ok(html.includes(`for="${id}"`));
     assert.ok(html.includes("Limpar filtros")); assert.ok(html.includes("Editar encontro"));
     assert.ok(html.includes("Título &lt;seguro&gt;")); assert.ok(!html.includes("<seguro>"));
     const empty = renderToStaticMarkup(React.createElement(Component, { ...common, encontros: [] }));
@@ -948,4 +950,54 @@ test("planning orders the same day by actual starting time and keeps free-form t
     }));
     const items = montarAgendaPlanejamento(2027, meetings, [{ id: "g", nome: "Grupo" }], [], [], []);
     assert.deepEqual(Array.from(items, i => i.encontro.horario), ["08h59", "9:00", "9h30", "14h00 - 18h00", "Após a missa", "25h00"]);
+});
+
+test("editorial warnings distinguish missing information from optional display dates and intentional internal visibility", () => {
+    const { pendenciasDoEncontro, alertasDoEncontro } = load("lib/alertas.ts");
+    const completo = { data_inicio: "2027-12-31", data_fim: "2028-01-02", local: "CMV", horario: "Após a missa", tipo: "evento_especial", visibilidade: "interno" };
+    assert.equal(pendenciasDoEncontro(completo).length, 0);
+    assert.deepEqual(Array.from(alertasDoEncontro(completo)), ["Não publicado"]);
+    assert.deepEqual(Array.from(pendenciasDoEncontro({ data_inicio: "2027-03-01", local: "  ", horario: null })), ["Local ausente", "Horário ausente"]);
+    assert.ok(pendenciasDoEncontro({ ...completo, data_inicio: "2027-02-29" }).includes("Data de início inválida"));
+    assert.ok(pendenciasDoEncontro({ ...completo, data_fim: "2027-12-30" }).includes("Término anterior ao início"));
+    assert.ok(pendenciasDoEncontro({ ...completo, data_fim: "2028-02-30" }).includes("Data de término inválida"));
+});
+
+test("review filter combines with search, month and annual visibility without changing publication decisions", () => {
+    const { montarAgendaPlanejamento, filtrarAgendaPlanejamento } = load("lib/agenda-planejamento.ts");
+    const meetings = [
+        { id: "a", grupo_id: "g", data_inicio: "2027-03-10", local: "", horario: "9h00", visibilidade: "publico" },
+        { id: "b", grupo_id: "g", data_inicio: "2027-03-11", local: "CMV", horario: "9h00", visibilidade: "interno" },
+    ];
+    const snapshot = JSON.stringify(meetings);
+    const items = montarAgendaPlanejamento(2027, meetings, [{ id: "g", nome: "Jovens" }], [], [], []);
+    assert.equal(filtrarAgendaPlanejamento(items, "jovens", "03", "anual", "com")[0].encontro.id, "a");
+    assert.equal(filtrarAgendaPlanejamento(items, "", "", "fora", "sem")[0].encontro.id, "b");
+    assert.equal(filtrarAgendaPlanejamento(items, "", "", "anual", "sem").length, 0);
+    assert.equal(filtrarAgendaPlanejamento(items, "", "", "", "").length, 2);
+    assert.equal(items[0].noAnual, true); assert.equal(items[1].noAnual, false);
+    assert.equal(JSON.stringify(meetings), snapshot);
+});
+
+test("preview warns about missing details while the exported print card excludes editorial warnings", () => {
+    const React = require("react"), { renderToStaticMarkup } = require("react-dom/server");
+    const Card = load("components/admin/CartaoEncontro.tsx").default;
+    const props = { encontro: { id: "m", data_inicio: "2027-03-01" }, grupo: { nome: "Grupo" }, voltarHref: "/admin/grupos?ano=2027" };
+    const preview = renderToStaticMarkup(React.createElement(Card, props));
+    assert.ok(preview.includes('aria-label="Informações a conferir"'));
+    assert.ok(preview.includes("Horário ausente")); assert.ok(preview.includes("Local ausente"));
+    const print = renderToStaticMarkup(React.createElement(Card, { ...props, acoes: false }));
+    assert.ok(!print.includes("Informações a conferir")); assert.ok(!print.includes("Horário ausente"));
+});
+
+test("poster warnings are outside the image export area and do not require missing optional fields", () => {
+    const React = require("react"), { renderToStaticMarkup } = require("react-dom/server");
+    const Poster = load("pages/admin/preview/encontro/[id]/cartaz.tsx", { "html-to-image": { toPng() { throw Error("No export during render"); } } }).default;
+    const props = { encontro: { id: "m", data_inicio: "2027-03-01" }, grupo: { nome: "Grupo" }, voltarHref: "/admin/grupos?ano=2027" };
+    const html = renderToStaticMarkup(React.createElement(Poster, props));
+    const marker = html.indexOf('data-cartaz-exportavel="true"');
+    assert.ok(marker > html.indexOf("Horário ausente"));
+    assert.ok(!html.slice(marker).includes("Informações a conferir"));
+    const complete = renderToStaticMarkup(React.createElement(Poster, { ...props, encontro: { ...props.encontro, local: "CMV", horario: "9h00", tipo: "evento_especial" } }));
+    assert.ok(!complete.includes("Informações a conferir"));
 });

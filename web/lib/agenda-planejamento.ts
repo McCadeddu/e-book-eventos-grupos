@@ -3,6 +3,7 @@ import type { Grupo } from "./types";
 import type { EventoAdmin } from "./admin-types";
 import { dataDoAnoPastoral } from "./ano-pastoral";
 import { nivelPermitidoNoAnual } from "./calendario-regras";
+import { pendenciasDoEncontro } from "./alertas";
 
 export type ItemPlanejamento = {
     encontro: Encontro;
@@ -11,6 +12,7 @@ export type ItemPlanejamento = {
     noAnual: boolean;
     podeEditar: boolean;
     busca: string;
+    pendencias: string[];
 };
 
 function normalizar(texto: string) {
@@ -43,16 +45,17 @@ export function montarAgendaPlanejamento(ano: number, encontros: Encontro[], gru
             : encontro.visibilidade !== "publico" ? "Encontro interno"
             : encontro.evento_id && evento?.visibilidade !== "publico" ? "Evento interno"
             : noAnual ? "No calendário anual" : "Somente nos capítulos";
-        return { encontro, responsavel, situacao, noAnual, podeEditar: ativo,
+        return { encontro, responsavel, situacao, noAnual, podeEditar: ativo, pendencias: pendenciasDoEncontro(encontro),
             busca: normalizar([responsavel, encontro.titulo, encontro.local, encontro.horario].filter(Boolean).join(" ")) };
     }).sort((a,b) => a.encontro.data_inicio.localeCompare(b.encontro.data_inicio)
         || minutosDoHorario(a.encontro.horario) - minutosDoHorario(b.encontro.horario)
         || a.encontro.id.localeCompare(b.encontro.id));
 }
 
-export function filtrarAgendaPlanejamento(itens: ItemPlanejamento[], busca: string, mes: string, situacao: string) {
+export function filtrarAgendaPlanejamento(itens: ItemPlanejamento[], busca: string, mes: string, situacao: string, revisao = "") {
     const termos = normalizar(busca.trim()).split(/\s+/).filter(Boolean);
     return itens.filter(item => (!mes || item.encontro.data_inicio.slice(5,7) === mes)
         && (!situacao || (situacao === "anual" ? item.noAnual : !item.noAnual))
+        && (!revisao || (revisao === "com" ? item.pendencias.length > 0 : item.pendencias.length === 0))
         && termos.every(termo => item.busca.includes(termo)));
 }
